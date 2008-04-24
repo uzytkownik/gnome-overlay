@@ -26,6 +26,10 @@ DEPEND="${RDEPEND}
 
 DOCS="AUTHORS ChangeLog MAINTAINERS NEWS README"
 
+src_unpack() {
+	subversion_src_unpack
+}
+
 pkg_setup() {
 	G2CONF="${G2CONF}
 	        $(use_enable debug)
