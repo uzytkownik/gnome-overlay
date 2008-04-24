@@ -22,7 +22,6 @@ RDEPEND=">=dev-libs/glib-2.12
 DEPEND="${RDEPEND}
         sys-devel/flex
 		||  ( sys-devel/bison dev-util/yacc )
-		<dev-lang/vala-9999
         dev-libs/libxslt"
 
 DOCS="AUTHORS ChangeLog MAINTAINERS NEWS README"
