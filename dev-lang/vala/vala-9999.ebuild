@@ -15,14 +15,14 @@ SRC_URI=""
 LICENSE="LGPL-2.1"
 SLOT="0"
 KEYWORDS=""
-IUSE="debug gen-project vapigen"
+IUSE="doc gtk +vapigen"
 
 RDEPEND=">=dev-libs/glib-2.12
-         gen-project? ( >=x11-libs/gtk+-2.10 )"
+         gtk? ( >=x11-libs/gtk+-2.10 )"
 DEPEND="${RDEPEND}
         sys-devel/flex
 		||  ( sys-devel/bison dev-util/yacc )
-        dev-libs/libxslt"
+        doc? ( dev-libs/libxslt )"
 
 DOCS="AUTHORS ChangeLog MAINTAINERS NEWS README"
 
@@ -32,8 +32,7 @@ src_unpack() {
 
 pkg_setup() {
 	G2CONF="${G2CONF}
-	        $(use_enable debug)
-			$(use_enable gen-project) 
+			$(use_enable gtk gen-project) 
 			$(use_enable vapigen)"
 }
 
