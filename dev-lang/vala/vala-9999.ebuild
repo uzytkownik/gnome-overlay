@@ -14,7 +14,7 @@ SRC_URI=""
 
 LICENSE="LGPL-2.1"
 SLOT="0"
-KEYWORDS="~x86 ~amd64"
+KEYWORDS=""
 IUSE="debug gen-project vapigen"
 
 RDEPEND=">=dev-libs/glib-2.12
@@ -22,7 +22,7 @@ RDEPEND=">=dev-libs/glib-2.12
 DEPEND="${RDEPEND}
         sys-devel/flex
 		||  ( sys-devel/bison dev-util/yacc )
-		dev-lang/vala
+		<dev-lang/vala-9999
         dev-libs/libxslt"
 
 DOCS="AUTHORS ChangeLog MAINTAINERS NEWS README"
