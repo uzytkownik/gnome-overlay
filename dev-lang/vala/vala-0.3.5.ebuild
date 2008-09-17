@@ -23,7 +23,7 @@ DEPEND="${RDEPEND}
 DOCS="AUTHORS ChangeLog MAINTAINERS NEWS README"
 
 src_unpack() {
-	unpack $(A}
+	unpack ${A}
 	cd "${S}"
 	epatch "${FILESDIR}/missing-gnet-vapi.patch"
 }
