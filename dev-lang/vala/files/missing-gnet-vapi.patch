@@ -1,7 +1,7 @@
-Index: Makefile.am
+Index: vapi/Makefile.am
 ===================================================================
---- Makefile.am	(revision 1777)
-+++ Makefile.am	(working copy)
+--- vapi/Makefile.am	(revision 1777)
++++ vapi/Makefile.am	(working copy)
 @@ -27,6 +27,7 @@
  	gio-unix-2.0.deps \
  	gio-unix-2.0.vapi \
