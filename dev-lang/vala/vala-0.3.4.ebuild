@@ -2,20 +2,16 @@
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
-inherit subversion gnome2
-
-ESVN_REPO_URI="http://svn.gnome.org/svn/vala/trunk"
-ESVN_PROJECT="vala"
-ESVN_BOOTSTRAP="./autogen.sh"
+inherit gnome2
 
 DESCRIPTION="Vala - Compiler for the GObject type system"
 HOMEPAGE="http://live.gnome.org/Vala"
-SRC_URI=""
+SRC_URI="http://download.gnome.org/sources/${PN}/0.3/${P}.tar.bz2"
 
 LICENSE="LGPL-2.1"
 SLOT="0"
-KEYWORDS=""
-IUSE="doc gtk +vapigen"
+KEYWORDS="~x86 ~amd64"
+IUSE="gtk +vapigen"
 
 RDEPEND=">=dev-libs/glib-2.12
          gtk? ( >=x11-libs/gtk+-2.10 )"
@@ -27,9 +23,9 @@ DEPEND="${RDEPEND}
 DOCS="AUTHORS ChangeLog MAINTAINERS NEWS README"
 
 src_unpack() {
-	subversion_src_unpack
-	cd "#{S}"
-	epatch "${FILESFIR}/missing-gnet-vapi.patch"
+	unpack ${A}
+	cd "${S}"
+	epatch "${FILESDIR}/missing-gnet-vapi.patch"
 }
 
 pkg_setup() {
