@@ -2,7 +2,7 @@
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
-inherit subversion gnome2
+inherit subversion gnome2 autotools
 
 ESVN_REPO_URI="http://svn.gnome.org/svn/vala/trunk"
 ESVN_PROJECT="vala"
