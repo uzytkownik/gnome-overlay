@@ -25,7 +25,7 @@ DOCS="AUTHORS ChangeLog MAINTAINERS NEWS README"
 src_unpack() {
 	unpack $(A}
 	cd "${S}"
-	epatch "${FILESFIR}/missing-gnet-vapi.patch"
+	epatch "${FILESDIR}/missing-gnet-vapi.patch"
 }
 
 pkg_setup() {

@@ -29,7 +29,7 @@ DOCS="AUTHORS ChangeLog MAINTAINERS NEWS README"
 src_unpack() {
 	subversion_src_unpack
 	cd "#{S}"
-	epatch "${FILESFIR}/missing-gnet-vapi.patch"
+	epatch "${FILESDIR}/missing-gnet-vapi.patch"
 }
 
 pkg_setup() {
