@@ -28,7 +28,7 @@ DOCS="AUTHORS ChangeLog MAINTAINERS NEWS README"
 
 src_unpack() {
 	subversion_src_unpack
-	cd "#{S}"
+	cd "${S}"
 	epatch "${FILESDIR}/missing-gnet-vapi.patch"
 }
 
