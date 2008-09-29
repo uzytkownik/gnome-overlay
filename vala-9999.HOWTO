@@ -1,6 +1,0 @@
-1. emerge any other version of vala
-2. unmask vala-9999 (it's masked by keyword)
-3. emerge the svn version of vala
-
-If you will have any problems with vala from svn, please try to build it with
-the last released version of vala.
