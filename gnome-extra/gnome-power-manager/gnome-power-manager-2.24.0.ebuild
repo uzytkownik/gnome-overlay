@@ -76,7 +76,7 @@ src_unpack() {
 	else
 		# Remove the docbook2man rules here since it's not handled by a proper
 		# parameter in configure.in.
-		sed -i -e 's:@HAVE_DOCBOOK2MAN_TRUE@.*::' "${S}/man/Makefile.am"
+		epatch "${FILESDIR}/gnome-power-manager-2.24.0.ebuild"
 	fi
 
 	# glibc splits this out, whereas other libc's do not tend to

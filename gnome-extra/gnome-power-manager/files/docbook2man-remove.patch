@@ -1,0 +1,27 @@
+--- man/Makefile.am.old	2008-10-02 00:57:44.000000000 +0200
++++ man/Makefile.am	2008-10-02 00:58:23.000000000 +0200
+@@ -3,24 +3,6 @@
+ 	gnome-power-statistics.sgml			\
+ 	gnome-power-preferences.sgml
+ 
+-if HAVE_DOCBOOK2MAN
+-man_MANS =						\
+-	gnome-power-manager.1				\
+-	gnome-power-statistics.1			\
+-	gnome-power-preferences.1
+-endif
+-
+-if HAVE_DOCBOOK2MAN
+-gnome-power-manager.1: gnome-power-manager.sgml
+-	docbook2man $? > $@
+-
+-gnome-power-preferences.1: gnome-power-preferences.sgml
+-	docbook2man $? > $@
+-
+-gnome-power-statistics.1: gnome-power-statistics.sgml
+-	docbook2man $? > $@
+-endif
+-
+ clean-local :
+ 	rm -f *~
+ 	rm -f *.1
