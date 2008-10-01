@@ -76,7 +76,7 @@ src_unpack() {
 	else
 		# Remove the docbook2man rules here since it's not handled by a proper
 		# parameter in configure.in.
-		epatch "${FILESDIR}/gnome-power-manager-2.24.0.ebuild"
+		epatch "${FILESDIR}/docbook2man-remove.patch"
 	fi
 
 	# glibc splits this out, whereas other libc's do not tend to
