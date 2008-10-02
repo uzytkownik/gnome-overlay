@@ -76,13 +76,11 @@ src_unpack() {
 	else
 		# Remove the docbook2man rules here since it's not handled by a proper
 		# parameter in configure.in.
-		epatch "${FILESDIR}/docbook2man-remove.patch"
+		sed -i -e 's:@HAVE_DOCBOOK2MAN_TRUE@.*::' "${S}/man/Makefile.in"
 	fi
 
 	# glibc splits this out, whereas other libc's do not tend to
 	use elibc_glibc || sed -i -e 's/-lresolv//' configure
-
-	eautoreconf
 }
 
 src_test() {
