@@ -69,11 +69,7 @@ pkg_setup() {
 src_unpack() {
 	gnome2_src_unpack
 
-	if use doc; then
-		# Actually install all html files, not just the index
-		sed -i -e 's:\(htmldoc_DATA = \).*:\1$(SPEC_HTML_FILES):' \
-			"${S}/docs/Makefile.am"
-	else
+	if ! use doc; then
 		# Remove the docbook2man rules here since it's not handled by a proper
 		# parameter in configure.in.
 		sed -i -e 's:@HAVE_DOCBOOK2MAN_TRUE@.*::' "${S}/man/Makefile.in"
