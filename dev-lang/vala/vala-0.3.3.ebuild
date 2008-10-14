@@ -22,13 +22,6 @@ DEPEND="${RDEPEND}
 
 DOCS="AUTHORS ChangeLog MAINTAINERS NEWS README"
 
-src_unpack() {
-	unpack ${A}
-	cd "${S}"
-	epatch "${FILESDIR}/missing-gnet-vapi.patch"
-	eautoreconf
-}
-
 pkg_setup() {
 	G2CONF="${G2CONF}
 			$(use_enable gtk gen-project)
