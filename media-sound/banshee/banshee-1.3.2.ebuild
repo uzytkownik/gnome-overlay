@@ -2,7 +2,7 @@
 # Distributed under the terms of the GNU General Public License v2
 # $Header: /var/cvsroot/gentoo-x86/media-sound/banshee/banshee-1.2.1-r2.ebuild,v 1.1 2008/09/10 13:51:47 loki_val Exp $
 
-EAPI=2
+EAPI=1
 
 inherit base gnome2 mono autotools
 
@@ -66,7 +66,7 @@ RDEPEND=">=dev-lang/mono-1.2.6
 		>=media-libs/libmtp-0.3
 	)
 	moonlight? (
-		>=dev-lang/mono-1.9[moonlight]
+		>=dev-lang/mono-1.9
 	)
 	vorbis? (
 		>=media-plugins/gst-plugins-ogg-${GVER}
