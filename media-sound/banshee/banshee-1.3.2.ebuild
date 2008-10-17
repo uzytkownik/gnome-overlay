@@ -10,7 +10,7 @@ GVER=0.10.3
 
 DESCRIPTION="Import, organize, play, and share your music using a simple and powerful interface."
 HOMEPAGE="http://banshee-project.org"
-SRC_URI="http://download.banshee-project.org/${PN}/${PN}-1-${PV}.tar.bz2 -> ${P}.tar.bz2"
+SRC_URI="http://download.banshee-project.org/${PN}/${PN}-1-${PV}.tar.bz2"
 
 LICENSE="MIT"
 SLOT="0"
@@ -78,8 +78,7 @@ DEPEND="${RDEPEND}
 
 DOCS="AUTHORS ChangeLog HACKING NEWS README"
 
-PATCHES=( "${FILESDIR}/${P}-libmtp-0.3.0-API.patch"
-	"${FILESDIR}/${P}-notification-crash.patch" )
+S=${WORKDIR}/${PN}-1-${PV}
 
 pkg_setup() {
 	G2CONF="${G2CONF}
