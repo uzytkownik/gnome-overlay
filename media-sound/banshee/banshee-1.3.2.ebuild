@@ -15,7 +15,7 @@ SRC_URI="http://download.banshee-project.org/${PN}/${PN}-1-${PV}.tar.bz2"
 LICENSE="MIT"
 SLOT="0"
 KEYWORDS="~amd64 ~x86"
-IUSE="+aac +boo daap doc +encode +flac ipod +mad moonlight mtp +podcast test +vorbis"
+IUSE="+aac +boo daap doc +encode +flac ipod +mad mtp +podcast test +vorbis"
 
 RDEPEND=">=dev-lang/mono-1.2.6
 	>=dev-dotnet/gtk-sharp-2.10
@@ -65,9 +65,6 @@ RDEPEND=">=dev-lang/mono-1.2.6
 	mtp? (
 		>=media-libs/libmtp-0.3
 	)
-	moonlight? (
-		>=dev-lang/mono-1.9
-	)
 	vorbis? (
 		>=media-plugins/gst-plugins-ogg-${GVER}
 		>=media-plugins/gst-plugins-vorbis-${GVER}
@@ -88,8 +85,7 @@ pkg_setup() {
 		$(use_enable daap)
 		$(use_enable ipod)
 		$(use_enable podcast)
-		$(use_enable test tests)
-		$(use_enable moonlight)"
+		$(use_enable test tests)"
 
 	MAKEOPTS="${MAKEOPTS} -j1"
 }
