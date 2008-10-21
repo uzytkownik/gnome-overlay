@@ -6,7 +6,7 @@ inherit gnome2 autotools
 
 DESCRIPTION="Vala - Compiler for the GObject type system"
 HOMEPAGE="http://live.gnome.org/Vala"
-SRC_URI="http://download.gnome.org/sources/${PN}/0.3/${P}.tar.bz2"
+SRC_URI="http://download.gnome.org/sources/${PN}/0.4/${P}.tar.bz2"
 
 LICENSE="LGPL-2.1"
 SLOT="0"
