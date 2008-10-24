@@ -12,8 +12,8 @@ SLOT="0"
 KEYWORDS="~alpha ~amd64 ~hppa ~ia64 ~ppc ~ppc64 ~sparc ~x86 ~x86-fbsd"
 IUSE="avahi doc networkmanager python spell xulrunner webkit"
 
-RDEPEND=">=dev-libs/glib-2.16.0
-	>=x11-libs/gtk+-2.12.0
+RDEPEND=">=dev-libs/glib-2.18.0
+	>=x11-libs/gtk+-2.14.0
 	>=dev-libs/libxml2-2.6.12
 	>=dev-libs/libxslt-1.1.7
 	>=gnome-base/libglade-2.3.1
@@ -52,7 +52,7 @@ DOCS="AUTHORS ChangeLog* HACKING MAINTAINERS NEWS README TODO"
 pkg_setup() {
 	# FIXME: I'm automagic
 	if ! built_with_use media-libs/libcanberra gtk; then
-		eerror "You need to rebuild media-libs/libcanberra with gtk	support."
+		eerror "You need to rebuild media-libs/libcanberra with gtk support."
 		die "Rebuild media-libs/libcanberra with USE='gtk'"
 	fi
 
