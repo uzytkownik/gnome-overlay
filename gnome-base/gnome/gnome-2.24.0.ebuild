@@ -109,7 +109,7 @@ RDEPEND="
 
 	>=dev-python/gnome-python-desktop-2.22.0
 	>=gnome-extra/gnome-games-2.24.0
-	>=gnome-base/librsvg-2.22.3
+	>=gnome-base/librsvg-2.22.0
 
 	>=gnome-extra/gnome-system-monitor-2.24.0
 	>=gnome-base/libgtop-2.24.0
