@@ -17,7 +17,7 @@ RDEPEND=">=dev-lang/mono-2.0
 	>=dev-libs/dbus-glib-0.71
 	>=dev-libs/glib-2
 	>=x11-libs/gtk+-2.6
-	>=dev-dotnet/gtk-sharp-2.12.0[glade]
+	>=dev-dotnet/gtk-sharp-2.12.0
 	>=dev-dotnet/dbus-sharp-0.4.2
 	>=dev-dotnet/dbus-glib-sharp-0.3.0
 	>=dev-dotnet/gtkhtml-sharp-2.7
