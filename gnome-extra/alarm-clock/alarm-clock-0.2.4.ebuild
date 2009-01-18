@@ -6,7 +6,7 @@ inherit gnome2
 
 DESCRIPTION="An alarm clock"
 HOMEPAGE="https://launchpad.net/alarm-clock"
-SRC_URI="http://launchpad.net/alarm-clock/trunk/0.2/+download/${PV}.tar.gz"
+SRC_URI="http://launchpad.net/alarm-clock/trunk/0.2/+download/${P}.tar.gz"
 
 LICENSE="GPL-2"
 SLOT="0"
