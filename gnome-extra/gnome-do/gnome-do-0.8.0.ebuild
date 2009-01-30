@@ -42,10 +42,6 @@ DEPEND="${RDEPEND}
 
 MAKEOPTS="${MAKEOPTS} -j1"
 
-src_prepare() {
-	epatch "${FILESDIR}/${P}-mono-2.2.patch"
-}
-
 src_configure() {
 	gnome2_src_configure
 }
