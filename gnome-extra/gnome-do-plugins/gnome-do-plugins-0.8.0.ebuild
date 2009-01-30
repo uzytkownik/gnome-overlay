@@ -15,7 +15,7 @@ SRC_URI="https://launchpad.net/${MY_PN}/${PVC}/${PVC2}/+download/${P}.tar.gz"
 LICENSE="GPL-3"
 SLOT="0"
 KEYWORDS="~amd64 ~x86"
-IUSE="banshee "
+IUSE="banshee evolution"
 
 RDEPEND=">=gnome-extra/gnome-do-${PV}
 		dev-dotnet/wnck-sharp
