@@ -1,0 +1,28 @@
+diff -ru gnome-do-plugins-0.8.0.old/configure.ac gnome-do-plugins-0.8.0/configure.ac
+--- gnome-do-plugins-0.8.0.old/configure.ac	2009-01-30 03:53:45.000000000 +0100
++++ gnome-do-plugins-0.8.0/configure.ac	2009-01-30 04:01:02.000000000 +0100
+@@ -32,7 +32,6 @@
+ 
+ PKG_CHECK_MODULES([BANSHEE_INDEXER], [banshee-1-collection-indexer >= 1.4.2])
+ PKG_CHECK_MODULES([EVOLUTION_SHARP], [evolution-sharp])
+-PKG_CHECK_MODULES([FLICKRNET], [flickrnet])
+ PKG_CHECK_MODULES([GCONF_SHARP_20], [gconf-sharp-2.0])
+ PKG_CHECK_MODULES([GLADE_SHARP_20], [glade-sharp-2.0])
+ PKG_CHECK_MODULES([GLIB_SHARP_20], [glib-sharp-2.0])
+@@ -57,7 +56,6 @@
+ 
+ AC_SUBST([BANSHEE_INDEXER_LIBS])
+ AC_SUBST([EVOLUTION_SHARP_LIBS])
+-AC_SUBST([FLICKRNET_LIBS])
+ AC_SUBST([GCONF_SHARP_20_LIBS])
+ AC_SUBST([GDATA_SHARP_ACL_LIBS])
+ AC_SUBST([GDATA_SHARP_CALENDAR_LIBS])
+@@ -124,7 +122,6 @@
+ Evolution/Makefile
+ File/Makefile
+ Firefox/Makefile
+-Flickr/Makefile
+ GNOME-Dictionary/Makefile
+ GNOME-Screenshot/Makefile
+ GNOME-Session/Makefile
+Only in gnome-do-plugins-0.8.0: configure.ac.orig

@@ -28,7 +28,9 @@ DEPEND="${RDEPEND}
 src_unpack() {
 	unpack ${A}
 	cd ${S}
-	epatch "${FILESDIR}/${P}-disable-evo-flickr.patch"
+	use banshee || epatch "${FILESDIR}/${P}-disable-banshee.patch"
+	use evolution || epatch  "${FILESDIR}/${P}-disable-evolution.patch"
+	epatch  "${FILESDIR}/${P}-disable-flickr.patch"
 	eautoreconf
 }
 
