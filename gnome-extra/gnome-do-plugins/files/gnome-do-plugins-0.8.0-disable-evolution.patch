@@ -1,6 +1,6 @@
 diff -ru gnome-do-plugins-0.8.0.old/configure.ac gnome-do-plugins-0.8.0/configure.ac
 --- gnome-do-plugins-0.8.0.old/configure.ac	2009-01-30 03:53:45.000000000 +0100
-+++ gnome-do-plugins-0.8.0/configure.ac	2009-01-30 03:54:21.000000000 +0100
++++ gnome-do-plugins-0.8.0/configure.ac	2009-01-30 04:21:14.000000000 +0100
 @@ -31,7 +31,6 @@
  SHAMROCK_EXPAND_DATADIR
  
@@ -25,3 +25,15 @@ diff -ru gnome-do-plugins-0.8.0.old/configure.ac gnome-do-plugins-0.8.0/configur
  File/Makefile
  Firefox/Makefile
  Flickr/Makefile
+Only in gnome-do-plugins-0.8.0: configure.ac.orig
+diff -ru gnome-do-plugins-0.8.0.old/Makefile.am gnome-do-plugins-0.8.0/Makefile.am
+--- gnome-do-plugins-0.8.0.old/Makefile.am	2009-01-30 03:53:45.000000000 +0100
++++ gnome-do-plugins-0.8.0/Makefile.am	2009-01-30 04:21:27.000000000 +0100
+@@ -16,7 +16,6 @@
+ 	DiskMounter \
+ 	EOG-Slideshow \
+ 	Epiphany \
+-	Evolution \
+ 	File \
+ 	Firefox \
+ 	Flickr \
