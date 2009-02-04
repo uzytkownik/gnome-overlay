@@ -76,7 +76,7 @@ src_unpack() {
 	epatch "${FILESDIR}"/${PN}-1.2.0-gentoo_etc_services.patch
 
 	# Fix broken libdb build
-	epatch "${FILESDIR}"/${PN}-2.25.90-no-libdb.patch
+	#patch "${FILESDIR}"/${PN}-2.25.90-no-libdb.patch
 
 	# Rewind in camel-disco-diary to fix a crash
 	epatch "${FILESDIR}"/${PN}-1.8.0-camel-rewind.patch
