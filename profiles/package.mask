@@ -51,6 +51,20 @@
 >=dev-python/gnome-python-desktop-2.25
 >=x11-wm/metacity-2.25
 >=gnome-base/nautilus-2.25
+>=x11-themes/gnome-icon-theme-2.25
+>=x11-themes/gnome-theme-2.25
+>=media-video/totem-2.25
+>=gnome-base/gnome-session-2.25
+>=gnome-base/gnome-menus-2.25
+>=x11-wm/metacity-2.25
+>=gnome-base/gnome-panel-2.25
+>=gnome-extra/gnome-utils-2.25
+>=gnome-base/gconf-2.25
+>=net-misc/vinagre-2.25
+>=net-misc/vino-2.25
+>=dev-libs/totem-pl-parser-2.25
+>=gnome-base/gnome-keyring-2.25
+>=app-arch/file-roller-2.25
 
 # Gilles Dartiguelongue <eva@gentoo.org> (14 Dec 2008)
 # Masked for testing until tree is fixed, see bug #243160.
