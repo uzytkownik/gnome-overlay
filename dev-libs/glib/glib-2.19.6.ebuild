@@ -11,7 +11,7 @@ HOMEPAGE="http://www.gtk.org/"
 LICENSE="LGPL-2"
 SLOT="2"
 KEYWORDS="~alpha ~amd64 ~arm ~hppa ~ia64 ~m68k ~mips ~ppc ~ppc64 ~s390 ~sh ~sparc ~sparc-fbsd ~x86 ~x86-fbsd"
-IUSE="debug doc fam hardened selinux xattr"
+IUSE="debug doc fam gresolver hardened selinux xattr"
 
 RDEPEND="virtual/libc
 		 virtual/libiconv
@@ -47,6 +47,8 @@ src_prepare() {
 
 	# Fix gmodule issues on fbsd; bug #184301
 	epatch "${FILESDIR}"/${PN}-2.12.12-fbsd.patch
+
+	use gresolver && epatch "${FILESDIR}/${P}-gresolver.patch"
 
 	[[ ${CHOST} == *-freebsd* ]] && elibtoolize
 }
