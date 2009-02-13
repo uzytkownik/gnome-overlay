@@ -3,7 +3,7 @@
 # $Header: /var/cvsroot/gentoo-x86/dev-libs/glib/glib-2.18.3.ebuild,v 1.1 2008/11/27 01:51:33 leio Exp $
 EAPI=2
 
-inherit gnome.org libtool eutils flag-o-matic
+inherit gnome.org libtool eutils flag-o-matic autotools
 
 DESCRIPTION="The GLib library of C routines"
 HOMEPAGE="http://www.gtk.org/"
