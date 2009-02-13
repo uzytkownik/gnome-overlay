@@ -48,7 +48,8 @@ src_prepare() {
 	# Fix gmodule issues on fbsd; bug #184301
 	epatch "${FILESDIR}"/${PN}-2.12.12-fbsd.patch
 
-	use gresolver && epatch "${FILESDIR}/${P}-gresolver.patch"
+	use gresolver && \
+	  EPATCH_OPTS="${EPATCH_OPTS} -p1" epatch "${FILESDIR}/${P}-gresolver.patch"
 
 	[[ ${CHOST} == *-freebsd* ]] && elibtoolize
 }
