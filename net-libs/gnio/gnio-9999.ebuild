@@ -21,3 +21,7 @@ RDEPEND=">=dev-libs/glib-2.19.6[gresolver]
 		 >=gnome-extra/gobject-introspection-0.6.0
 		 >=net-libs/gnutls-2.2.5"
 
+src_unpack() {
+	git_src_unpack
+}
+
