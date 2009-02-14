@@ -1,0 +1,3 @@
+144c
+	LD_LIBRARY_PATH=../girepository/.libs/ $(SCANNER) \
+.

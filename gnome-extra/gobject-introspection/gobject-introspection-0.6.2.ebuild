@@ -3,7 +3,7 @@
 # $Header: $
 EAPI=2
 
-inherit gnome2 eutils
+inherit gnome2 eutils autotools
 
 DESCRIPTION="The GObject introspection"
 HOMEPAGE="http://live.gnome.org/GObjectIntrospection/"
@@ -17,4 +17,10 @@ DEPEND=">=dev-libs/glib-2.19.0
         || ( sys-devel/gcc[libffi] virtual/libffi )
 		>=dev-lang/python-2.5"
 RDEPEND="${DEPEND}"
+
+src_unpack() {
+	unpack ${A}
+	cd "${S}"
+	epatch "${FILESDIR}/${P}-git.patch"
+}
 
