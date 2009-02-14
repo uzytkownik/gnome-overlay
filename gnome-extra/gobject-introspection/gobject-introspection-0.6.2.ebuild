@@ -21,6 +21,7 @@ RDEPEND="${DEPEND}"
 src_unpack() {
 	unpack ${A}
 	cd "${S}"
-	epatch "${FILESDIR}/${P}-git.patch"
+	epatch "${FILESDIR}/${P}-gir.patch"
+	eautoreconf
 }
 
