@@ -14,7 +14,7 @@ SLOT="0"
 KEYWORDS="~x86"
 IUSE=""
 
-DEPEND="=dev-lang/vala-0.5.3
+DEPEND=">=dev-lang/vala-0.5.3
 		${RDEPEND}"
 RDEPEND=">=dev-libs/glib-2.19.6[gresolver]
 		 >=gnome-extra/gobject-introspection-0.6.0"
