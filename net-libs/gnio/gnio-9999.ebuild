@@ -3,7 +3,7 @@
 # $Header: $
 EAPI=2
 
-inherit git
+inherit git gnome2
 
 DESCRIPTION="The GLib-based network library"
 HOMEPAGE=""
@@ -17,17 +17,6 @@ IUSE=""
 DEPEND=">=dev-lang/vala-0.5.3
 		${RDEPEND}"
 RDEPEND=">=dev-libs/glib-2.19.6[gresolver]
-		 >=gnome-extra/gobject-introspection-0.6.0"
+		 >=gnome-extra/gobject-introspection-0.6.0
+		 >=net-libs/gnutls-2.2.5"
 
-src_unpack() {
-	git_src_unpack
-}
-
-src_compile() {
-	./waf configure --prefix /usr
-	./waf
-}
-
-src_install() {
-	./waf install --destdir="${D}"
-}
