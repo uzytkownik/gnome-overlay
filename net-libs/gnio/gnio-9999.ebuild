@@ -8,6 +8,7 @@ inherit git gnome2
 DESCRIPTION="The GLib-based network library"
 HOMEPAGE=""
 EGIT_REPO_URI="git://git.desrt.ca/gnio"
+EGIT_BOOTSTRAP="./autogen.sh"
 SRC_URI=""
 
 LICENSE="LGPL-2"
