@@ -4,7 +4,7 @@
 
 EAPI=2
 
-inherit mono gnome.org eutils
+inherit mono gnome.org eutils autotools
 
 DESCRIPTION="Mono bindings for Evolution"
 HOMEPAGE="http://www.gnome.org/projects/beagle"
@@ -26,6 +26,7 @@ DEPEND="${RDEPEND}
 src_unpack() {
 	unpack "${A}"
 	epatch "${FILESDIR}/${PN}-0.19-evolution-2.25.patch"
+	eautoreconf
 }
 
 src_configure() {
