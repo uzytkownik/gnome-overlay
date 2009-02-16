@@ -27,7 +27,7 @@ src_unpack() {
 	unpack "${A}"
 	cd "${S}"
 	epatch "${FILESDIR}/${PN}-0.19-evolution-2.25.patch"
-	eautoreconf
+	eautoconf
 }
 
 src_configure() {
