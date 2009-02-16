@@ -1,0 +1,31 @@
+Index: configure.in
+===================================================================
+--- configure.in	(revision 206)
++++ configure.in	(working copy)
+@@ -17,7 +17,6 @@
+ PKG_CHECK_MODULES(EVOLUTION_DATA_SERVER_1_9, evolution-data-server-1.2 >= 1.9 evolution-data-server-1.2 < 1.10, edsver="1.9", AC_MSG_RESULT([no]))
+ PKG_CHECK_MODULES(EVOLUTION_DATA_SERVER_1_10, evolution-data-server-1.2 >= 1.10 evolution-data-server-1.2 < 2.23.92, edsver="1.10", AC_MSG_RESULT([no]))
+ PKG_CHECK_MODULES(EVOLUTION_DATA_SERVER_2_24, evolution-data-server-1.2 >= 2.23.92 evolution-data-server-1.2 < 2.25.7, edsver="2.24", AC_MSG_RESULT([no]))
+-PKG_CHECK_MODULES(TOO_NEW_EDS, evolution-data-server-1.2 >= 2.25.7, edsver="unsupported", AC_MSG_RESULT([no]))
+ 
+ if test "x$edsver" = "x1.8"; then
+ 	EDS_VERSION=-1.2
+@@ -39,18 +38,6 @@
+ 	ECAL_SOVERSION=7
+ 	EBACKEND_SOVERSION=0
+ 	EDATACAL_SOVERSION=6
+-elif test "x$edsver" = "xunsupported"; then
+-	AC_MSG_ERROR([
+-
+-Your evolution-data-server is too new for this evolution-sharp.  Check to see
+-if there is a newer version than $VERSION at:
+-  
+-    http://download.gnome.org/sources/evolution-sharp
+-
+-If not, you'll have to wait to support the newest version.  You may want to
+-file a bug against evolution-sharp at http://bugzilla.gnome.org.  Patches
+-welcome!
+-])
+ else
+ 	AC_MSG_ERROR([
+ 
