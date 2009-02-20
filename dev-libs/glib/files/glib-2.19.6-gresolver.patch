@@ -9563,8 +9563,6 @@ index e09a587..be29be8 100755
  
  for so in .libs/lib*.so; do
  	echo Checking $so for local PLT entries
-diff --git a/gio/tests/Makefile.am b/gio/tests/Makefile.am
-index 70a9ae8..eddaaa2 100644
 --- a/gio/tests/Makefile.am
 +++ b/gio/tests/Makefile.am
 @@ -9,7 +9,7 @@ INCLUDES = 			\
@@ -11011,8 +11009,6 @@ index ba9174a..f92f0a9 100644
   *
   * Setting @start_position differs from just passing over a shortened 
   * string and setting #G_REGEX_MATCH_NOTBOL in the case of a pattern 
-diff --git a/glib/tests/Makefile.am b/glib/tests/Makefile.am
-index 3d497ac..673d338 100644
 --- a/glib/tests/Makefile.am
 +++ b/glib/tests/Makefile.am
 @@ -44,6 +44,9 @@ markup_subparser_LDADD    = $(progs_ldadd)

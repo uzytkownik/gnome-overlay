@@ -14,15 +14,18 @@ SRC_URI=""
 LICENSE="LGPL-2"
 SLOT="0"
 KEYWORDS="~x86"
-IUSE=""
+IUSE="gir vala"
 
-DEPEND=">=dev-lang/vala-0.5.3
+DEPEND="vala? ( >=dev-lang/vala-0.5.7 )
 		${RDEPEND}"
 RDEPEND=">=dev-libs/glib-2.19.6[gresolver]
-		 >=gnome-extra/gobject-introspection-0.6.0
+		 gir? ( >=gnome-extra/gobject-introspection-0.6.3 )
 		 >=net-libs/gnutls-2.2.5"
 
 src_unpack() {
 	git_src_unpack
 }
 
+pkg_setup() {
+	G2CONF="${G2CONF} $(use_enable vala) $(use_enable gir introspection)"
+}
