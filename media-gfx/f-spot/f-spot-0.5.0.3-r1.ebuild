@@ -45,12 +45,37 @@ MAKEOPTS="${MAKEOPTS} -j1"
 RESTRICT="test"
 
 src_unpack() {
-	unpack ${A}
-	cd "${S}"
+	default
+}
 
-	epatch "${FILESDIR}/dcraw-tiff.patch"
+src_prepare() {
+	# Prevent scrollkeeper access violations
+	gnome2_omf_fix
+
+	# Run libtoolize
+	elibtoolize ${ELTCONF}
+
+	# http://bugs.gentoo.org/show_bug.cgi?id=252636
+	# http://bugzilla.gnome.org/565733
+	sed -i -e '/rm \-f $(pl/d' \
+		$(
+			grep -lr --include='Makefile.in' \
+			'rm -f \$(pl' "${S}"/extensions/Exporters
+		) || die "sed failed"
+	epatch ${FILESDIR}/f-spot-0.5.0.3-icon-size-crash-fix.patch
+	epatch ${FILESDIR}/f-spot-0.5.0.3-no-image-in-collection-crash-fix.patch
+	epatch ${FILESDIR}/f-spot-0.5.0.3-dcraw-tiff.patch
 }
 
 src_configure() {
-	:
+	gnome2_src_configure --disable-static
+}
+
+src_compile() {
+	default
+}
+
+src_install() {
+	gnome2_src_install
+	find "${D}" -name '*.la' -exec rm -rf '{}' '+' || die "la removal failed"
 }
