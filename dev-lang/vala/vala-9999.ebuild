@@ -2,15 +2,15 @@
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
-inherit subversion gnome2 autotools
+inherit git gnome2 autotools
 
-ESVN_REPO_URI="http://svn.gnome.org/svn/vala/trunk"
-ESVN_PROJECT="vala"
-ESVN_BOOTSTRAP="./autogen.sh"
+EGIT_REPO_URI="git://git.gnome.org/vala"
+EGIT_BOOTSTRAP="./autogen.sh"
 
 DESCRIPTION="Vala - Compiler for the GObject type system"
 HOMEPAGE="http://live.gnome.org/Vala"
 SRC_URI=""
+S="${WORKDIR}/vala"
 
 LICENSE="LGPL-2.1"
 SLOT="0"
@@ -27,7 +27,7 @@ DEPEND="${RDEPEND}
 DOCS="AUTHORS ChangeLog MAINTAINERS NEWS README"
 
 src_unpack() {
-	subversion_src_unpack
+	git_src_unpack
 }
 
 pkg_setup() {
