@@ -1,5 +1,5 @@
 diff --git a/configure.in b/configure.in
-index d2126ea..d25db58 100644
+index 65e9caf..237d53b 100644
 --- a/configure.in
 +++ b/configure.in
 @@ -953,6 +953,50 @@ AC_CHECK_FUNCS(_NSGetEnviron)
@@ -10759,6 +10759,8 @@ index 333164f..061a693 100644
  #ifdef INCLUDE_VARIABLES
  g_ascii_table
  g_utf8_skip
+diff --git a/glib/tests/Makefile.am b/glib/tests/Makefile.am
+index 3d497ac..673d338 100644
 --- a/glib/tests/Makefile.am
 +++ b/glib/tests/Makefile.am
 @@ -44,6 +44,9 @@ markup_subparser_LDADD    = $(progs_ldadd)
