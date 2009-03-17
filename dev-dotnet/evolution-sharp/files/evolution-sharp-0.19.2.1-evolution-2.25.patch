@@ -1,17 +1,18 @@
-diff -u evolution-sharp-0.19.1.old/configure.in evolution-sharp-0.19.1/configure.in
---- evolution-sharp-0.19.1.old/configure.in	2009-01-19 07:51:58.000000000 +0100
-+++ evolution-sharp-0.19.1/configure.in	2009-02-16 02:57:13.000000000 +0100
+Index: configure.in
+===================================================================
+--- configure.in	(revision 212)
++++ configure.in	(working copy)
 @@ -16,8 +16,7 @@
  PKG_CHECK_MODULES(EVOLUTION_DATA_SERVER_1_8, evolution-data-server-1.2 >= 1.8 evolution-data-server-1.2 < 1.9, edsver="1.8", AC_MSG_RESULT([no]))
  PKG_CHECK_MODULES(EVOLUTION_DATA_SERVER_1_9, evolution-data-server-1.2 >= 1.9 evolution-data-server-1.2 < 1.10, edsver="1.9", AC_MSG_RESULT([no]))
  PKG_CHECK_MODULES(EVOLUTION_DATA_SERVER_1_10, evolution-data-server-1.2 >= 1.10 evolution-data-server-1.2 < 2.23.92, edsver="1.10", AC_MSG_RESULT([no]))
--PKG_CHECK_MODULES(EVOLUTION_DATA_SERVER_2_24, evolution-data-server-1.2 >= 2.23.92 evolution-data-server-1.2 < 2.25.7, edsver="2.24", AC_MSG_RESULT([no]))
--PKG_CHECK_MODULES(TOO_NEW_EDS, evolution-data-server-1.2 >= 2.25.7, edsver="unsupported", AC_MSG_RESULT([no]))
+-PKG_CHECK_MODULES(EVOLUTION_DATA_SERVER_2_24, evolution-data-server-1.2 >= 2.23.92 evolution-data-server-1.2 < 2.25.92, edsver="2.24", AC_MSG_RESULT([no]))
+-PKG_CHECK_MODULES(TOO_NEW_EDS, evolution-data-server-1.2 >= 2.25.92, edsver="unsupported", AC_MSG_RESULT([no]))
 +PKG_CHECK_MODULES(EVOLUTION_DATA_SERVER_2_24, evolution-data-server-1.2 >= 2.23.92, edsver="2.24", AC_MSG_RESULT([no]))
  
  if test "x$edsver" = "x1.8"; then
  	EDS_VERSION=-1.2
-@@ -39,18 +38,6 @@
+@@ -39,29 +38,12 @@
  	ECAL_SOVERSION=7
  	EBACKEND_SOVERSION=0
  	EDATACAL_SOVERSION=6
@@ -30,5 +31,15 @@ diff -u evolution-sharp-0.19.1.old/configure.in evolution-sharp-0.19.1/configure
  else
  	AC_MSG_ERROR([
  
-Common subdirectories: evolution-sharp-0.19.1.old/evolution and evolution-sharp-0.19.1/evolution
-Common subdirectories: evolution-sharp-0.19.1.old/glue and evolution-sharp-0.19.1/glue
+ You are missing evolution-data-server development files for a supported
+-version of e-d-s.  Supported versions are:
++version of e-d-s.  Supporte version is 1.8.0 or any compatible with it,
+ 
+-    1.8.x
+-    1.9.x
+-    1.10.x
+-    1.11.1, 1.11.2
+-
+ If you have a supported evolution-data-server installed, you are probably
+ missing the development files, which are often found bundled separately,
+ depending on the operating system.  On Linux, they're often found in the
