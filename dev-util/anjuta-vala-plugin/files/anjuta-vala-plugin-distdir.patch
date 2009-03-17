@@ -1,0 +1,16 @@
+diff -r 53b48e39ddba Makefile
+--- a/Makefile	Fri Feb 27 20:41:13 2009 +0100
++++ b/Makefile	Sun Mar 15 00:45:57 2009 +0100
+@@ -11,9 +11,9 @@
+ 	echo \#define UI_DIR \"`pkg-config --variable=datadir libanjuta-1.0`/anjuta/ui\" >> config.h
+ 
+ install : libanjuta-language-vala.so
+-	install -m 644 libanjuta-language-vala.so anjuta-language-support-vala.plugin `pkg-config libanjuta-1.0 --variable=libdir`/anjuta
+-	install -m 644 anjuta-language-support-vala.glade `pkg-config libanjuta-1.0 --variable=datadir`/anjuta/glade
+-	install -m 644 anjuta-language-support-vala.ui `pkg-config libanjuta-1.0 --variable=datadir`/anjuta/ui
++	install -m 644 libanjuta-language-vala.so anjuta-language-support-vala.plugin ${DISTDIR}/`pkg-config libanjuta-1.0 --variable=libdir`/anjuta
++	install -m 644 anjuta-language-support-vala.glade ${DISTDIR}/`pkg-config libanjuta-1.0 --variable=datadir`/anjuta/glade
++	install -m 644 anjuta-language-support-vala.ui ${DISTDIR}/`pkg-config libanjuta-1.0 --variable=datadir`/anjuta/ui
+ 
+ clean :
+ 	rm -f valaplugin.vala.stamp plugin.c plugin.h config.h libanjuta-language-vala.so
