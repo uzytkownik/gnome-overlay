@@ -11,6 +11,7 @@ LICENSE="GPL-2"
 SLOT="0"
 KEYWORDS="~amd64 ~hppa ~ppc ~sparc ~x86"
 IUSE="debug devhelp doc glade graphviz sourceview subversion valgrind"
+SRC_URI="mirror://sourceforge.net/anjuta/${P}.tar.bz2"
 
 RDEPEND=">=dev-libs/glib-2.16.0
 	>=x11-libs/gtk+-2.12.10
