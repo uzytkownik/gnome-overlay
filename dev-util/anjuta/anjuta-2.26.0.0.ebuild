@@ -11,7 +11,7 @@ LICENSE="GPL-2"
 SLOT="0"
 KEYWORDS="~amd64 ~hppa ~ppc ~sparc ~x86"
 IUSE="debug devhelp doc glade graphviz sourceview subversion valgrind"
-SRC_URI="mirror://sourceforge.net/anjuta/${P}.tar.bz2"
+SRC_URI="mirror://sourceforge/anjuta/${P}.tar.bz2"
 
 RDEPEND=">=dev-libs/glib-2.16.0
 	>=x11-libs/gtk+-2.12.10
@@ -22,7 +22,7 @@ RDEPEND=">=dev-libs/glib-2.16.0
 	>=gnome-base/gconf-2.12.0
 	>=x11-libs/vte-0.13.1
 	>=dev-libs/libxml2-2.4.23
-	>=dev-libs/gdl-0.7.5
+	>=dev-libs/gdl-2.26.0
 	>=app-text/gnome-doc-utils-0.3.2
 	>=dev-libs/gnome-build-0.3.0
 	>=x11-libs/libwnck-2.12
