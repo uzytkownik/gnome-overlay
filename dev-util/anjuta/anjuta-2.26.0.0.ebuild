@@ -4,6 +4,8 @@
 
 inherit autotools eutils gnome2
 
+EAPI=2
+
 DESCRIPTION="A versatile IDE for GNOME"
 HOMEPAGE="http://www.anjuta.org"
 
@@ -28,6 +30,7 @@ RDEPEND=">=dev-libs/glib-2.16.0
 	>=x11-libs/libwnck-2.12
 	>=sys-devel/binutils-2.15.92
 	>=dev-libs/libunique-1.0.0
+	gnome-extra/libgda:4
 
 	dev-libs/libxslt
 	dev-lang/perl
@@ -54,8 +57,7 @@ DEPEND="${RDEPEND}
 	doc? ( >=dev-util/gtk-doc-1.0 )"
 
 pkg_setup() {
-	# symbol-db plugin depends on libgda-4
-	G2CONF="${G2CONF} --disable-plugin-symbol-db
+	G2CONF="${G2CONF}
 		$(use_enable debug)
 		$(use_enable devhelp plugin-devhelp)
 		$(use_enable glade plugin-glade)
@@ -66,11 +68,7 @@ pkg_setup() {
 		$(use_enable graphviz)" # Toggles inherit-plugin and performance-plugin
 }
 
-src_unpack() {
-	gnome2_src_unpack
-
-	# Make Symbol DB optional
-	epatch "${FILESDIR}/${P}-symbol-db-optional.patch"
+src_prepare() {
 	# Fix collision with gnome-build
 	# Don't build gbf-{am,mkfile}-parse
 	sed -i -e ':/gbf:d' configure.in
