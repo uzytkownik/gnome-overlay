@@ -17,6 +17,7 @@ KEYWORDS="~x86"
 IUSE="gir vala"
 
 DEPEND="vala? ( >=dev-lang/vala-0.5.7 )
+		dev-util/gtk-doc
 		${RDEPEND}"
 RDEPEND=">=dev-libs/glib-2.19.6[gresolver]
 		 gir? ( >=gnome-extra/gobject-introspection-0.6.3 )
