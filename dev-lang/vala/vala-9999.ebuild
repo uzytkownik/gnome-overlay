@@ -15,13 +15,10 @@ S="${WORKDIR}/vala"
 LICENSE="LGPL-2.1"
 SLOT="0"
 KEYWORDS=""
-IUSE="doc gtk +vapigen"
+IUSE="doc +vapigen"
 
-RDEPEND=">=dev-libs/glib-2.12
-		 gtk? ( >=x11-libs/gtk+-2.10 )"
+RDEPEND=">=dev-libs/glib-2.12"
 DEPEND="${RDEPEND}
-		sys-devel/flex
-		||  ( sys-devel/bison dev-util/yacc )
 		doc? ( dev-libs/libxslt )"
 
 DOCS="AUTHORS ChangeLog MAINTAINERS NEWS README"
@@ -32,7 +29,6 @@ src_unpack() {
 
 pkg_setup() {
 	G2CONF="${G2CONF}
-			$(use_enable gtk gen-project)
 			$(use_enable vapigen)"
 }
 
