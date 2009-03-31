@@ -13,7 +13,6 @@ LICENSE="GPL-2"
 SLOT="0"
 KEYWORDS="~amd64 ~hppa ~ppc ~sparc ~x86"
 IUSE="debug devhelp doc glade graphviz sourceview subversion valgrind"
-SRC_URI="mirror://sourceforge/anjuta/${P}.tar.bz2"
 
 RDEPEND=">=dev-libs/glib-2.16.0
 	>=x11-libs/gtk+-2.12.10
@@ -68,7 +67,9 @@ pkg_setup() {
 		$(use_enable graphviz)" # Toggles inherit-plugin and performance-plugin
 }
 
-src_prepare() {
+src_unpack() {
+	gnome2_src_unpack
+
 	# Fix collision with gnome-build
 	# Don't build gbf-{am,mkfile}-parse
 	sed -i -e ':/gbf:d' configure.in
