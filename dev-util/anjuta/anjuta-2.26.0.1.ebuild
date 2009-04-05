@@ -25,17 +25,18 @@ RDEPEND=">=dev-libs/glib-2.16.0
 	>=dev-libs/libxml2-2.4.23
 	>=dev-libs/gdl-2.26
 	>=app-text/gnome-doc-utils-0.3.2
-	>=dev-libs/gnome-build-0.3.0
 	>=x11-libs/libwnck-2.12
 	>=sys-devel/binutils-2.15.92
 	>=dev-libs/libunique-1.0.0
 	gnome-extra/libgda:4
 
 	dev-libs/libxslt
-	dev-lang/perl
+	>=dev-lang/perl-5
 	sys-devel/autogen
 
-	devhelp? ( >=dev-util/devhelp-0.22 )
+	devhelp? (
+		>=dev-util/devhelp-0.22
+		>=net-libs/webkit-gtk-1 )
 	glade? ( >=dev-util/glade-3.6.0 )
 	inherit-graph? ( >=media-gfx/graphviz-2.6.0 )
 	sourceview? (
@@ -49,14 +50,16 @@ RDEPEND=">=dev-libs/glib-2.16.0
 		>=dev-libs/apr-util-1 )
 	valgrind? ( dev-util/valgrind )"
 DEPEND="${RDEPEND}
+	!!dev-libs/gnome-build
 	>=sys-devel/gettext-0.14
 	>=dev-util/intltool-0.35
 	>=dev-util/pkgconfig-0.20
 	>=app-text/scrollkeeper-0.3.14-r2
-	doc? ( >=dev-util/gtk-doc-1.0 )"
+	doc? ( >=dev-util/gtk-doc-1.4 )"
 
 pkg_setup() {
 	G2CONF="${G2CONF}
+		--docdir=/usr/share/doc/${PF}
 		$(use_enable debug)
 		$(use_enable devhelp plugin-devhelp)
 		$(use_enable glade plugin-glade)
@@ -67,24 +70,11 @@ pkg_setup() {
 		$(use_enable graphviz)" # Toggles inherit-plugin and performance-plugin
 }
 
-src_unpack() {
-	gnome2_src_unpack
+src_prepare() {
+	gnome2_src_prepare
 
-	# Fix collision with gnome-build
-	# Don't build gbf-{am,mkfile}-parse
-	sed -i -e ':/gbf:d' configure.in
-	sed -i -e '/gbf/d' plugins/Makefile.am
-
+	intltoolize --force --copy --automake || die "intltoolize failed"
 	eautoreconf
-}
-
-src_install() {
-	# Install user docs into /usr/share/doc/${PF}/
-	sed -i -e "s:doc/${PN}:doc/${PF}:g" Makefile
-	sed -i -e "s:doc/${PN}:doc/${PF}/html:g" doc/Makefile
-
-	gnome2_src_install
-	prepalldocs
 }
 
 pkg_postinst() {
