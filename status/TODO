@@ -4,7 +4,7 @@ app-accessibility/dasher-4.10.0
  * bashism in configure is utterly broken !
 app-text/evince-2.26.0
  * enable gobject-introspection when we have an ebuild for it.
-dev-libs/libgweather-2.26.0
+dev-libs/libgweather-2.26.1
  * decide what to do with --enable-locations-compression
 dev-libs/totem-pl-parser-2.26.1
  * tests broken with USE="-doc" upstream bug #577774
@@ -19,8 +19,8 @@ gnome-base/gdm-2.26.0
 gnome-base/gnome-control-center-2.26.0
  * libcanberra is automagic.
  * policykit-gnome is automagic for about-me capplet.
-gnome-base/gnome-desktop-2.26.0
- * Python deps are needed for gnome-about but not
+gnome-base/gnome-desktop-2.26.1
+ * Python deps are needed for gnome-about but not listed in configure.ac
 gnome-base/gnome-2.26.0
  * Rephrase to teach about using different WMs instead, as metacity is the default anyway
  * but first check WINDOW_MANAGER is still honored in 2.24. gnome-session-2.24 might have lost
@@ -34,7 +34,7 @@ gnome-base/librsvg-2.26.0
 gnome-base/nautilus-2.26.2
  * dev-libs/libunique needs KEYWORDS
  * tarball generated with broken gtk-doc, revisit me.
-gnome-extra/evolution-data-server-2.26.0
+gnome-extra/evolution-data-server-2.26.1
  * tarball generated with broken gtk-doc, revisit me.
 gnome-extra/gnome-media-2.26.0
  * libcanberra is automagic
@@ -47,7 +47,7 @@ gnome-extra/gucharmap-2.26.1
  * add gobject-introspection support once available
 gnome-extra/yelp-2.26.0
  * Add patch to make lzma-utils not automagic and use_enable here
-mail-client/evolution-2.26.0
+mail-client/evolution-2.26.1
  * libpst automagic dep
 media-sound/sound-juicer-2.26.1
  * possibly automagic dual slot dep on musicbrainz
