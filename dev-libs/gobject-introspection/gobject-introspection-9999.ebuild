@@ -24,6 +24,6 @@ RDEPEND="${DEPEND}"
 
 src_prepare() {
 	epatch "${FILESDIR}/${PN}-0.6.2-gir.patch"
-	eautoreconf
+	NOCONFIGURE=yes ./autogen.sh
 }
 

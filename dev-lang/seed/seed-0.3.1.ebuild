@@ -24,7 +24,7 @@ RDEPEND="|| (
 		 sys-libs/readline
 		 x11-libs/cairo
 		 >=dev-db/sqlite-3
-		 gnome-extra/gobject-introspection
+		 dev-libs/gobject-introspection
 		 net-libs/webkit-gtk" # TODO: Check if it is possible to use qt webkit
 
 pkg_setup() {
