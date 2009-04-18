@@ -12,7 +12,7 @@ HOMEPAGE="http://www.anjuta.org"
 LICENSE="GPL-2"
 SLOT="0"
 KEYWORDS="~amd64 ~hppa ~ppc ~sparc ~x86"
-IUSE="debug devhelp doc glade graphviz sourceview subversion valgrind"
+IUSE="debug devhelp doc glade graphviz sourceview subversion +symbol-db valgrind"
 
 RDEPEND=">=dev-libs/glib-2.16.0
 	>=x11-libs/gtk+-2.12.10
@@ -28,7 +28,11 @@ RDEPEND=">=dev-libs/glib-2.16.0
 	>=x11-libs/libwnck-2.12
 	>=sys-devel/binutils-2.15.92
 	>=dev-libs/libunique-1.0.0
+<<<<<<< HEAD:dev-util/anjuta/anjuta-2.26.1.0.ebuild
 	gnome-extra/libgda:4
+=======
+	symbol-db? ( gnome-extra/libgda:4 )
+>>>>>>> 07554c3087dace1dfddee336c0b2c5c3050587c8:dev-util/anjuta/anjuta-2.26.1.0.ebuild
 
 	dev-libs/libxslt
 	>=dev-lang/perl-5
@@ -67,6 +71,32 @@ pkg_setup() {
 		$(use_enable sourceview plugin-sourceview)
 		$(use_enable !sourceview plugin-scintilla)
 		$(use_enable subversion plugin-subversion)
+		$(use_enable symbol-db plugin-symbol-db)
 		$(use_enable graphviz)" # Toggles inherit-plugin and performance-plugin
+}
+
+src_prepare() {
+	gnome2_src_prepare
+
+	# Make Symbol DB optional
+	epatch "${FILESDIR}/${PN}-2.26.0.0-symbol-db-optional.patch"
+
+	intltoolize --force --copy --automake || die "intltoolize failed"
+	eautoreconf
+}
+
+pkg_postinst() {
+	gnome2_pkg_postinst
+
+	if ! use symbol-db; then
+		elog "You disabled symbol-db which will disallow using projects."
+	fi
+
+	ebeep 1
+	elog ""
+	elog "Some project templates may require additional development"
+	elog "libraries to function correctly. It goes beyond the scope"
+	elog "of this ebuild to provide them."
+	epause 5
 }
 
