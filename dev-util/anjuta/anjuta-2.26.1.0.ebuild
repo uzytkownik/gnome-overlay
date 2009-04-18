@@ -70,19 +70,3 @@ pkg_setup() {
 		$(use_enable graphviz)" # Toggles inherit-plugin and performance-plugin
 }
 
-src_prepare() {
-	gnome2_src_prepare
-
-	intltoolize --force --copy --automake || die "intltoolize failed"
-	eautoreconf
-}
-
-pkg_postinst() {
-	gnome2_pkg_postinst
-
-	ebeep 1
-	elog "Some project templates may require additional development"
-	elog "libraries to function correctly. It goes beyond the scope"
-	elog "of this ebuild to provide them."
-	epause 5
-}

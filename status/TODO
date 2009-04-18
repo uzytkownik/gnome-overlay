@@ -2,6 +2,8 @@ Ebuild Notices:
 ===============
 app-accessibility/dasher-4.10.0
  * bashism in configure is utterly broken !
+app-arch/file-roller-2.26.1
+ * report upstream their package is broken
 app-misc/gnote-0.1.2
  * boost macros sucks, hence can't configure with as-needed
 app-text/evince-2.26.1
@@ -10,15 +12,10 @@ dev-libs/libgweather-2.26.1
  * decide what to do with --enable-locations-compression
 dev-libs/totem-pl-parser-2.26.1
  * tests broken with USE="-doc" upstream bug #577774
-gnome-base/gconf-2.26.0
- * add policykit support
 gnome-base/gdm-2.24.1
  * automagic libxklavier check
 gnome-base/gdm-2.26.1
  * automagic libxklavier check
-gnome-base/gnome-control-center-2.26.0
- * libcanberra is automagic.
- * policykit-gnome is automagic for about-me capplet.
 gnome-base/gnome-desktop-2.26.1
  * Python deps are needed for gnome-about but not listed in configure.ac
 gnome-base/gnome-2.26.0
@@ -43,8 +40,6 @@ gnome-extra/gnome-user-share-2.26.0
  * could libnotify be made optional ?
 gnome-extra/gucharmap-2.26.1
  * add gobject-introspection support once available
-gnome-extra/yelp-2.26.0
- * Add patch to make lzma-utils not automagic and use_enable here
 mail-client/evolution-2.26.1.1
  * libpst automagic dep
 media-sound/sound-juicer-2.26.1
@@ -70,8 +65,6 @@ net-wireless/gnome-bluetooth-2.27.4
  * KEYWORDS for libunique
 sys-apps/devicekit-power-006
  * crazy cflags by default, kill them out behind --enable-maintainer-mode
-www-client/epiphany-2.26.1
- * libcanberra is automagic
 x11-libs/gtk+-2.16.1
  * configure says >=xrandr-1.2.99 but remi tells me it's broken
 x11-libs/pango-1.24.1
