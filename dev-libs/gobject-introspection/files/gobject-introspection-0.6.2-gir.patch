@@ -1,6 +1,9 @@
 diff -u gir.old/Makefile.am gir/Makefile.am
 --- gir.old/Makefile.am	2009-02-14 01:58:57.000000000 +0100
 +++ gir/Makefile.am	2009-02-14 01:41:35.000000000 +0100
+=======
+--- a/gir/Makefile.am	2009-02-14 01:58:57.000000000 +0100
++++ b/gir/Makefile.am	2009-02-14 01:41:35.000000000 +0100
 @@ -141,7 +141,7 @@
  	$(top_srcdir)/girepository/girepository.h
  
