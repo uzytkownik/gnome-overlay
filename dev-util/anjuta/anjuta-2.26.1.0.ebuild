@@ -28,11 +28,7 @@ RDEPEND=">=dev-libs/glib-2.16.0
 	>=x11-libs/libwnck-2.12
 	>=sys-devel/binutils-2.15.92
 	>=dev-libs/libunique-1.0.0
-<<<<<<< HEAD:dev-util/anjuta/anjuta-2.26.1.0.ebuild
-	gnome-extra/libgda:4
-=======
 	symbol-db? ( gnome-extra/libgda:4 )
->>>>>>> 07554c3087dace1dfddee336c0b2c5c3050587c8:dev-util/anjuta/anjuta-2.26.1.0.ebuild
 
 	dev-libs/libxslt
 	>=dev-lang/perl-5
