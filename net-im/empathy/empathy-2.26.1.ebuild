@@ -70,11 +70,11 @@ src_unpack() {
 		|| die "Copying empathy-new-account.png failed"
 
 	# Remove hard enabled -Werror (see AM_MAINTAINER_MODE), bug 218687
-	sed -i "s:-Werror::g" configure || die "sed failed"
+	sed -i "s:-Werror::g" configure || die "sed 1 failed"
 
 	# FIXME: report upstream their package is broken
-	intltoolize --force --copy --automake || die "intltoolize failed"
-	eautoreconf
+	# Fix intltoolize broken file, see upstream #577133
+	sed "s:'\^\$\$lang\$\$':\^\$\$lang\$\$:g" -i po/Makefile.in.in || die "sed 2 failed"
 }
 
 src_test() {

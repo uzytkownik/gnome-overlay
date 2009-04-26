@@ -4,7 +4,7 @@ app-accessibility/dasher-4.10.0
  * bashism in configure is utterly broken !
 app-arch/file-roller-2.26.1
  * report upstream their package is broken
-app-misc/gnote-0.1.2
+app-misc/gnote-0.2.0
  * boost macros sucks, hence can't configure with as-needed
 app-text/evince-2.26.1
  * enable gobject-introspection when we have an ebuild for it.
@@ -63,14 +63,10 @@ net-im/empathy-2.26.1
  * report upstream their package is broken
 net-libs/libepc-0.3.9
  * 2 out of 16 tests fail, upstream bug #578792
-net-misc/vinagre-2.26.1
- * make gnome-panel applet optional ?
 net-misc/vino-2.26.1
  * dev-libs/libunique needs KEYWORDS
 net-wireless/gnome-bluetooth-2.27.4
  * KEYWORDS for libunique
-sys-apps/devicekit-power-006
- * crazy cflags by default, kill them out behind --enable-maintainer-mode
 x11-libs/gtk+-2.16.1
  * configure says >=xrandr-1.2.99 but remi tells me it's broken
 x11-libs/pango-1.24.1

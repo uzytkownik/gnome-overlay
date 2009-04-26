@@ -2,9 +2,9 @@
 # Distributed under the terms of the GNU General Public License v2
 # $Header: /var/cvsroot/gentoo-x86/dev-util/anjuta/anjuta-2.24.2.ebuild,v 1.1 2008/11/29 19:18:45 eva Exp $
 
-inherit autotools eutils gnome2
+EAPI="2"
 
-EAPI=2
+inherit autotools eutils gnome2 flag-o-matic
 
 DESCRIPTION="A versatile IDE for GNOME"
 HOMEPAGE="http://www.anjuta.org"
@@ -69,6 +69,9 @@ pkg_setup() {
 		$(use_enable subversion plugin-subversion)
 		$(use_enable symbol-db plugin-symbol-db)
 		$(use_enable graphviz)" # Toggles inherit-plugin and performance-plugin
+
+	# Conflics wiht -pg in a plugin, bug #266777
+	filter-flags -fomit-frame-pointer
 }
 
 src_prepare() {
