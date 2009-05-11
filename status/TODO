@@ -1,17 +1,10 @@
 Ebuild Notices:
 ===============
-dev-libs/libgweather-2.26.1
- * decide what to do with --enable-locations-compression
 gnome-base/gnome-2.26.0
  * Rephrase to teach about using different WMs instead, as metacity is the default anyway
  * but first check WINDOW_MANAGER is still honored in 2.24. gnome-session-2.24 might have lost
  * support for it, but we don't ship with gnome-session-2.24 yet
-gnome-base/gnome-menus-2.26.1
- * fix autofoo and report upstream
 gnome-base/gnome-panel-2.26.1
- * tarball generated with broken gtk-doc, revisit me.
-gnome-base/nautilus-2.26.2
- * dev-libs/libunique needs KEYWORDS
  * tarball generated with broken gtk-doc, revisit me.
 gnome-extra/evolution-data-server-2.26.1.1
  * tarball generated with broken gtk-doc, revisit me.
@@ -31,12 +24,5 @@ media-video/totem-2.26.1
  * why does it need write access here, probably need to set up a fake
 net-analyzer/gnome-nettool-2.26.1
  * Dropped ~x86-fbsd (see epatch below)
-net-im/empathy-2.26.1
- * libnotify & libcanberra hard deps
- * Tests are broken, upstream bug #576785
- * This needs to be upstreamed before moving to tree
- * report upstream their package is broken
 net-libs/libepc-0.3.9
  * 2 out of 16 tests fail, upstream bug #578792
-net-misc/vino-2.26.1
- * dev-libs/libunique needs KEYWORDS
