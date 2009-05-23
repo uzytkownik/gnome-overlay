@@ -4,17 +4,11 @@ gnome-base/gnome-2.26.0
  * Rephrase to teach about using different WMs instead, as metacity is the default anyway
  * but first check WINDOW_MANAGER is still honored in 2.24. gnome-session-2.24 might have lost
  * support for it, but we don't ship with gnome-session-2.24 yet
-gnome-extra/evolution-data-server-2.26.1.1
- * tarball generated with broken gtk-doc, revisit me.
 gnome-extra/libgda-4.0.2
  * sqlite is automagic, but maybe it is a hard-dep
  * autoconf is a hell of inconsistencies
 gnome-extra/libgda-4.1.0
  * sqlite is automagic, but maybe it is a hard-dep
  * autoconf is a hell of inconsistencies
-media-video/totem-2.26.2
- * tests broken with USE="-doc" upstream bug #577774
- * tarball generated with broken gtk-doc, revisit me.
- * why does it need write access here, probably need to set up a fake
-net-libs/libepc-0.3.9
+net-libs/libepc-0.3.10
  * 2 out of 16 tests fail, upstream bug #578792
