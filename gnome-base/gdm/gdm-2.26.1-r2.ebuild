@@ -111,6 +111,9 @@ src_prepare() {
 	# Fix libxklavier automagic support
 	epatch "${FILESDIR}/${PN}-2.24.1-automagic-libxklavier-support.patch"
 
+	# Fix intltoolize broken file, see upstream #577133
+	sed "s:'\^\$\$lang\$\$':\^\$\$lang\$\$:g" -i po/Makefile.in.in || die "sed 2 failed"
+
 	eautoreconf
 }
 
