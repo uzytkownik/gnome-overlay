@@ -1,0 +1,44 @@
+From c12a8388f6f88477c0fcf52d66287d744d40929d Mon Sep 17 00:00:00 2001
+From: Matthias Clasen <mclasen@redhat.com>
+Date: Tue, 16 Jun 2009 16:21:36 +0000
+Subject: More instances of those deprecated functions
+
+---
+diff --git a/gtk/gtkcombobox.c b/gtk/gtkcombobox.c
+index 30545f6..2a84a48 100644
+--- a/gtk/gtkcombobox.c
++++ b/gtk/gtkcombobox.c
+@@ -1732,7 +1732,7 @@ tree_column_row_is_sensitive (GtkComboBox *combo_box,
+ 					   priv->model,
+ 					   iter, FALSE, FALSE);
+ 
+-  cells = gtk_tree_view_column_get_cell_renderers (priv->column);
++  cells = gtk_cell_layout_get_cells (GTK_CELL_LAYOUT (priv->column));
+ 
+   sensitive = FALSE;
+   for (list = cells; list; list = list->next)
+@@ -4097,7 +4097,7 @@ gtk_combo_box_list_select_func (GtkTreeSelection *selection,
+       gtk_tree_view_column_cell_set_cell_data (column, model, &iter,
+ 					       FALSE, FALSE);
+ 
+-      cell = cells = gtk_tree_view_column_get_cell_renderers (column);
++      cell = cells = gtk_cell_layout_get_cells (GTK_CELL_LAYOUT (column));
+       while (cell)
+         {
+ 	  g_object_get (cell->data,
+diff --git a/gtk/gtkentrycompletion.c b/gtk/gtkentrycompletion.c
+index cb02c5a..a3a01be 100644
+--- a/gtk/gtkentrycompletion.c
++++ b/gtk/gtkentrycompletion.c
+@@ -1486,7 +1486,7 @@ _gtk_entry_completion_popup (GtkEntryCompletion *completion)
+   completion->priv->ignore_enter = TRUE;
+     
+   column = gtk_tree_view_get_column (GTK_TREE_VIEW (completion->priv->action_view), 0);
+-  renderers = gtk_tree_view_column_get_cell_renderers (column);
++  renderers = gtk_cell_layout_get_cells (GTK_CELL_LAYOUT (column));
+   gtk_widget_ensure_style (completion->priv->tree_view);
+   g_object_set (GTK_CELL_RENDERER (renderers->data), "cell-background-gdk",
+                 &completion->priv->tree_view->style->bg[GTK_STATE_NORMAL],
+--
+cgit v0.8.2
+
