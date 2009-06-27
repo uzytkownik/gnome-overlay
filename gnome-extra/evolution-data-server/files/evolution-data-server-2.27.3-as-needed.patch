@@ -1,0 +1,48 @@
+diff -up -Nur evolution-data-server-2.27.3-orig/addressbook/backends/Makefile.am evolution-data-server-2.27.3/addressbook/backends/Makefile.am
+--- evolution-data-server-2.27.3-orig/addressbook/backends/Makefile.am	2009-06-27 16:28:03.000000000 +0200
++++ evolution-data-server-2.27.3/addressbook/backends/Makefile.am	2009-06-27 16:36:20.000000000 +0200
+@@ -4,4 +4,4 @@ else
+ LDAP_SUBDIR =
+ endif
+ 
+-SUBDIRS = file vcf $(LDAP_SUBDIR) google groupwise webdav
++SUBDIRS = file vcf $(LDAP_SUBDIR)
+diff -up -Nur evolution-data-server-2.27.3-orig/camel/providers/Makefile.am evolution-data-server-2.27.3/camel/providers/Makefile.am
+--- evolution-data-server-2.27.3-orig/camel/providers/Makefile.am	2009-06-27 16:28:03.000000000 +0200
++++ evolution-data-server-2.27.3/camel/providers/Makefile.am	2009-06-27 16:37:03.000000000 +0200
+@@ -21,6 +21,6 @@ else
+ SENDMAIL_DIR=sendmail
+ endif
+ 
+-SUBDIRS = pop3 $(SENDMAIL_DIR) smtp imap $(IMAP4_DIR) $(NNTP_DIR) local $(IMAPP_DIR) groupwise $(HULA_DIR)
++SUBDIRS = pop3 $(SENDMAIL_DIR) smtp imap $(IMAP4_DIR) $(NNTP_DIR) local $(IMAPP_DIR) $(HULA_DIR)
+ 
+ 
+diff -up -Nur evolution-data-server-2.27.3-orig/Makefile.am evolution-data-server-2.27.3/Makefile.am
+--- evolution-data-server-2.27.3-orig/Makefile.am	2009-06-27 16:28:03.000000000 +0200
++++ evolution-data-server-2.27.3/Makefile.am	2009-06-27 16:38:41.000000000 +0200
+@@ -7,9 +7,12 @@ endif
+ 
+ if ENABLE_CALENDAR
+ CALENDAR_DIR = calendar
++CALENDAR_LATER = calendar/backends/groupwise calendar/backends/google
+ endif
+ 
+-SUBDIRS = $(LIBDB) win32 libedataserver libebackend servers camel addressbook $(CALENDAR_DIR) libedataserverui src docs art po
++LATER = camel/providers/groupwise addressbook/backends/groupwise addressbook/backends/google addressbook/backends/webdav $(CALENDAR_LATER)
++
++SUBDIRS = $(LIBDB) win32 libedataserver libebackend camel addressbook $(CALENDAR_DIR) libedataserverui servers $(LATER) src docs art po
+ DIST_SUBDIRS = win32 libedataserver libebackend servers camel addressbook calendar libedataserverui src docs art po
+ changelogs =			\
+ 	ChangeLog
+diff -up -Nur evolution-data-server-2.27.3-orig/servers/exchange/storage/Makefile.am evolution-data-server-2.27.3/servers/exchange/storage/Makefile.am
+--- evolution-data-server-2.27.3-orig/servers/exchange/storage/Makefile.am	2009-06-27 16:28:03.000000000 +0200
++++ evolution-data-server-2.27.3/servers/exchange/storage/Makefile.am	2009-06-27 16:39:09.000000000 +0200
+@@ -64,6 +64,7 @@ libexchange_storage_1_2_la_LIBADD =				\
+ 	$(top_builddir)/servers/exchange/lib/libexchange.la	\
+ 	$(top_builddir)/servers/exchange/xntlm/libxntlm.la	\
+ 	$(top_builddir)/libedataserver/libedataserver-1.2.la	\
++	$(top_builddir)/libedataserverui/libedataserverui-1.2.la	\
+ 	$(E_DATA_SERVER_LIBS)					\
+ 	$(E_DATA_SERVER_UI_LIBS)				\
+ 	$(LDAP_LIBS)						\
