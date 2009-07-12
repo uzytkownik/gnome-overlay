@@ -28,7 +28,7 @@ RDEPEND="x11-libs/libXrender
 	x11-libs/libXcomposite
 	x11-libs/libXdamage
 	xinerama? ( x11-libs/libXinerama )
-	>=dev-libs/glib-2.19.7
+	>=dev-libs/glib-2.21.3
 	>=x11-libs/pango-1.20
 	>=dev-libs/atk-1.13
 	>=x11-libs/cairo-1.6[X]
@@ -69,13 +69,6 @@ src_prepare() {
 
 	# Don't break inclusion of gtkclist.h, upstream bug 536767
 	epatch "${FILESDIR}/${PN}-2.14.3-limit-gtksignal-includes.patch"
-
-	#gtk+-2.17.2-fix-internal-deprecated-api-2.patch
-	epatch "${FILESDIR}/gtk+-2.17.2-fix-internal-deprecated-api-1.patch"
-	epatch "${FILESDIR}/gtk+-2.17.2-fix-internal-deprecated-api-2.patch"
-	epatch "${FILESDIR}/gtk+-2.17.2-fix-internal-deprecated-api-3.patch"
-	epatch "${FILESDIR}/gtk+-2.17.2-fix-internal-deprecated-api-4.patch"
-	epatch "${FILESDIR}/gtk+-2.17.2-fix-internal-deprecated-api-5.patch"
 
 	# -O3 and company cause random crashes in applications. Bug #133469
 	replace-flags -O3 -O2
