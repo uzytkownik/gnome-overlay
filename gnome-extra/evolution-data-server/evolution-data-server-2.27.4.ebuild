@@ -29,7 +29,6 @@ RDEPEND=">=dev-libs/glib-2.16.1
 	ssl? (
 		>=dev-libs/nspr-4.4
 		>=dev-libs/nss-3.9 )
-	>=gnome-base/libgnomeui-2
 	sys-libs/zlib
 	=sys-libs/db-4*
 	ldap? ( >=net-nds/openldap-2.0 )
