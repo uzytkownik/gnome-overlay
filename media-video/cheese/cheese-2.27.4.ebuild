@@ -16,7 +16,7 @@ IUSE="v4l"
 
 COMMON_DEPEND=">=dev-libs/dbus-glib-0.7
 	>=dev-libs/glib-2.16.0
-	>=x11-libs/gtk+-2.14
+	>=x11-libs/gtk+-2.17.3
 	>=x11-libs/cairo-1.4.0
 	>=x11-libs/pango-1.18.0
 	>=sys-apps/dbus-1
