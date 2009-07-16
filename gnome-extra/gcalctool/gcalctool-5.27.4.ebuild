@@ -18,7 +18,6 @@ RDEPEND=">=x11-libs/gtk+-2.14.0
 	>=dev-libs/glib-2
 	>=dev-libs/atk-1.5
 	>=gnome-base/gconf-2
-	gnome-base/libglade
 	!<gnome-extra/gnome-utils-2.3"
 DEPEND="${RDEPEND}
 	sys-devel/gettext
@@ -33,5 +32,5 @@ src_prepare() {
 	gnome2_src_prepare
 
 	# Fix intltoolize broken file, see upstream #577133
-	sed "s:'\^\$\$lang\$\$':\^\$\$lang\$\$:g" -i po/Makefile.in.in || die "sed failed"
+	#sed "s:'\^\$\$lang\$\$':\^\$\$lang\$\$:g" -i po/Makefile.in.in || die "sed failed"
 }
