@@ -18,6 +18,7 @@ RDEPEND=">=dev-libs/glib-2.21.1
 	>=sys-apps/dbus-1.0
 	>=net-libs/libsoup-2.25.1[gnome]
 	dev-libs/libxml2
+	>=sys-fs/udev-142[extras]
 	net-misc/openssh
 	archive? ( app-arch/libarchive )
 	avahi? ( >=net-dns/avahi-0.6 )
@@ -29,7 +30,7 @@ RDEPEND=">=dev-libs/glib-2.21.1
 		>=sys-apps/hal-0.5.10
 		>=dev-libs/libcdio-0.78.2[-minimal] )
 	fuse? ( sys-fs/fuse )
-	gdu? ( >=sys-apps/gnome-disk-utility-0.3 )
+	gdu? ( >=sys-apps/gnome-disk-utility-0.4 )
 	gnome? ( >=gnome-base/gconf-2.0 )
 	gnome-keyring? ( >=gnome-base/gnome-keyring-1.0 )
 	gphoto2? ( >=media-libs/libgphoto2-2.4 )
