@@ -1,0 +1,35 @@
+From 7aa143ec3249a76c015a8ce4f7950663831e1f2f Mon Sep 17 00:00:00 2001
+From: Mikel Olasagasti Uranga <mikel@olasagasti.info>
+Date: Thu, 16 Jul 2009 20:09:18 +0200
+Subject: [PATCH] Check for sgutils and sgutils2
+
+---
+ configure.ac |   12 +++++-------
+ 1 files changed, 5 insertions(+), 7 deletions(-)
+
+diff --git a/configure.ac b/configure.ac
+index cdd2f4e..ee497a7 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -119,13 +119,11 @@ ZLIB_LIBS="-lz"
+ AC_SUBST(ZLIB_CFLAGS)
+ AC_SUBST(ZLIB_LIBS)
+ 
+-have_sgutils="false"
+-AC_CHECK_LIB([sgutils2], [sg_ll_inquiry], have_sgutils="true")
+-if test x$have_sgutils != "xtrue"; then
+-   AC_MSG_ERROR([libsgutils2 is needed])
+-fi
+-SGUTILS_CFLAGS=""
+-SGUTILS_LIBS="-lsgutils2"
++AC_CHECK_LIB(sgutils, sg_ll_inquiry, SGUTILS_LIBS="-lsgutils",
++AC_CHECK_LIB(sgutils2, sg_ll_inquiry, SGUTILS_LIBS="-lsgutils2",
++	AC_MSG_ERROR([Error! You need to have libsgutils/libsgutils2.])
++)
++)
+ AC_SUBST(SGUTILS_CFLAGS)
+ AC_SUBST(SGUTILS_LIBS)
+ 
+-- 
+1.6.3.1
+

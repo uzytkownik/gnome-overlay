@@ -4,7 +4,7 @@
 
 EAPI="2"
 
-inherit gnome2
+inherit gnome2 autotools
 
 MY_PN="DeviceKit-disks"
 
@@ -20,9 +20,9 @@ IUSE="debug doc"
 RDEPEND=">=dev-libs/glib-2.16.1
 	>=dev-libs/dbus-glib-0.76
 	>=sys-apps/dbus-1.0
-	>=sys-auth/policykit-0.7
+	>=sys-auth/policykit-0.92
 	>=sys-apps/devicekit-002
-	>=sys-fs/udev-139
+	>=sys-fs/udev-142[extras]
 	|| (
 		>=sys-fs/lvm2-2.02
 		>=sys-fs/device-mapper-1.02 )
@@ -53,6 +53,11 @@ src_prepare() {
 
 	# Fix intltoolize broken file, see upstream #577133
 	sed "s:'\^\$\$lang\$\$':\^\$\$lang\$\$:g" -i po/Makefile.in.in || die "sed failed"
+
+	# Check for sgutils and sgutils2
+	epatch "${FILESDIR}/0001-Check-for-sgutils-and-sgutils2.patch"
+
+	eautoreconf
 }
 
 src_configure() {
