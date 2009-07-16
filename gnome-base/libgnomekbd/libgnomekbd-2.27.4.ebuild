@@ -51,3 +51,11 @@ src_compile() {
 	use x86-fbsd && MAKEOPTS="${MAKEOPTS} -j1"
 	gnome2_src_compile
 }
+
+pkg_postinst() {
+	ewarn "Please note that the soname of the library changed!"
+	ewarn "If you are upgrading from a version prior to 2.27 you need"
+	ewarn "to fix dynamic linking inconsistencies by executing:"
+	ewarn "revdep-rebuild --library libgnomekbd.so.3"
+}
+
