@@ -12,13 +12,12 @@ HOMEPAGE="http://ronald.bitfreak.net/gnome-media.php"
 LICENSE="LGPL-2 GPL-2 FDL-1.1"
 SLOT="2"
 KEYWORDS="~alpha ~amd64 ~hppa ~ia64 ~ppc64 ~sparc ~x86 ~x86-fbsd"
-IUSE="+sound esd gnomecd ipv6 pulseaudio"
+IUSE="+sound gnomecd ipv6 pulseaudio"
 
 RDEPEND=">=dev-libs/glib-2.18.2:2
 	>=x11-libs/gtk+-2.15.1:2
 	>=gnome-base/libglade-2
 	>=gnome-base/gconf-2.6.1
-	esd? ( >=media-sound/esound-0.2.23 )
 	>=media-libs/gstreamer-0.10.23
 	>=media-libs/gst-plugins-base-0.10.23
 	>=media-libs/gst-plugins-good-0.10
@@ -43,7 +42,7 @@ DEPEND="${RDEPEND}
 	>=app-text/gnome-doc-utils-0.3.2
 	>=dev-util/intltool-0.35.0"
 
-DOCS="AUTHORS ChangeLog NEWS README"
+DOCS="AUTHORS NEWS README"
 
 pkg_setup() {
 	G2CONF="${G2CONF}
@@ -52,8 +51,6 @@ pkg_setup() {
 		--disable-static
 		--disable-scrollkeeper
 		--disable-schemas-install
-		$(use_enable esd esound)
-		$(use_enable esd vumeter)
 		$(use_enable gnomecd cddbslave)
 		$(use_enable gnomecd)
 		$(use_enable ipv6)
