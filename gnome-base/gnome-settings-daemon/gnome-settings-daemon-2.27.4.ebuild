@@ -23,8 +23,7 @@ RDEPEND=">=dev-libs/dbus-glib-0.74
 	>=gnome-base/libgnomekbd-2.21.4
 
 	>=gnome-base/libglade-2
-	>=gnome-base/libgnomeui-2
-	>=gnome-base/gnome-desktop-2.25.6
+	>=gnome-base/gnome-desktop-2.26.3
 
 	libnotify? ( >=x11-libs/libnotify-0.4.5 )
 
@@ -33,7 +32,7 @@ RDEPEND=">=dev-libs/dbus-glib-0.74
 	x11-libs/libXrandr
 	x11-libs/libXext
 	x11-libs/libXxf86misc
-	>=x11-libs/libxklavier-3.8
+	>=x11-libs/libxklavier-4
 	media-libs/fontconfig
 
 	pulseaudio? ( >=media-sound/pulseaudio-0.9.15 )"
