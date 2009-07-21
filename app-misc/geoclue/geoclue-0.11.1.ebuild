@@ -23,7 +23,7 @@ RDEPEND=">=dev-libs/glib-2
 DEPEND="${RDEPEND}
         dev-util/pkgconfig
         dev-libs/libxslt
-        doc? ( >=dev-util/gtk-doc )"
+        doc? ( dev-util/gtk-doc )"
 
 src_unpack() {
 	unpack ${A}
