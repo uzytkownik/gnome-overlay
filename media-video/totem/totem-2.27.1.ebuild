@@ -13,7 +13,7 @@ LICENSE="GPL-2 LGPL-2"
 SLOT="0"
 KEYWORDS="~alpha ~amd64 ~arm ~ppc ~ppc64 ~sparc ~x86 ~x86-fbsd"
 
-IUSE="bluetooth debug doc galago lirc nautilus nsplugin python tracker vala"
+IUSE="bluetooth debug doc galago lirc nautilus nsplugin python tracker vala youtube"
 
 # TODO:
 # easy-publish-and-consume is not in tree (epc)
@@ -21,7 +21,7 @@ IUSE="bluetooth debug doc galago lirc nautilus nsplugin python tracker vala"
 # check gmyth requirement ? -> waiting for updates in tree
 # coherence plugin not enabled until we have deps in tree
 
-# youtube plugin depends on gst-plugins-soup
+# youtube plugin depends on gst-plugins-soup and dev-libs/libgdata
 RDEPEND=">=dev-libs/glib-2.15
 	>=x11-libs/gtk+-2.16.0
 	>=gnome-base/gconf-2.0
@@ -29,11 +29,12 @@ RDEPEND=">=dev-libs/glib-2.15
 	>=x11-themes/gnome-icon-theme-2.16
 	x11-libs/cairo
 	app-text/iso-codes
+	dev-libs/libunique
 	>=dev-libs/libxml2-2.6
 	>=dev-libs/dbus-glib-0.71
-	>=media-libs/gstreamer-0.10.16
+	>=media-libs/gstreamer-0.10.22
 	>=media-libs/gst-plugins-good-0.10
-	>=media-libs/gst-plugins-base-0.10.12
+	>=media-libs/gst-plugins-base-0.10.23
 	>=media-plugins/gst-plugins-gconf-0.10
 
 	>=media-plugins/gst-plugins-gio-0.10
@@ -47,14 +48,13 @@ RDEPEND=">=dev-libs/glib-2.15
 	>=x11-libs/libXrandr-1.1.1
 	>=x11-libs/libXxf86vm-1.0.1
 
-	>=dev-libs/libgdata-0.1.1
-
 	bluetooth? ( || (
 		net-wireless/bluez
 		net-wireless/bluez-libs ) )
 	galago? ( >=dev-libs/libgalago-0.5.2 )
 	lirc? ( app-misc/lirc )
 	nautilus? ( >=gnome-base/nautilus-2.10 )
+	nsplugin? ( >=x11-misc/shared-mime-info-0.22 )
 	python? (
 		dev-lang/python[threads]
 		>=dev-python/pygtk-2.12
@@ -63,7 +63,9 @@ RDEPEND=">=dev-libs/glib-2.15
 		dev-python/gconf-python
 		media-plugins/gst-plugins-soup )
 	tracker? ( >=app-misc/tracker-0.5.3 )
-	vala? ( >=dev-lang/vala-0.1.6 )"
+	youtube? ( >=media-plugins/gst-plugins-soup-0.10
+		>=dev-libs/libgdata-0.1.1 )
+    vala? ( >=dev-lang/vala-0.1.6 )"
 DEPEND="${RDEPEND}
 	x11-proto/xproto
 	x11-proto/xextproto
@@ -96,13 +98,13 @@ pkg_setup() {
 		BROWSER_PLUGIN_DIR=/usr/$(get_libdir)/nsbrowser/plugins
 		PLUGINDIR=/usr/$(get_libdir)/totem/plugins"
 
-	local
-	plugins="properties,thumbnail,screensaver,ontop,gromit,media-player-keys,skipto,brasero-disc-recorder,screenshot,youtube"
+	local plugins="properties,thumbnail,screensaver,ontop,gromit,media-player-keys,skipto,brasero-disc-recorder,screenshot"
 	use bluetooth && plugins="${plugins},bemused"
 	use galago && plugins="${plugins},galago"
 	use lirc && plugins="${plugins},lirc"
 	use python && plugins="${plugins},opensubtitles,jamendo,pythonconsole"
 	use tracker && plugins="${plugins},tracker"
+	use youtube && plugins="${plugins},youtube"
 
 	G2CONF="${G2CONF} --with-plugins=${plugins}"
 

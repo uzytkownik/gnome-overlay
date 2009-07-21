@@ -4,3 +4,8 @@ dev-util/gnome-devel-docs-2.26.2
 #FIXME: Fixs the better as possible the fail install with emake jobs.
 net-libs/libepc-0.3.10
  * 2 out of 16 tests fail, upstream bug #578792
+
++ gnome-control-center
+	- update automagic patches
++ gnome-session
+	- update logout po patch

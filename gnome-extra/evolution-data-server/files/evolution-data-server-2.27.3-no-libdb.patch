@@ -1,0 +1,12 @@
+--- evolution-data-server-2.27.3-orig/configure.ac	2009-06-27 16:28:03.000000000 +0200
++++ evolution-data-server-2.27.3/configure.ac	2009-06-27 16:28:16.000000000 +0200
+@@ -1732,9 +1732,6 @@
+ export privincludedir
+ export privdatadir
+ 
+-if test $dynamic_libdb = no; then
+-        AC_CONFIG_SUBDIRS(libdb/dist)
+-fi
+ AC_OUTPUT([
+ Makefile
+ evolution-data-server-zip
