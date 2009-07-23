@@ -62,7 +62,4 @@ src_prepare() {
 
 	# Remove stupid CFLAGS, bug #259179
 	sed "s:-Werror::g" -i configure.in configure || die "sed failed"
-
-	# Fix behavior wrt. panel overlap, bug #268699
-	epatch "${FILESDIR}/${PN}-2.26.0-panel-behavior.patch"
 }
