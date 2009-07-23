@@ -15,17 +15,17 @@ SLOT="0"
 KEYWORDS="~amd64 ~x86"
 IUSE="doc +nautilus"
 
-COMMON_DEPEND=">=dev-libs/glib-2.16
-	>=dev-libs/dbus-glib-0.74
+RDEPEND="
+	>=dev-libs/glib-2.16
+	>=dev-libs/dbus-glib-0.71
 	>=dev-libs/libunique-1.0
-	>=x11-libs/gtk+-2.17.2
+	>=x11-libs/gtk+-2.17
+	>=sys-apps/devicekit-disks-005
 	>=gnome-base/gnome-keyring-2.22
 	x11-libs/libnotify
 
 	nautilus? ( >=gnome-base/nautilus-2.24 )"
-RDEPEND="${COMMON_DEPEND}
-       >=sys-apps/devicekit-disks-005"
-DEPEND="${COMMON_DEPEND}
+DEPEND="${RDEPEND}
 	sys-devel/gettext
 	app-text/scrollkeeper
 	>=dev-util/pkgconfig-0.9

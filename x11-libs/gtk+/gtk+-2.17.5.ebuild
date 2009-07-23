@@ -1,6 +1,6 @@
 # Copyright 1999-2009 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Header: /var/cvsroot/gentoo-x86/x11-libs/gtk+/gtk+-2.16.1.ebuild,v 1.1 2009/05/04 22:28:22 eva Exp $
+# $Header: /var/cvsroot/gentoo-x86/x11-libs/gtk+/gtk+-2.16.5.ebuild,v 1.1 2009/07/19 23:25:17 eva Exp $
 
 EAPI="2"
 
@@ -12,9 +12,7 @@ HOMEPAGE="http://www.gtk.org/"
 LICENSE="LGPL-2"
 SLOT="2"
 KEYWORDS="~alpha ~amd64 ~arm ~hppa ~ia64 ~mips ~ppc ~ppc64 ~sh ~sparc ~x86 ~x86-fbsd"
-IUSE="cups debug doc jpeg jpeg2k tiff vim-syntax xinerama"
-
-EPATCH_FORCE="yes"
+IUSE="cups debug doc jpeg jpeg2k tiff test vim-syntax xinerama"
 
 # FIXME: configure says >=xrandr-1.2.99 but remi tells me it's broken
 RDEPEND="x11-libs/libXrender
@@ -50,7 +48,10 @@ DEPEND="${RDEPEND}
 	>=dev-util/gtk-doc-am-1.11
 	doc? (
 		>=dev-util/gtk-doc-1.11
-		~app-text/docbook-xml-dtd-4.1.2 )"
+		~app-text/docbook-xml-dtd-4.1.2 )
+	test? (
+		media-fonts/font-misc-misc
+		media-fonts/font-cursor-misc )"
 PDEPEND="vim-syntax? ( app-vim/gtk-syntax )"
 
 set_gtk2_confdir() {
@@ -64,9 +65,6 @@ src_prepare() {
 	# dont clash on multilib systems
 	has_multilib_profile && epatch "${FILESDIR}/${PN}-2.8.0-multilib.patch"
 
-	# Workaround adobe flash infinite loop. Patch from http://bugzilla.gnome.org/show_bug.cgi?id=463773#c11
-	# epatch "${FILESDIR}/${PN}-2.12.0-flash-workaround.patch"
-
 	# Don't break inclusion of gtkclist.h, upstream bug 536767
 	epatch "${FILESDIR}/${PN}-2.14.3-limit-gtksignal-includes.patch"
 
@@ -76,6 +74,11 @@ src_prepare() {
 
 	use ppc64 && append-flags -mminimal-toc
 
+	# Non-working test in gentoo's env
+	sed 's:\(g_test_add_func ("/ui-tests/keys-events.*\):/*\1*/:g' \
+		-i gtk/tests/testing.c || die "sed 1 failed"
+	sed '\%/recent-manager/add%,/recent_manager_purge/ d' \
+		-i gtk/tests/recentmanager.c || die "sed 2 failed"
 	elibtoolize
 }
 
@@ -87,6 +90,7 @@ src_configure() {
 		$(use_with tiff libtiff) \
 		$(use_enable xinerama) \
 		$(use_enable cups cups auto) \
+		--disable-papi \
 		--with-libpng \
 		--with-gdktarget=x11 \
 		--with-xinput"
@@ -116,7 +120,7 @@ src_install() {
 	dodir /etc/env.d
 	echo "GDK_USE_XFT=1" > "${D}/etc/env.d/50gtk2"
 
-	dodoc AUTHORS ChangeLog* HACKING NEWS* README*
+	dodoc AUTHORS ChangeLog* HACKING NEWS* README* || die "dodoc failed"
 
 	# This has to be removed, because it's multilib specific; generated in
 	# postinst

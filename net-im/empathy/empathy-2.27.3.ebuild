@@ -32,7 +32,7 @@ RDEPEND=">=dev-libs/glib-2.16.0
 
 	applet? ( >=gnome-base/gnome-panel-2.10 )
 	location? ( app-misc/geoclue )
-	map? ( >=media-libs/libchamplain-0.3.3[gtk]
+	map? ( >=media-libs/libchamplain-gtk-0.3.3
 		>=media-libs/clutter-gtk-0.8.2 )
 	spell? (
 		app-text/enchant
