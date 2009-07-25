@@ -16,7 +16,7 @@ HOMEPAGE="http://live.gnome.org/GnomeGames/"
 LICENSE="GPL-2 FDL-1.1"
 SLOT="0"
 KEYWORDS="~alpha ~amd64 ~arm ~hppa ~ia64 ~ppc ~ppc64 ~sh ~sparc ~x86 ~x86-fbsd"
-IUSE="artworkextra canberra guile opengl test +gstreamer"
+IUSE="artworkextra +canberra guile opengl test"
 
 RDEPEND=">=dev-python/pygtk-2.10
 	dev-python/pygobject
