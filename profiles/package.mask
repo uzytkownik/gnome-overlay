@@ -6,10 +6,6 @@
 # NOTE: Please add your entry at the top!
 #
 
-# Maciej Piechotka <uzytkownik2@gmail.com> (19 Apr 2009)
-# A development branch
-=dev-lang/vala-0.7*
-
 # Nirbheek Chauhan <nirbheek@gentoo.org> (17 Mar 2009)
 # Epiphany which uses webkit (bug #239112)
 # Several feature regressions
