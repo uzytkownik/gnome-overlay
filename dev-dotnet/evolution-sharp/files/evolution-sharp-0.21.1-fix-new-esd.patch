@@ -1,0 +1,45 @@
+From dcefbf7bb02064627f463ef3a85ed88d02fc2077 Mon Sep 17 00:00:00 2001
+From: Maciej Piechotka <uzytkownik2@gmail.com>
+Date: Sat, 25 Jul 2009 02:20:39 +0100
+Subject: [PATCH] Remove unnecessaryrestrictions on e-d-s
+
+---
+ configure.in |   15 +--------------
+ 1 files changed, 1 insertions(+), 14 deletions(-)
+
+diff --git a/configure.in b/configure.in
+index ce49466..9737a1f 100644
+--- a/configure.in
++++ b/configure.in
+@@ -16,8 +16,7 @@ fi
+ PKG_CHECK_MODULES(EVOLUTION_DATA_SERVER_1_8, evolution-data-server-1.2 >= 1.8 evolution-data-server-1.2 < 1.9, edsver="1.8", AC_MSG_RESULT([no]))
+ PKG_CHECK_MODULES(EVOLUTION_DATA_SERVER_1_9, evolution-data-server-1.2 >= 1.9 evolution-data-server-1.2 < 1.10, edsver="1.9", AC_MSG_RESULT([no]))
+ PKG_CHECK_MODULES(EVOLUTION_DATA_SERVER_1_10, evolution-data-server-1.2 >= 1.10 evolution-data-server-1.2 < 2.23.92, edsver="1.10", AC_MSG_RESULT([no]))
+-PKG_CHECK_MODULES(EVOLUTION_DATA_SERVER_2_24, evolution-data-server-1.2 >= 2.23.92 evolution-data-server-1.2 < 2.27.4, edsver="2.24", AC_MSG_RESULT([no]))
+-PKG_CHECK_MODULES(TOO_NEW_EDS, evolution-data-server-1.2 >= 2.27.4, edsver="unsupported", AC_MSG_RESULT([no]))
++PKG_CHECK_MODULES(EVOLUTION_DATA_SERVER_2_24, evolution-data-server-1.2 >= 2.23.92, edsver="2.24", AC_MSG_RESULT([no]))
+ 
+ if test "x$edsver" = "x1.8"; then
+ 	EDS_VERSION=-1.2
+@@ -39,18 +38,6 @@ elif test "x$edsver" = "x2.24"; then
+ 	ECAL_SOVERSION=7
+ 	EBACKEND_SOVERSION=0
+ 	EDATACAL_SOVERSION=6
+-elif test "x$edsver" = "xunsupported"; then
+-	AC_MSG_ERROR([
+-
+-Your evolution-data-server is too new for this evolution-sharp.  Check to see
+-if there is a newer version than $VERSION at:
+-  
+-    http://download.gnome.org/sources/evolution-sharp
+-
+-If not, you'll have to wait to support the newest version.  You may want to
+-file a bug against evolution-sharp at http://bugzilla.gnome.org.  Patches
+-welcome!
+-])
+ else
+ 	AC_MSG_ERROR([
+ 
+-- 
+1.6.3.3
+
