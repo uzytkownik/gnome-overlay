@@ -107,18 +107,6 @@ pkg_setup() {
 src_prepare() {
 	gnome2_src_prepare
 
-	# Fix timezone offsets on fbsd.  bug #183708
-	epatch "${FILESDIR}/${PN}-2.21.3-fbsd.patch"
-
-	# Fix delete keyboard shortcut
-	epatch "${FILESDIR}/${PN}-2.23.3.1-delete-key.patch"
-
-	# Fix multiple automagic plugins, bug #204300 & bug #271451
-	epatch "${FILESDIR}/${PN}-2.26.3-automagic-plugins.patch"
-
-	intltoolize --force --copy --automake || die "intltoolize failed"
-	eautoreconf
-
 	# Use NSS/NSPR only if 'ssl' is enabled.
 	if use ssl ; then
 		sed -i -e "s|mozilla-nss|nss|
