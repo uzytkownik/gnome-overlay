@@ -84,12 +84,6 @@ src_prepare() {
 	# Skip crazy compilation warnings, bug #263078
 	epatch "${FILESDIR}/${PN}-2.26.0-gcc44-options.patch"
 
-	# Resurrect cpufreq in capplet, bug #263891
-	epatch "${FILESDIR}/${PN}-2.26.0-cpufreq-libhal-glib.patch"
-	epatch "${FILESDIR}/${PN}-2.26.0-cpufreq-support.patch"
-	epatch "${FILESDIR}/${PN}-2.26.0-cpufreq-ui.patch"
-	epatch "${FILESDIR}/${PN}-2.26.2-cpufreq-po.patch"
-
 	# Fix uninstalled cpufreq schemas, bug #266995
 	epatch "${FILESDIR}/${PN}-2.26.0-cpufreq-schemas.patch"
 
