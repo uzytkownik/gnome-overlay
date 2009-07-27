@@ -9,3 +9,6 @@ net-libs/libepc-0.3.10
 	- update automagic patches
 + gnome-session
 	- update logout po patch
+
+x11-libs/gtk+-2.17.6
+ * configure says >=xrandr-1.2.99 but remi tells me it's broken
