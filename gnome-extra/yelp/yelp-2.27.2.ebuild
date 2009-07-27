@@ -48,7 +48,7 @@ src_unpack() {
 	gnome2_src_unpack
 
 	# Fix automagic lzma support, bug #266128
-	epatch "${FILESDIR}/${P}-automagic-lzma.patch"
+	epatch "${FILESDIR}/${PN}-2.26.0-automagic-lzma.patch"
 
 	eautoreconf
 
