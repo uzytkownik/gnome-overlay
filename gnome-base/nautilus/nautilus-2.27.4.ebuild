@@ -71,6 +71,9 @@ src_prepare() {
 
 	# Fix intltoolize broken file, see upstream #577133
 	sed "s:'\^\$\$lang\$\$':\^\$\$lang\$\$:g" -i po/Makefile.in.in || die "sed failed"
+
+	# Fix nautilus flipping-out with --no-desktop -- bug 266398
+	epatch "${FILESDIR}/${PN}-2.27.4-change-reg-desktop-file-with-no-desktop.patch"
 }
 
 src_test() {
