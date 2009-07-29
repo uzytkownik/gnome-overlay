@@ -4,7 +4,7 @@
 
 EAPI="2"
 
-inherit eutils gnome2
+inherit eutils gnome2 autotools
 
 DESCRIPTION="Simple document viewer for GNOME"
 HOMEPAGE="http://www.gnome.org/projects/evince/"
@@ -43,6 +43,9 @@ DEPEND="${RDEPEND}
 
 DOCS="AUTHORS ChangeLog NEWS README TODO"
 ELTCONF="--portage"
+
+# Needs dogtail and pyspi from http://fedorahosted.org/dogtail/
+# Releases: http://people.redhat.com/zcerza/dogtail/releases/
 RESTRICT="test"
 
 pkg_setup() {
@@ -54,6 +57,7 @@ pkg_setup() {
 		--enable-impress
 		--enable-thumbnailer
 		--with-gconf
+		--with-smclient=xsmp
 		$(use_enable dbus)
 		$(use_enable djvu)
 		$(use_enable dvi)
@@ -68,4 +72,10 @@ src_prepare() {
 
 	# Fix .desktop file so menu item shows up
 	epatch "${FILESDIR}"/${PN}-0.7.1-display-menu.patch
+
+	# Fix bug #279591, compilation error with
+	# --with-smclient=xsmp gave to the configure script
+	epatch "${FILESDIR}"/${P}-smclient-configure.patch
+
+	eautoreconf
 }
