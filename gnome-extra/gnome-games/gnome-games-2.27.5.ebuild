@@ -95,6 +95,7 @@ pkg_setup() {
 		--with-platform=gnome
 		--with-card-theme-formats=all
 		--with-smclient
+		--disable-introspection
 		--enable-omitgames=none" # This line should be last for _omitgame
 
 	# Needs clutter, always disable till we can have that
@@ -119,9 +120,6 @@ src_prepare() {
 	# disable pyc compiling
 	mv py-compile py-compile.orig
 	ln -s $(type -P true) py-compile
-
-	# Fix parallel make install issue for setgid, bug #267041
-	epatch "${FILESDIR}/${PN}-2.26.2-parallel-make.patch"
 
 	# Fix implicit declaration of yylex.
 	epatch "${FILESDIR}/${PN}-2.26.3-implicit-declaration.patch"

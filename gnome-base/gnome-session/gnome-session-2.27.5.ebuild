@@ -65,9 +65,6 @@ src_prepare() {
 	# Add "session saving" button back, upstream bug #575544
 	# epatch "${WORKDIR}/${PN}-2.26.1-session-saving-button.patch"
 
-	# Remove shave stuff for silent build
-	epatch "${FILESDIR}/gnome-session-2.27.4-remove-shave.patch"
-
 	eautoreconf
 }
 

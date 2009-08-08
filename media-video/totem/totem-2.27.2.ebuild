@@ -34,7 +34,7 @@ RDEPEND=">=dev-libs/glib-2.15
 	>=dev-libs/dbus-glib-0.71
 	>=media-libs/gstreamer-0.10.22
 	>=media-libs/gst-plugins-good-0.10
-	>=media-libs/gst-plugins-base-0.10.23
+	>=media-libs/gst-plugins-base-0.10.23.2
 	>=media-plugins/gst-plugins-gconf-0.10
 
 	>=media-plugins/gst-plugins-gio-0.10
