@@ -26,8 +26,9 @@ RDEPEND=">=dev-libs/glib-2.16.5
 	>=app-cdr/cdrdao-1.2.2-r3
 	media-libs/libdvdcss
 	>=app-cdr/dvd+rw-tools-7.1
+	>=dev-libs/dbus-glib-0.72
 	cdr? ( virtual/cdrtools )
-	totem? ( >=dev-libs/totem-pl-parser-2.20 )
+	totem? ( >=dev-libs/totem-pl-parser-2.22 )
 	beagle? ( >=dev-libs/libbeagle-0.3.0 )
 	libburn? ( >=dev-libs/libburn-0.6.0
 		>=dev-libs/libisofs-0.6.12 )

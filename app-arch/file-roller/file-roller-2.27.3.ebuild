@@ -18,7 +18,7 @@ IUSE="nautilus"
 RDEPEND=">=dev-libs/glib-2.16.0
 	>=x11-libs/gtk+-2.16
 	gnome-base/gconf
-	nautilus? ( gnome-base/nautilus )"
+	nautilus? ( >=gnome-base/nautilus-2.22.2 )"
 DEPEND="${RDEPEND}
 	gnome-base/gnome-common
 	sys-devel/gettext
