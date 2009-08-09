@@ -1,6 +1,6 @@
 # Copyright 1999-2009 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Header: /var/cvsroot/gentoo-x86/app-editors/gedit/gedit-2.26.2.ebuild,v 1.1 2009/05/17 21:45:24 eva Exp $
+# $Header: /var/cvsroot/gentoo-x86/app-editors/gedit/gedit-2.26.3.ebuild,v 1.2 2009/07/28 11:07:21 mrpouet Exp $
 
 GCONF_DEBUG="no"
 
@@ -12,16 +12,15 @@ HOMEPAGE="http://www.gnome.org/"
 LICENSE="GPL-2"
 SLOT="0"
 KEYWORDS="~alpha ~amd64 ~arm ~hppa ~ia64 ~ppc ~ppc64 ~sh ~sparc ~x86 ~x86-fbsd"
-IUSE="doc python soup spell xattr"
+IUSE="doc python spell xattr"
 
 RDEPEND=">=gnome-base/gconf-2
 	xattr? ( sys-apps/attr )
 	>=x11-libs/libSM-1.0
 	>=dev-libs/libxml2-2.5.0
 	>=dev-libs/glib-2.18
-	>=x11-libs/gtk+-2.17.1
+	>=x11-libs/gtk+-2.17
 	>=x11-libs/gtksourceview-2.5
-	soup? ( >=net-libs/libsoup-2.4 )
 	spell? (
 		>=app-text/enchant-1.2
 		>=app-text/iso-codes-0.35
@@ -52,8 +51,8 @@ fi
 pkg_setup() {
 	G2CONF="${G2CONF}
 		--disable-scrollkeeper
+		--disable-updater
 		$(use_enable python)
-		$(use_enable soup updater)
 		$(use_enable spell)
 		$(use_enable xattr attr)"
 }
@@ -64,6 +63,10 @@ src_unpack() {
 	# disable pyc compiling
 	mv "${S}"/py-compile "${S}"/py-compile.orig
 	ln -s $(type -P true) "${S}"/py-compile
+
+	# Fix intltoolize broken file, see upstream #577133
+	sed "s:'\^\$\$lang\$\$':\^\$\$lang\$\$:g" -i po/Makefile.in.in \
+		|| die "sed expression failed"
 }
 
 pkg_postinst() {
