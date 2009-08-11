@@ -12,10 +12,8 @@ HOMEPAGE="http://www.gnome.org/projects/evince/"
 LICENSE="GPL-2"
 SLOT="0"
 KEYWORDS="~alpha ~amd64 ~hppa ~ia64 ~ppc ~ppc64 ~sparc ~x86 ~x86-fbsd"
-IUSE="dbus debug djvu doc dvi gnome-keyring nautilus t1lib tiff"
+IUSE="dbus debug djvu doc dvi gnome-keyring introspection nautilus t1lib tiff"
 
-# FIXME: enable gobject-introspection when we have an ebuild for it.
-# Since 2.26.2, can handle poppler without cairo support. Make it optional ?
 RDEPEND="
 	>=app-text/libspectre-0.2.0
 	>=dev-libs/glib-2.18.0
@@ -26,6 +24,7 @@ RDEPEND="
 	>=x11-themes/gnome-icon-theme-2.17.1
 	dbus? ( >=dev-libs/dbus-glib-0.71 )
 	gnome-keyring? ( >=gnome-base/gnome-keyring-2.22.0 )
+	introspection? ( >=dev-libs/gobject-introspection-0.6.3 )
 	nautilus? ( >=gnome-base/nautilus-2.10 )
 	>=virtual/poppler-glib-0.11[cairo]
 	dvi? (
@@ -51,7 +50,6 @@ RESTRICT="test"
 pkg_setup() {
 	G2CONF="${G2CONF}
 		--disable-scrollkeeper
-		--disable-introspection
 		--enable-pdf
 		--enable-comics
 		--enable-impress
@@ -62,6 +60,7 @@ pkg_setup() {
 		$(use_enable djvu)
 		$(use_enable dvi)
 		$(use_with gnome-keyring keyring)
+		$(use_enable introspection)
 		$(use_enable t1lib)
 		$(use_enable tiff)
 		$(use_enable nautilus)"

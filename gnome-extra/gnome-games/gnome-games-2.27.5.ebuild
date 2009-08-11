@@ -16,7 +16,7 @@ HOMEPAGE="http://live.gnome.org/GnomeGames/"
 LICENSE="GPL-2 FDL-1.1"
 SLOT="0"
 KEYWORDS="~alpha ~amd64 ~arm ~hppa ~ia64 ~ppc ~ppc64 ~sh ~sparc ~x86 ~x86-fbsd"
-IUSE="artworkextra +canberra guile opengl test"
+IUSE="artworkextra +canberra +clutter guile introspectio opengl staging test"
 
 RDEPEND=">=dev-python/pygtk-2.10
 	dev-python/pygobject
@@ -41,14 +41,17 @@ RDEPEND=">=dev-python/pygtk-2.10
 	>=dev-games/libggz-0.0.14
 	>=dev-games/ggz-client-libs-0.0.14	
 
-	>=media-libs/clutter-0.9.6
-	>=media-libs/clutter-gtk-0.9.2
+	clutter? (
+		>=media-libs/clutter-0.9.6
+		>=media-libs/clutter-gtk-0.9.2
+	)
 
 	guile? ( >=dev-scheme/guile-1.6.5[deprecated,regex] )
 	artworkextra? ( gnome-extra/gnome-games-extra-data )
 	opengl? (
 		dev-python/pygtkglext
 		>=dev-python/pyopengl-3 )
+	introspection? ( >=dev-libs/gobject-introspection-0.6.3 )
 	!games-board/glchess
 	x11-libs/libSM"
 
@@ -84,9 +87,11 @@ pkg_setup() {
 		G2CONF="${G2CONF} --with-sound=sdl_mixer"
 	fi
 
-	# Needs "seed", which needs gobject-introspection, libffi, etc.
-	#$(use_enable clutter)
-	#$(use_enable clutter staging)
+	if use staging; then
+		ewarn "USE='staging' implies that games not ready for prime time will be enabled"
+		G2CONF="${G2CONF} --enable-staging"
+	fi
+
 	G2CONF="${G2CONF}
 		$(use_enable test tests)
 		--disable-card-themes-installer
@@ -95,13 +100,15 @@ pkg_setup() {
 		--with-platform=gnome
 		--with-card-theme-formats=all
 		--with-smclient
-		--disable-introspection
+		$(use_enable introspction)
 		--enable-omitgames=none" # This line should be last for _omitgame
 
-	# Needs clutter, always disable till we can have that
-	#if ! use clutter; then
+	
+	if ! use clutter; then
+		ewarn "USE='-clutter' implies that Gnometris won't be build"
 		_omitgame lightsoff
-	#fi
+		_omitgame gnometris
+	fi
 
 	if ! use guile; then
 		ewarn "USE='-guile' implies that Aisleriot won't be installed"
