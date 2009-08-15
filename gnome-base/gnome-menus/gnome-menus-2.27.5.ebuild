@@ -1,6 +1,6 @@
 # Copyright 1999-2009 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Header: /var/cvsroot/gentoo-x86/gnome-base/gnome-menus/gnome-menus-2.26.1.ebuild,v 1.2 2009/05/10 18:51:37 eva Exp $
+# $Header: /var/cvsroot/gentoo-x86/gnome-base/gnome-menus/gnome-menus-2.26.2.ebuild,v 1.2 2009/08/03 21:25:24 eva Exp $
 
 inherit eutils gnome2 python
 
@@ -44,6 +44,17 @@ src_unpack() {
 	ln -s $(type -P true) py-compile
 }
 
+src_install() {
+	gnome2_src_install
+
+	# Prefix menu, bug #256614
+	mv "${D}"/etc/xdg/menus/applications.menu \
+		"${D}"/etc/xdg/menus/gnome-applications.menu || die "menu move failed"
+
+	exeinto /etc/X11/xinit/xinitrc.d/
+	doexe "${FILESDIR}/10-xdg-menu-gnome" || die "doexe failed"
+}
+
 pkg_postinst() {
 	gnome2_pkg_postinst
 	if use python; then
@@ -51,6 +62,11 @@ pkg_postinst() {
 		python_need_rebuild
 		python_mod_optimize $(python_get_sitedir)/GMenuSimpleEditor
 	fi
+
+	ewarn "Due to bug #256614, you might loose icons in applications menus."
+	ewarn "If you use a login manager, please re-select your session."
+	ewarn "If you use startx and have no .xinitrc, just export XSESSION=Gnome."
+	ewarn "If you use startx and have .xinitrc, export XDG_MENU_PREFIX=gnome-."
 }
 
 pkg_postrm() {

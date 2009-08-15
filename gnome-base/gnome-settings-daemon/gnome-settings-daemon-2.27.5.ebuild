@@ -8,8 +8,6 @@ inherit autotools eutils gnome2
 
 DESCRIPTION="Gnome Settings Daemon"
 HOMEPAGE="http://www.gnome.org"
-#SRC_URI="${SRC_URI}
-#	mirror://gentoo/${P}-readd-gst-vol-control-support.patch.bz2"
 
 LICENSE="GPL-2"
 SLOT="0"
@@ -22,20 +20,23 @@ RDEPEND=">=dev-libs/dbus-glib-0.74
 	>=gnome-base/gconf-2.6.1
 	>=gnome-base/libgnomekbd-2.21.4
 
-	>=gnome-base/libglade-2
+	>=gnome-base/libgnomeui-2
 	>=gnome-base/gnome-desktop-2.26.3
 
-	libnotify? ( >=x11-libs/libnotify-0.4.5 )
+	libnotify? ( >=x11-libs/libnotify-0.4.3 )
 
 	x11-libs/libX11
 	x11-libs/libXi
 	x11-libs/libXrandr
 	x11-libs/libXext
 	x11-libs/libXxf86misc
-	>=x11-libs/libxklavier-4
+	>=x11-libs/libxklavier-4.0
 	media-libs/fontconfig
 
-	pulseaudio? ( >=media-sound/pulseaudio-0.9.15 )"
+	pulseaudio? ( >=media-sound/pulseaudio-0.9.12 )
+	!pulseaudio? (
+		>=media-libs/gstreamer-0.10.1.2
+		>=media-libs/gst-plugins-base-0.10.1.2 )"
 DEPEND="${RDEPEND}
 	!<gnome-base/gnome-control-center-2.22
 	sys-devel/gettext
@@ -49,7 +50,25 @@ DOCS="AUTHORS NEWS ChangeLog MAINTAINERS"
 
 pkg_setup() {
 	G2CONF="${G2CONF}
+		--disable-static
 		$(use_enable debug)
 		$(use_with libnotify)
-		$(use_enable pulseaudio pulse)"
+		$(use_enable pulseaudio pulse)
+		$(use_enable !pulseaudio gstreamer)"
+
+	if use pulseaudio; then
+		elog "Building volume media keys using Pulseaudio"
+	else
+		elog "Building volume media keys using GStreamer"
+	fi
+}
+
+src_prepare() {
+	gnome2_src_prepare
+
+	# Restore gstreamer volume control support, upstream bug #571145
+	epatch "${FILESDIR}/${PN}-2.27.5-readd-gst-vol-control-support.patch"
+
+	intltoolize --force --copy --automake || die "intltoolize failed"
+	eautoreconf
 }

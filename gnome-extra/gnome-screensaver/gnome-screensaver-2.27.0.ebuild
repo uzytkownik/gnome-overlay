@@ -67,8 +67,8 @@ src_install() {
 	dodoc "${S}/data/xscreensaver-config.xsl"
 
 	# Conversion information
-	sed -e "s:\${PF}:${PF}:" \
-		< "${FILESDIR}/xss-conversion-2.txt" > "${S}/xss-conversion.txt"
+	sed -e "s:\${PF}:${PF}:" < "${FILESDIR}/xss-conversion-2.txt" \
+		> "${S}/xss-conversion.txt" || die "sed failed"
 
 	dodoc "${S}/xss-conversion.txt"
 
