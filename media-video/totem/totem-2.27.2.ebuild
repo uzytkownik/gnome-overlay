@@ -1,6 +1,6 @@
 # Copyright 1999-2009 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Header: /var/cvsroot/gentoo-x86/media-video/totem/totem-2.26.2.ebuild,v 1.2 2009/06/03 19:49:00 klausman Exp $
+# $Header: /var/cvsroot/gentoo-x86/media-video/totem/totem-2.26.3.ebuild,v 1.2 2009/07/18 19:17:31 armin76 Exp $
 
 EAPI="2"
 
@@ -11,17 +11,15 @@ HOMEPAGE="http://gnome.org/projects/totem/"
 
 LICENSE="GPL-2 LGPL-2"
 SLOT="0"
-KEYWORDS="~alpha ~amd64 ~arm ~ppc ~ppc64 ~sparc ~x86 ~x86-fbsd"
+KEYWORDS="~alpha ~amd64 ~arm ~ia64 ~ppc ~ppc64 ~sparc ~x86 ~x86-fbsd"
 
-IUSE="bluetooth debug doc galago lirc nautilus nsplugin python tracker vala youtube"
+IUSE="bluetooth debug doc galago iplayer lirc nautilus nsplugin python tracker +youtube"
 
 # TODO:
 # easy-publish-and-consume is not in tree (epc)
 # Cone (VLC) plugin needs someone with the right setup (remi ?)
 # check gmyth requirement ? -> waiting for updates in tree
 # coherence plugin not enabled until we have deps in tree
-
-# youtube plugin depends on gst-plugins-soup and dev-libs/libgdata
 RDEPEND=">=dev-libs/glib-2.15
 	>=x11-libs/gtk+-2.16.0
 	>=gnome-base/gconf-2.0
@@ -29,19 +27,20 @@ RDEPEND=">=dev-libs/glib-2.15
 	>=x11-themes/gnome-icon-theme-2.16
 	x11-libs/cairo
 	app-text/iso-codes
-	dev-libs/libunique
 	>=dev-libs/libxml2-2.6
 	>=dev-libs/dbus-glib-0.71
-	>=media-libs/gstreamer-0.10.22
+	>=media-libs/gstreamer-0.10.23.2
 	>=media-libs/gst-plugins-good-0.10
 	>=media-libs/gst-plugins-base-0.10.23.2
 	>=media-plugins/gst-plugins-gconf-0.10
 
+	>=media-plugins/gst-plugins-taglib-0.10
 	>=media-plugins/gst-plugins-gio-0.10
 	>=media-plugins/gst-plugins-pango-0.10
 	>=media-plugins/gst-plugins-x-0.10
 	>=media-plugins/gst-plugins-meta-0.10-r2
 
+	dev-libs/libunique
 	x11-libs/libSM
 	x11-libs/libX11
 	x11-libs/libXtst
@@ -52,20 +51,27 @@ RDEPEND=">=dev-libs/glib-2.15
 		net-wireless/bluez
 		net-wireless/bluez-libs ) )
 	galago? ( >=dev-libs/libgalago-0.5.2 )
+	iplayer? (
+		dev-python/pygobject
+		dev-python/pygtk
+		dev-python/httplib2
+		dev-python/feedparser
+		dev-python/beautifulsoup )
 	lirc? ( app-misc/lirc )
 	nautilus? ( >=gnome-base/nautilus-2.10 )
-	nsplugin? ( >=x11-misc/shared-mime-info-0.22 )
 	python? (
 		dev-lang/python[threads]
 		>=dev-python/pygtk-2.12
 		dev-python/pyxdg
 		dev-python/gst-python
-		dev-python/gconf-python
-		media-plugins/gst-plugins-soup )
-	tracker? ( >=app-misc/tracker-0.5.3 )
-	youtube? ( >=media-plugins/gst-plugins-soup-0.10
-		>=dev-libs/libgdata-0.1.1 )
-    vala? ( >=dev-lang/vala-0.1.6 )"
+		dev-python/dbus-python
+		dev-python/gconf-python )
+	tracker? (
+		>=app-misc/tracker-0.6
+		<app-misc/tracker-0.7 )
+	youtube? (
+		>=dev-libs/libgdata-0.4.0
+		media-plugins/gst-plugins-soup )"
 DEPEND="${RDEPEND}
 	x11-proto/xproto
 	x11-proto/xextproto
@@ -87,7 +93,8 @@ pkg_setup() {
 	G2CONF="${G2CONF}
 		--disable-scrollkeeper
 		--disable-schemas-install
-		$(use_enable vala)
+		--disable-static
+		--disable-vala
 		--with-dbus
 		--with-smclient
 		--enable-easy-codec-installation
@@ -101,8 +108,9 @@ pkg_setup() {
 	local plugins="properties,thumbnail,screensaver,ontop,gromit,media-player-keys,skipto,brasero-disc-recorder,screenshot"
 	use bluetooth && plugins="${plugins},bemused"
 	use galago && plugins="${plugins},galago"
+	use iplayer && plugins="${plugins},iplayer"
 	use lirc && plugins="${plugins},lirc"
-	use python && plugins="${plugins},opensubtitles,jamendo,pythonconsole"
+	use python && plugins="${plugins},opensubtitles,jamendo,pythonconsole,dbus-service"
 	use tracker && plugins="${plugins},tracker"
 	use youtube && plugins="${plugins},youtube"
 
