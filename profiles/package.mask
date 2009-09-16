@@ -17,11 +17,6 @@
 # Mask live version of packagekit
 ~app-portage/packagekit-9999
 
-# Maciej Piechotka <uzytkownik2@gmail.com> (25 Jul 2009)
-# Gnome depends on masked dev-libs/poppler-*
->=gnome-base/gnome-2.27.4
->=app-text/evince-2.27.4
-
 # Nirbheek Chauhan <nirbheek@gentoo.org> (17 Mar 2009)
 # Epiphany which uses webkit (bug #239112)
 # Several feature regressions
