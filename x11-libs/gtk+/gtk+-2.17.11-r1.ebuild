@@ -4,7 +4,7 @@
 
 EAPI="2"
 
-inherit gnome.org flag-o-matic eutils libtool virtualx
+inherit gnome.org flag-o-matic eutils autotools virtualx
 
 DESCRIPTION="Gimp ToolKit +"
 HOMEPAGE="http://www.gtk.org/"
@@ -83,7 +83,7 @@ src_prepare() {
 		-i gtk/tests/testing.c || die "sed 1 failed"
 	sed '\%/recent-manager/add%,/recent_manager_purge/ d' \
 		-i gtk/tests/recentmanager.c || die "sed 2 failed"
-	elibtoolize
+	eautoreconf
 }
 
 src_configure() {
