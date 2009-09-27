@@ -7,8 +7,6 @@ inherit gnome2 git autotools
 
 DESCRIPTION="Desktop-neutral search tool and indexer"
 HOMEPAGE="http://www.tracker-project.org/"
-SRC_URI=""
-EGIT_REPO_URI="git://git.gnome.org/${PN}"
 
 LICENSE="GPL-2"
 SLOT="0"
@@ -37,7 +35,6 @@ DEPEND="sys-libs/zlib
 		>=gnome-base/libgnomeui-2.13.2
 		>=gnome-base/gnome-desktop-2.9.91
 		>=dev-libs/libgee-0.1.3
-		>=dev-lang/vala-0.7.5
 	)
 	poppler? ( >=dev-libs/poppler-glib-0.4.5 )
 	exif? ( >=media-gfx/exif-0.6 )
@@ -105,11 +102,4 @@ pkg_setup() {
 			$(use_enable exempi)
 			$(use_enable totem playlist)"
 }
-
-src_prepare() {
-	gtkdocize
-	glib-gettextize --force --copy
-	eautoreconf
-}
-
 
