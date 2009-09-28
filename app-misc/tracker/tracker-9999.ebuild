@@ -110,6 +110,7 @@ src_prepare() {
 	gtkdocize
 	glib-gettextize --force --copy
 	eautoreconf
+	intltoolize --force --copy
 }
 
 
