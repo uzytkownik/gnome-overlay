@@ -14,7 +14,7 @@ IUSE="doc"
 
 RDEPEND=">=dev-python/pygobject-2.15.2
 	>=dev-python/pygtk-2.8
-	>=x11-libs/gtksourceview-2.3"
+	>=x11-libs/gtksourceview-2.8.1"
 
 DEPEND="${RDEPEND}
 	doc? (
