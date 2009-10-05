@@ -1,5 +1,7 @@
 Ebuild Notices:
 ===============
+app-text/gnome-doc-utils-0.18.0
+ * Highly broken with parallel make, see bug #286889
 dev-libs/gir-repository-0.6.5
  * installs even disabled stuff if it's a dependency of something enabled
  * these dependencies are incomplete
@@ -17,24 +19,38 @@ gnome-base/gvfs-1.4.0
  * gphoto2 && gudev => we need >libgphoto2-2.4.6 (unreleased)
 gnome-base/nautilus-2.28.0
  * tarball generated with broken gtk-doc, revisit me.
+gnome-extra/evolution-data-server-2.28.0
+ * Fix compilation flags crazyness
 gnome-extra/gnome-user-share-2.28.0
  * could libnotify be made optional ?
  * gnome-bluetooth is a hard-dep
+gnome-extra/gtkhtml-3.28.0-r1
+ * Fix compilation flags crazyness
 gnome-extra/gucharmap-2.28.0
  * add gobject-introspection support once available
+gnome-extra/nautilus-sendto-2.28.0
+ * mail plugin build is broken
+ * skip evolution, it does not build properly
+mail-client/evolution-2.28.0
+ * bsd needs to be more active at pushing stuff upstream
+ * Fix compilation flags crazyness
 media-libs/clutter-1.0.6
+ * Tests are interactive, not of use for us
  * Using external json-glib breaks introspection
+ * Tests are interactive, not of use for us
 media-libs/libchamplain-0.4.0
- * add pyclutter first
- * mono support
+ * add pyclutter and pyclutter-gtk first
+ * add clutter-sharp first
+media-sound/sound-juicer-2.28.0
+ * possibly automagic dual slot dep on musicbrainz
 media-video/totem-2.28.1-r1
  * tests broken with USE="-doc" upstream bug #577774.
  * tarball generated with broken gtk-doc, revisit me.
  * why does it need write access here, probably need to set up a fake
-net-im/empathy-2.28.0
+net-im/empathy-2.28.0.1
+ * Add location support once geoclue stops being idiotic with automagic deps
  * libnotify & libcanberra hard deps
- * Tests are broken, upstream bug #576785
- * report upstream their package is broken
+ * Highly broken with parallel make, mallard strike 2, see bug #286889
 net-libs/libepc-0.3.10
  * 2 out of 16 tests fail, upstream bug #578792
 www-client/epiphany-extensions-2.28.0
@@ -44,7 +60,7 @@ www-client/epiphany-extensions-2.28.0
  * - gestures ( https://bugzilla.gnome.org/show_bug.cgi?id=563099 )
  * - session-saver ( https://bugzilla.gnome.org/show_bug.cgi?id=316245 )
  * - sidebar: hangs ( https://bugzilla.gnome.org/show_bug.cgi?id=594481 )
-x11-libs/gtk+-2.18.0
+x11-libs/gtk+-2.18.1
  * configure says >=xrandr-1.2.99 but remi tells me it's broken
 x11-themes/gnome-icon-theme-2.28.0
  * double check potential LINGUAS problem
