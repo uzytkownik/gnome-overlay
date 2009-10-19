@@ -4,7 +4,7 @@
 
 EAPI="2"
 
-inherit eutils gnome2 autotools linux-info
+inherit gnome2 linux-info
 
 MY_PN="DeviceKit-power"
 
@@ -15,9 +15,9 @@ SRC_URI="http://hal.freedesktop.org/releases/${MY_PN}-${PV}.tar.gz"
 LICENSE="GPL-2 LGPL-2"
 SLOT="0"
 KEYWORDS="~amd64 ~x86"
-IUSE="debug doc"
+IUSE="debug doc test"
 
-RDEPEND=">=dev-libs/glib-2.16.1
+RDEPEND=">=dev-libs/glib-2.21.5
 	>=dev-libs/dbus-glib-0.76
 	>=sys-fs/udev-145[extras]
 	>=sys-auth/polkit-0.91
@@ -47,17 +47,16 @@ pkg_setup() {
 		--disable-ansi
 		--enable-man-pages
 		$(use_enable debug verbose-mode)
+		$(use_enable test tests)
 	"
 
 	check_battery
 }
 
 src_prepare() {
-	# Fix build with older gcc, bug #266987
-	epatch "${FILESDIR}/${PN}-009-build-gcc-4.1.2.patch"
+	gnome2_src_prepare
 
-	# Fix crazy cflags and moved them to maintainer-mode, bug #267139
-	epatch "${FILESDIR}/${PN}-007-maintainer-cflags.patch"
-
-	eautoreconf
+	# Fix crazy cflags
+	sed 's:-DG.*DISABLE_DEPRECATED::g' -i configure.ac configure \
+		|| die "sed failed"
 }
