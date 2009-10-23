@@ -1,3 +1,5 @@
+THIS FILE IS AUTO GENERATED, DO NOT MODIFY BY HAND
+
 Ebuild Notices:
 ===============
 app-text/gnome-doc-utils-0.18.0
@@ -14,6 +16,8 @@ dev-libs/libgweather-2.28.0
 dev-libs/totem-pl-parser-2.28.1
  * testsuite does not work, please fix them and report on upstream
  * tarball generated with broken gtk-doc, revisit me.
+dev-python/pygobject-2.20.0
+ * add introspection support
 dev-util/gnome-devel-docs-2.28.0
  * Find a better fix for the failure with parallel install.
 gnome-base/gnome-panel-2.28.0-r1
@@ -21,7 +25,7 @@ gnome-base/gnome-panel-2.28.0-r1
 gnome-base/gnome-session-2.28.0-r1
  * Needs updating for 2.27.91 (package is currently masked)
  * Needs updating for 2.27.91 (package is currently masked)
-gnome-base/nautilus-2.28.0
+gnome-base/nautilus-2.28.1
  * tarball generated with broken gtk-doc, revisit me.
 gnome-extra/evolution-data-server-2.28.1
  * Fix compilation flags crazyness
@@ -37,7 +41,7 @@ gnome-extra/gnome-user-share-2.28.0
  * gnome-bluetooth is a hard-dep
 gnome-extra/gtkhtml-3.28.1
  * Fix compilation flags crazyness
-gnome-extra/gucharmap-2.28.0
+gnome-extra/gucharmap-2.28.1
  * add gobject-introspection support once available
 gnome-extra/nautilus-sendto-2.28.0
  * mail plugin build is broken
@@ -45,11 +49,11 @@ gnome-extra/nautilus-sendto-2.28.0
 mail-client/evolution-2.28.1
  * bsd needs to be more active at pushing stuff upstream
  * Fix compilation flags crazyness
-media-libs/clutter-1.0.6
+media-libs/clutter-1.0.8
  * Tests are interactive, not of use for us
  * Using external json-glib breaks introspection
  * Tests are interactive, not of use for us
-media-libs/libchamplain-0.4.0
+media-libs/libchamplain-0.4.1
  * add pyclutter and pyclutter-gtk first
  * add clutter-sharp first
 media-sound/sound-juicer-2.28.0
@@ -58,7 +62,7 @@ media-video/totem-2.28.1-r1
  * freezes totem
  * tests broken with USE="doc" upstream bug #598805.
  * why does it need write access here, probably need to set up a fake
-net-im/empathy-2.28.0.1
+net-im/empathy-2.28.1
  * Add location support once geoclue stops being idiotic with automagic deps
  * libnotify & libcanberra hard deps
  * Highly broken with parallel make, mallard strike 2, see bug #286889
