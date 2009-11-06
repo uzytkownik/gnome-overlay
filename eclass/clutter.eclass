@@ -21,7 +21,7 @@ LICENSE="LGPL-2"
 
 DEPEND="dev-util/pkgconfig"
 
-DOCS="AUTHORS ChangeLog NEWS README TODO"
+DOCS="${DOCS:-AUTHORS ChangeLog NEWS README TODO}"
 
 clutter_src_install() {
 	emake DESTDIR="${D}" install || die "emake install failed"
@@ -31,7 +31,8 @@ clutter_src_install() {
 	if hasq examples ${IUSE} && use examples; then
 		insinto /usr/share/doc/${PF}/examples
 
-		for example in ${EXAMPLES}; do
+		# We use eval to be able to use globs
+		for example in $(eval echo ${EXAMPLES}); do
 			# If directory
 			if [[ ${example: -1} = "/" ]]; then
 				doins -r ${example}
