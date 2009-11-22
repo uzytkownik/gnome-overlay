@@ -9,22 +9,24 @@ SRC_URI="http://vtg.googlecode.com/files/${P}.tar.bz2"
 
 LICENSE="GPL-2 LGPL-2.1"
 SLOT="0"
-KEYWORDS="~x86"
+KEYWORDS="~x86 ~amd64"
 IUSE="+gen-project +vtg-plugin +vsc-shell"
 
 DEPEND="dev-util/intltool
         ${RDEPEND}"
-RDEPEND=">=dev-lang/vala-0.5.7
+RDEPEND=">=dev-lang/vala-0.7.7
          >=dev-libs/glib-2.16.0
 		 >=x11-libs/gtk+-2.10.0
+		 >=dev-libs/libgee-0.3
 		 vsc-shell? ( sys-libs/readline )
 		 vtg-plugin? (
 		 	>=app-editors/gedit-2.22.0
-		 	>=x11-libs/gtksourcecompletion-0.5.2
+		 	>=x11-libs/gtksourcecompletion-0.7.0
+			>=gnome-base/gconf-2.22
 		 )"
 
 pkg_setup() {
 	G2CONF="$G2CONF $(use_enable gen-project) $(use_enable vtg-plugin)"
-	G2CONF="$G2CONF $(use_enable vsc-shell)"
+	G2CONF="$G2CONF $(use_enable vsc-shell) --disable-silent-rules"
 }
 
