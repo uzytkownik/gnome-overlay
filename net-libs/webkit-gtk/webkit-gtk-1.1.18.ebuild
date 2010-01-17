@@ -13,7 +13,7 @@ SRC_URI="http://www.webkitgtk.org/${MY_P}.tar.gz"
 
 LICENSE="LGPL-2 LGPL-2.1 BSD"
 SLOT="0"
-KEYWORDS="~alpha ~amd64 ~ia64 ~ppc ~sparc ~x86 ~x86-fbsd"
+KEYWORDS="-*"
 # geoclue
 IUSE="coverage debug doc +gstreamer introspection pango"
 
@@ -28,7 +28,7 @@ RDEPEND="
 	>=x11-libs/gtk+-2.10
 	>=gnome-base/gail-1.8
 	>=dev-libs/icu-3.8.1-r1
-	>=net-libs/libsoup-2.27.91
+	>=net-libs/libsoup-2.28.2
 	>=dev-db/sqlite-3
 	>=app-text/enchant-0.22
 
@@ -56,14 +56,6 @@ DEPEND="${RDEPEND}
 S="${WORKDIR}/${MY_P}"
 
 src_prepare() {
-	# Add files missing from tarball...
-	# https://bugs.webkit.org/show_bug.cgi?id=31102
-	for file in JSCore-1.0.gir JSCore-1.0.typelib; do
-		cp "${FILESDIR}/$file" "${S}/WebKit/gtk/" || die "Error copying $file"
-	done
-	# ...and fix the include path for these
-	epatch "${FILESDIR}/webkit-introspection-jscore-path.patch"
-
 	# Make it libtool-1 compatible
 	rm -v autotools/lt* autotools/libtool.m4 \
 		|| die "removing libtool macros failed"
@@ -97,6 +89,12 @@ src_configure() {
 	fi
 
 	econf ${myconf}
+}
+
+src_compile() {
+	# Fix sandbox error with USE="introspection"
+	addpredict "$(unset HOME; echo ~)/.local"
+	emake || die "Compile failed"
 }
 
 src_install() {
