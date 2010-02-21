@@ -10,26 +10,14 @@
 # Mask live version of gst-convenience
 ~media-libs/gst-conveninence-9999
 
-# Nirbheek Chauhan <nirbheek@gentoo.org> (6 Sep 2009)
-# Session-saving support has regressions
-# http://bugzilla.gnome.org/show_bug.cgi?id=585614
-# Shutdown/Reboot fix needs to be updated
-# Session-saving button patch needs updating
-=gnome-base/gnome-session-2.27*
-
 # Nirbheek Chauhan <nirbheek@gentoo.org> (9 Aug 2009)
 # Mask live version of packagekit
 ~app-portage/packagekit-9999
 
-# Nirbheek Chauhan <nirbheek@gentoo.org> (17 Mar 2009)
-# Epiphany which uses webkit (bug #239112)
-# Several feature regressions
-=www-client/epiphany-2.27*
-=www-client/epiphany-extensions-2.27*
-
-# Gilles Dartiguelongue <eva@gentoo.org> (4 Oct 2009)
-# Needed by empathy-2.28
-# Olivier Crete <tester@gentoo.org> (11 Sep 2009)
-# Mission Control 5 API is compatible with MC4
-# It is also incompatible with empathy <2.27.91
-->=net-im/telepathy-mission-control-5
+# Gilles Dartiguelongue <eva@gentoo.org> (15 Feb 2010)
+# Mask Gnome 2.29 ebuilds
+#=www-client/epiphany-2.29*
+#=www-client/epiphany-extensions-2.29*
+#=net-libs/libsoup-gnome-2.29*
+#=net-libs/libsoup-2.29*
+#=net-libs/webkit-gtk-1.1.19
