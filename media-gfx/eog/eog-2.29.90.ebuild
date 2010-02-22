@@ -14,7 +14,7 @@ SLOT="1"
 KEYWORDS="~alpha ~amd64 ~arm ~hppa ~ia64 ~ppc ~ppc64 ~sparc ~x86 ~x86-fbsd"
 IUSE="dbus doc exif jpeg lcms python tiff xmp"
 
-RDEPEND=">=x11-libs/gtk+-2.15.1
+RDEPEND=">=x11-libs/gtk+-2.17.5
 	>=dev-libs/glib-2.15.3
 	>=dev-libs/libxml2-2
 	>=gnome-base/gconf-2.5.90
@@ -43,6 +43,11 @@ DEPEND="${RDEPEND}
 	doc? ( >=dev-util/gtk-doc-1.10 )"
 
 DOCS="AUTHORS ChangeLog HACKING MAINTAINERS NEWS README THANKS TODO"
+
+src_prepare() {
+	cd "${S}"
+	epatch "${FILESDIR}/${P}-RAND_MAX.patch"
+}
 
 pkg_setup() {
 	G2CONF="${G2CONF}
