@@ -3,6 +3,7 @@
 # $Header: /var/cvsroot/gentoo-x86/media-video/cheese/cheese-2.26.2.ebuild,v 1.1 2009/05/18 21:32:54 eva Exp $
 
 GCONF_DEBUG="no"
+EAPI=2
 
 inherit gnome2 eutils
 
@@ -16,18 +17,18 @@ IUSE="v4l"
 
 COMMON_DEPEND=">=dev-libs/dbus-glib-0.7
 	>=dev-libs/glib-2.16.0
-	>=x11-libs/gtk+-2.17.3
+	>=x11-libs/gtk+-2.19.1
 	>=x11-libs/cairo-1.4.0
 	>=x11-libs/pango-1.18.0
 	>=sys-apps/dbus-1
-	>=sys-apps/hal-0.5.9
+	>=sys-fs/udev-1
 	>=gnome-base/gconf-2.16.0
-	>=gnome-base/gnome-desktop-2.25.1
+	>=gnome-base/gnome-desktop-2.26
 	>=gnome-base/librsvg-2.18.0
-	>=gnome-extra/evolution-data-server-1.12
+	>=media-libs/libcanberra-0.11[gtk]
 
-	>=media-libs/gstreamer-0.10.20
-	>=media-libs/gst-plugins-base-0.10.20"
+	>=media-libs/gstreamer-0.10.23
+	>=media-libs/gst-plugins-base-0.10.23"
 RDEPEND="${COMMON_DEPEND}
 	>=media-plugins/gst-plugins-gconf-0.10
 	>=media-plugins/gst-plugins-ogg-0.10.20
