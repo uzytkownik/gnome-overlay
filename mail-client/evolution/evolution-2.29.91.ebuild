@@ -1,8 +1,9 @@
 # Copyright 1999-2009 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Header: /var/cvsroot/gentoo-x86/mail-client/evolution/evolution-2.26.3.ebuild,v 1.2 2009/07/24 11:10:10 mrpouet Exp $
+# $Header: /var/cvsroot/gentoo-x86/mail-client/evolution/evolution-2.28.2.ebuild,v 1.1 2009/12/24 00:50:16 eva Exp $
 
 EAPI="2"
+GCONF_DEBUG="no"
 
 inherit autotools gnome2 flag-o-matic python
 
@@ -11,28 +12,29 @@ HOMEPAGE="http://www.gnome.org/projects/evolution/"
 
 LICENSE="GPL-2 FDL-1.1"
 SLOT="2.0"
-KEYWORDS="~alpha ~amd64 ~hppa ~ppc64 ~x86 ~x86-fbsd"
+KEYWORDS="~alpha ~amd64 ~hppa ~ia64 ~ppc ~ppc64 ~sparc ~x86 ~x86-fbsd"
 IUSE="crypt dbus hal kerberos krb4 ldap mono networkmanager nntp pda profile python ssl gstreamer exchange"
-# pst
+# map pst
 
 # Pango dependency required to avoid font rendering problems
-RDEPEND=">=dev-libs/glib-2.20
-	>=x11-libs/gtk+-2.16
+# We need a graphical pinentry frontend to be able to ask for the GPG
+# password from inside evolution, bug 160302
+RDEPEND=">=dev-libs/glib-2.22
+	>=x11-libs/gtk+-2.18
 	>=gnome-extra/evolution-data-server-${PV}
 	>=x11-themes/gnome-icon-theme-2.20
-	>=gnome-base/libbonobo-2.20.3
-	>=gnome-base/libbonoboui-2.4.2
-	>=gnome-extra/gtkhtml-3.25.4
+	>=gnome-extra/gtkhtml-3.29.6
 	>=gnome-base/gconf-2
-	>=gnome-base/libglade-2
 	>=gnome-base/libgnomecanvas-2
 	>=gnome-base/libgnomeui-2
+	>=dev-libs/libunique-1.1.2
 	>=dev-libs/libxml2-2.7.3
 	>=dev-libs/libgweather-2.25.3
 	>=x11-misc/shared-mime-info-0.22
+	>=gnome-base/gnome-desktop-2.26.0
 	dbus? ( >=dev-libs/dbus-glib-0.74 )
 	hal? ( >=sys-apps/hal-0.5.4 )
-	>=x11-libs/libnotify-0.3
+	x11-libs/libnotify
 	pda? (
 		>=app-pda/gnome-pilot-2.0.15
 		>=app-pda/gnome-pilot-conduits-2 )
@@ -45,7 +47,10 @@ RDEPEND=">=dev-libs/glib-2.20
 	kerberos? ( virtual/krb5 )
 	krb4? ( app-crypt/mit-krb5[krb4] )
 	>=gnome-base/orbit-2.9.8
-	crypt? ( || ( >=app-crypt/gnupg-2.0.1-r2 =app-crypt/gnupg-1.4* ) )
+	crypt? ( || (
+				  ( >=app-crypt/gnupg-2.0.1-r2
+					|| ( app-crypt/pinentry[gtk] app-crypt/pinentry[qt3] ) )
+				  =app-crypt/gnupg-1.4* ) )
 	ldap? ( >=net-nds/openldap-2 )
 	mono? ( >=dev-lang/mono-1 )
 	python? ( >=dev-lang/python-2.4 )
@@ -53,7 +58,12 @@ RDEPEND=">=dev-libs/glib-2.20
 		>=media-libs/gstreamer-0.10
 		>=media-libs/gst-plugins-base-0.10 )"
 # Disabled until API stabilizes
-#	pst? ( >=net-mail/libpst-0.6 )
+#	pst? ( >=net-mail/libpst-0.6.41 )
+# Disabled until removed autodeps from geoclue
+#   map (
+#		>=media-libs/libchamplain-0.4[gtk]
+#		>=media-libs/clutter-gtk-0.10:1.0
+#		app-misc/geoclue )
 
 DEPEND="${RDEPEND}
 	>=dev-util/pkgconfig-0.16
@@ -68,7 +78,6 @@ PDEPEND="exchange? ( >=gnome-extra/evolution-exchange-2.26.1 )"
 
 DOCS="AUTHORS ChangeLog* HACKING MAINTAINERS NEWS* README"
 ELTCONF="--reverse-deps"
-GCONF_DEBUG="no"
 
 pkg_setup() {
 	G2CONF="${G2CONF}
@@ -79,24 +88,19 @@ pkg_setup() {
 		$(use_enable ssl smime)
 		$(use_enable mono)
 		$(use_enable nntp)
+		$(use_enable networkmanager nm)
 		$(use_enable dbus)
 		$(use_enable gstreamer audio-inline)
 		$(use_enable exchange)
 		--disable-pst-import
+		--disable-contacts-map
 		$(use_enable pda pilot-conduits)
 		$(use_enable profile profiling)
 		$(use_enable python)
 		$(use_with ldap openldap)
 		$(use_with kerberos krb5 /usr)
 		$(use_with krb4 krb4 /usr)"
-
-	# We need a graphical pinentry frontend to be able to ask for the GPG
-	# password from inside evolution, bug 160302
-	if use crypt && has_version '>=app-crypt/gnupg-2.0.1-r2'; then
-		if ! built_with_use -o app-crypt/pinentry gtk qt3; then
-			die "You must build app-crypt/pinentry with GTK or QT3 support"
-		fi
-	fi
+		# $(use_enable map contacts-map)
 
 	# dang - I've changed this to do --enable-plugins=experimental.  This will
 	# autodetect new-mail-notify and exchange, but that cannot be helped for the
@@ -106,6 +110,23 @@ pkg_setup() {
 
 src_prepare() {
 	gnome2_src_prepare
+
+	# Fix timezone offsets on fbsd.  bug #183708
+	# FIXME: bsd needs to be more active at pushing stuff upstream
+	#epatch "${FILESDIR}/${PN}-2.21.3-fbsd.patch"
+
+	# Fix delete keyboard shortcut, bug #????
+	#epatch "${FILESDIR}/${PN}-2.28.0-delete-key.patch"
+
+	# Fix multiple automagic plugins, bug #204300 & bug #271451
+	#epatch "${FILESDIR}/${PN}-2.28.0-automagic-plugins.patch"
+
+	# FIXME: Fix compilation flags crazyness
+	sed 's/CFLAGS="$CFLAGS $WARNING_FLAGS"//' \
+		-i configure.ac configure || die "sed 1 failed"
+
+	intltoolize --force --copy --automake || die "intltoolize failed"
+	eautoreconf
 
 	# Use NSS/NSPR only if 'ssl' is enabled.
 	if use ssl ; then
@@ -119,13 +140,6 @@ src_prepare() {
 
 	# problems with -O3 on gcc-3.3.1
 	replace-flags -O3 -O2
-
-	# Bug #?
-	if [ "${ARCH}" = "hppa" ]; then
-		append-flags "-fPIC -ffunction-sections"
-		# bad bad bad, what about user settings !!!
-		export LDFLAGS="-ffunction-sections -Wl,--stub-group-size=25000"
-	fi
 }
 
 pkg_postinst() {
