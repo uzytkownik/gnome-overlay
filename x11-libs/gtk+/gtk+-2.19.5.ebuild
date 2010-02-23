@@ -14,7 +14,6 @@ SLOT="2"
 KEYWORDS="~alpha ~amd64 ~arm ~hppa ~ia64 ~mips ~ppc ~ppc64 ~sh ~sparc ~x86 ~x86-fbsd ~x86-freebsd ~x86-interix ~amd64-linux ~x86-linux ~ppc-macos ~x86-macos ~sparc-solaris ~sparc64-solaris ~x64-solaris ~x86-solaris"
 IUSE="aqua cups debug doc jpeg jpeg2k tiff test vim-syntax xinerama"
 
-# FIXME: configure says >=xrandr-1.2.99 but remi tells me it's broken
 # NOTE: cairo[svg] dep is due to bug 291283 (not patched to avoid eautoreconf)
 RDEPEND="!aqua? (
 		x11-libs/libXrender
@@ -22,7 +21,7 @@ RDEPEND="!aqua? (
 		x11-libs/libXi
 		x11-libs/libXt
 		x11-libs/libXext
-		>=x11-libs/libXrandr-1.2
+		>=x11-libs/libXrandr-1.3
 		x11-libs/libXcursor
 		x11-libs/libXfixes
 		x11-libs/libXcomposite
@@ -40,9 +39,9 @@ RDEPEND="!aqua? (
 	x11-misc/shared-mime-info
 	>=media-libs/libpng-1.2.1
 	cups? ( net-print/cups )
-	jpeg? ( >=media-libs/jpeg-6b-r2:0 )
+	jpeg? ( >=media-libs/jpeg-6b-r9:0 )
 	jpeg2k? ( media-libs/jasper )
-	tiff? ( >=media-libs/tiff-3.5.7 )
+	tiff? ( >=media-libs/tiff-3.9.2 )
 	!<gnome-base/gail-1000"
 DEPEND="${RDEPEND}
 	>=dev-util/pkgconfig-0.9

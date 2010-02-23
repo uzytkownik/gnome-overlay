@@ -12,6 +12,7 @@ SLOT="0"
 KEYWORDS="~alpha ~amd64 ~arm ~hppa ~ia64 ~mips ~ppc ~ppc64 ~s390 ~sh ~sparc ~x86 ~x86-fbsd"
 IUSE="doc"
 
+# FIXME: This package also supports introspection
 RDEPEND=">=dev-libs/glib-2"
 DEPEND="${RDEPEND}
 	>=dev-lang/perl-5
