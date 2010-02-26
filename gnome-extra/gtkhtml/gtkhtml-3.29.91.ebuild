@@ -43,18 +43,14 @@ pkg_setup() {
 src_prepare() {
 	gnome2_src_prepare
 
-	# Add missing file, upstream bug #597361
-	cp "${FILESDIR}/gtkhtml-editor.xml" \
-		"${S}/components/editor/gtkhtml-editor.xml" || die "cp failed"
-
-	# FIXME: Fix compilation flags crazyness
+#	# FIXME: Fix compilation flags crazyness
 	sed 's/CFLAGS="$CFLAGS $WARNING_FLAGS"//' \
 		-i configure.ac configure || die "sed 1 failed"
-
+#
 	sed -i -e 's:-DGTK_DISABLE_DEPRECATED=1 -DGDK_DISABLE_DEPRECATED=1 -DG_DISABLE_DEPRECATED=1 -DGNOME_DISABLE_DEPRECATED=1::g' \
 		a11y/Makefile.am a11y/Makefile.in || die "sed 2 failed"
-
-	# ./../doltcompile: line 31: --silent : command not found
-	intltoolize --force --copy --automake || die "intltoolize failed"
-	eautoreconf
+#
+#	# ./../doltcompile: line 31: --silent : command not found
+#	intltoolize --force --copy --automake || die "intltoolize failed"
+#	eautoreconf
 }
