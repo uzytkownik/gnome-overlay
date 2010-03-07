@@ -10,6 +10,8 @@
 # Breaks many packages from 2.28.x (and 3-rd party)
 >=gnome-base/gnome-keyring-2.29.90
 >=gnome-base/gnome-desktop-2.29.90
+# Dependants
+>=gnome-base/gnome-control-center-2.29.91
 
 # Maciej Piechotka <uzytkownik2@gmail.com> (7 Mar 2010)
 # Mask until sys-apps/devicekit-disks will be renamed as sys-apps/udisks
