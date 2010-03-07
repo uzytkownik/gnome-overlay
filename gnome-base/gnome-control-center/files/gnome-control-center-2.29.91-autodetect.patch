@@ -16,9 +16,9 @@ index 68de03b..ce22e53 100644
  dnl Check dependencies of libslab
  dnl
 -PKG_CHECK_MODULES(EXTERNAL_LIBSLAB, [libslab], have_libslab=yes, have_libslab=no)
-+AC_ARG_ENABLE(libslub,
-+  AC_HELP_STRING([--enable-libslub=(yes|no|auto)],
-+                 [enable libslub (default auto)]),
++AC_ARG_ENABLE(libslab,
++  AC_HELP_STRING([--enable-libslab=(yes|no|auto)],
++                 [enable libslab (default auto)]),
 +  [ if test "x$enableval" = "xyes"; then
 +      enable_libslab=yes
 +    elif test "x$enableval" = "xno"; then
