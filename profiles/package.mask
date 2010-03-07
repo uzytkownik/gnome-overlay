@@ -18,6 +18,7 @@
 >=gnome-base/gnome-control-center-2.29.91
 # Not tested
 >=gnome-extra/gnome-screensaver-2.29.91
+>=gnome-base/nautilus-2.29.91
 
 # Maciej Piechotka <uzytkownik2@gmail.com> (7 Mar 2010)
 # Mask until sys-apps/devicekit-disks will be renamed as sys-apps/udisks
