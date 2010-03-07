@@ -1,10 +1,10 @@
 # Copyright 1999-2009 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Header: /var/cvsroot/gentoo-x86/app-crypt/seahorse/seahorse-2.26.2.ebuild,v 1.2 2009/07/10 14:02:18 dang Exp $
+# $Header: /var/cvsroot/gentoo-x86/app-crypt/seahorse/seahorse-2.28.1.ebuild,v 1.2 2009/10/29 21:15:39 eva Exp $
 
 EAPI="2"
 
-inherit gnome2 eutils
+inherit autotools eutils gnome2
 
 DESCRIPTION="A GNOME application for managing encryption keys"
 HOMEPAGE="http://www.gnome.org/projects/seahorse/index.html"
@@ -14,10 +14,10 @@ SLOT="0"
 KEYWORDS="~alpha ~amd64 ~hppa ~ia64 ~ppc ~ppc64 ~sparc ~x86 ~x86-fbsd"
 IUSE="avahi debug doc ldap libnotify test"
 
-RDEPEND=">=gnome-base/libglade-2.0
+RDEPEND="
 	>=gnome-base/gconf-2.0
 	>=dev-libs/glib-2.10
-	>=x11-libs/gtk+-2.10
+	>=x11-libs/gtk+-2.18
 	>=dev-libs/dbus-glib-0.72
 	>=gnome-base/gnome-keyring-2.25.5
 	net-libs/libsoup:2.4
@@ -47,6 +47,7 @@ pkg_setup() {
 		--enable-pgp
 		--enable-ssh
 		--enable-pkcs11
+		--disable-static
 		--disable-scrollkeeper
 		--disable-update-mime-database
 		--enable-hkp
@@ -60,11 +61,19 @@ pkg_setup() {
 src_prepare() {
 	gnome2_src_prepare
 
-	# Fix intltoolize broken file, see upstream #577133
-	sed "s:'\^\$\$lang\$\$':\^\$\$lang\$\$:g" -i po/Makefile.in.in || die "sed failed"
+	# https://bugzilla.gnome.org/show_bug.cgi?id=596691
+	epatch "${FILESDIR}/${PN}-2.28.0-as-needed.patch"
 
-	# fix building with gpgme with lfs  Bug #275445
-	epatch "${FILESDIR}"/${PN}-2.26.2-gpgme-lfs.patch
+	# Make it libtool-1 compatible
+	rm -v m4/lt* m4/libtool.m4 || die "removing libtool macros failed"
+
+	intltoolize --force --copy --automake || die "intltoolize failed"
+	eautoreconf
+}
+
+src_install() {
+	gnome2_src_install
+	find "${D}" -name "*.la" -delete || die "remove of la files failed"
 }
 
 pkg_postinst() {
