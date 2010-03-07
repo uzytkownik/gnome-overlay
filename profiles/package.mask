@@ -6,6 +6,9 @@
 # NOTE: Please add your entry at the top!
 #
 
+# Maciej Piechotka <uzytkownik2@gmail.com> (7 Mar 2010)
+# Mask until sys-apps/devicekit-disks will be renamed as sys-apps/udisks
+
 # Nirbheek Chauhan <nirbheek@gentoo.org> (27 Feb 2010)
 # Revert portage introspection mask
 # You will have to unmask the use.mask yourself. See man portage
