@@ -1,0 +1,114 @@
+From 85c966324e202d4824a4a3301d84b324358c8350 Mon Sep 17 00:00:00 2001
+From: Maciej Piechotka <uzytkownik2@gmail.com>
+Date: Sat, 6 Mar 2010 23:56:51 +0000
+Subject: [PATCH] Change autodetection into weak autodetection.
+
+---
+ configure.ac |   69 +++++++++++++++++++++++++++++++++++++++++++++++++++++----
+ 1 files changed, 64 insertions(+), 5 deletions(-)
+
+diff --git a/configure.ac b/configure.ac
+index 68de03b..ce22e53 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -116,7 +116,27 @@ AC_SUBST(GTK_ENGINE_DIR)
+ dnl
+ dnl Check dependencies of libslab
+ dnl
+-PKG_CHECK_MODULES(EXTERNAL_LIBSLAB, [libslab], have_libslab=yes, have_libslab=no)
++AC_ARG_ENABLE(libslub,
++  AC_HELP_STRING([--enable-libslub=(yes|no|auto)],
++                 [enable libslub (default auto)]),
++  [ if test "x$enableval" = "xyes"; then
++      enable_libslab=yes
++    elif test "x$enableval" = "xno"; then
++      enable_libslab=no
++    elif test "x$enableval" = "xauto"; then
++      enable_libslab=""
++    else
++      echo "Unknown argument --enable-libslub=$enableval"
++      exit=-1
++    fi
++  ], [])
++
++if test "x$enable_libslab" = "x"; then
++	PKG_CHECK_MODULES(EXTERNAL_LIBSLAB, [libslab], have_libslab=yes, have_libslab=no)
++else
++	have_libslab=yes
++	PKG_CHECK_MODULES(EXTERNAL_LIBSLAB, [libslab])
++fi
+ 
+ if test $have_libslab = no; then
+ 	PKG_CHECK_MODULES(LIBSLAB, [
+@@ -164,13 +184,33 @@ dnl
+ dnl Check for XCursor support.  If it exists, then we compile the
+ dnl mouse capplet with support for it turned on
+ dnl
+-have_xcursor=no
+-PKG_CHECK_MODULES(XCURSOR, [
++AC_ARG_ENABLE(mouse,
++  AC_HELP_STRING([--enable-mouse=(yes|no|auto)],
++                 [enable mouse capplet (default auto)]),
++  [ if test "x$enableval" = "xyes"; then
++      enable_mouse=yes
++    elif test "x$enableval" = "xno"; then
++      enable_mouse=no
++    elif test "x$enableval" = "xauto"; then
++      enable_mouse=""
++    else
++      echo "Unknown argument --enable-mouse=$enableval"
++      exit=-1
++    fi
++  ], [])
++
++if test "x$enableval" = "x"; then
++  PKG_CHECK_MODULES(XCURSOR, [
+ 	xcursor
+ 	],
+ 	have_xcursor=yes
+ 	AC_DEFINE(HAVE_XCURSOR, 1, [Define if the Xcursor extension is available]),
+ 	have_xcursor=no)
++else
++  PKG_CHECK_MODULES(XCURSOR, xcursor)
++  have_xcursor=yes
++fi
++
+ AM_CONDITIONAL(HAVE_XCURSOR, [test $have_xcursor=yes])
+ AC_SUBST(XCURSOR_CFLAGS)
+ AC_SUBST(XCURSOR_LIBS)
+@@ -191,11 +231,30 @@ CAPPLET_LIBS="$CAPPLET_LIBS $XCURSOR_LIBS"
+ dnl =============================================
+ dnl X Input library >= 1.2 with property support
+ dnl =============================================
+-have_xinput=no
+-PKG_CHECK_MODULES(XINPUT, [xi >= 1.2],
++AC_ARG_ENABLE(xinput,
++  AC_HELP_STRING([--enable-xinput=(yes|no|auto)],
++                 [enable xinput (default auto)]),
++  [ if test "x$enableval" = "xyes"; then
++      enable_xinput=yes
++    elif test "x$enableval" = "xno"; then
++      enable_xinput=no
++    elif test "x$enableval" = "xauto"; then
++      enable_xinput=""
++    else
++      echo "Unknown argument --enable-xinput=$enableval"
++      exit=-1
++    fi
++  ], [])
++
++if test "x$enable_xinput" = "x"; then
++   PKG_CHECK_MODULES(XINPUT, [xi >= 1.2],
+ 	have_xinput=yes
+ 	AC_DEFINE(HAVE_XINPUT, 1, [Define if the XInput extension is available]),
+ 	have_xinput=no)
++else
++  have_xinput=yes
++  PKG_CHECK_MODULES(XINPUT, [xi >= 1.2])
++fi
+ AM_CONDITIONAL(HAVE_XINPUT, [test $have_xinput=yes])
+ AC_SUBST(XINPUT_CFLAGS)
+ AC_SUBST(XINPUT_LIBS)
+-- 
+1.7.0
+
