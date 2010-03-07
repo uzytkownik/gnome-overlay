@@ -7,6 +7,10 @@
 #
 
 # Maciej Piechotka <uzytkownik2@gmail.com> (7 Mar 2010)
+# Revert portage libxklavier mask. Needed by >=gnome-base/libgnomekbd-2.29.5
+->=x11-libs/libxklavier-5
+
+# Maciej Piechotka <uzytkownik2@gmail.com> (7 Mar 2010)
 # Breaks many packages from 2.28.x (and 3-rd party)
 >=gnome-base/gnome-keyring-2.29.90
 >=gnome-base/gnome-desktop-2.29.90
