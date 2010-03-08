@@ -74,6 +74,10 @@ pkg_setup() {
 		$(use_enable samba)"
 }
 
+pkg_setup() {
+	G2CONF="${G2CONF} --with-dbus-service-dir=/usr/share/dbus-1/services"
+}
+
 src_prepare() {
 	gnome2_src_prepare
 
