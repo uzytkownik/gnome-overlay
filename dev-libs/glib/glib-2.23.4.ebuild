@@ -1,20 +1,20 @@
-# Copyright 1999-2008 Gentoo Foundation
+# Copyright 1999-2010 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Header: /var/cvsroot/gentoo-x86/dev-libs/glib/glib-2.18.3.ebuild,v 1.1 2008/11/27 01:51:33 leio Exp $
+# $Header: /var/cvsroot/gentoo-x86/dev-libs/glib/glib-2.22.4.ebuild,v 1.3 2010/03/06 16:14:28 phajdan.jr Exp $
+
 EAPI="2"
 
-inherit gnome.org libtool eutils flag-o-matic autotools
+inherit gnome.org libtool eutils flag-o-matic
 
 DESCRIPTION="The GLib library of C routines"
 HOMEPAGE="http://www.gtk.org/"
 
 LICENSE="LGPL-2"
 SLOT="2"
-KEYWORDS="~alpha ~amd64 ~arm ~hppa ~ia64 ~m68k ~mips ~ppc ~ppc64 ~s390 ~sh ~sparc ~sparc-fbsd ~x86 ~x86-fbsd"
-IUSE="debug doc fam gresolver hardened selinux xattr"
+KEYWORDS="~alpha amd64 ~arm ~hppa ~ia64 ~m68k ~mips ~ppc ~ppc64 ~s390 ~sh ~sparc x86 ~sparc-fbsd ~x86-fbsd"
+IUSE="debug doc fam hardened selinux xattr"
 
-RDEPEND="virtual/libc
-	virtual/libiconv
+RDEPEND="virtual/libiconv
 	xattr? ( sys-apps/attr )
 	fam? ( virtual/fam )"
 DEPEND="${RDEPEND}
@@ -47,9 +47,12 @@ src_prepare() {
 	# Fix gmodule issues on fbsd; bug #184301
 	epatch "${FILESDIR}"/${PN}-2.12.12-fbsd.patch
 
-	use gresolver && \
-	  EPATCH_OPTS="${EPATCH_OPTS} -p1" epatch "${FILESDIR}/${P}-gresolver.patch"
-	use gresolver && eautoreconf
+	# GNOME bug #612099
+	epatch "${FILESDIR}"/fix-run-assert-msg-test.patch
+
+	# Do not try to remove files on live filesystem, bug #XXX ?
+	sed 's:^\(.*"/desktop-app-info/delete".*\):/*\1*/:' \
+		-i "${S}"/gio/tests/desktop-app-info.c || die "sed failed"
 
 	[[ ${CHOST} == *-freebsd* ]] && elibtoolize
 }
@@ -65,7 +68,7 @@ src_configure() {
 	# -- compnerd (3/27/06)
 	use debug && myconf="--enable-debug"
 
-	# always build static libs, see #153807
+	# Always build static libs, see #153807
 	# Always use internal libpcre, bug #254659
 	econf ${myconf}                 \
 		  $(use_enable xattr)       \
@@ -74,8 +77,8 @@ src_configure() {
 		  $(use_enable fam)         \
 		  $(use_enable selinux)     \
 		  --enable-static           \
-		  --enable-regex			\
-		  --with-pcre=internal		\
+		  --enable-regex            \
+		  --with-pcre=internal      \
 		  --with-threads=posix
 }
 
@@ -90,5 +93,8 @@ src_install() {
 
 src_test() {
 	unset DBUS_SESSION_BUS_ADDRESS
+	export XDG_CONFIG_DIRS=/etc/xdg
+	export XDG_DATA_DIRS=/usr/local/share:/usr/share
+	export XDG_DATA_HOME="${T}"
 	emake check || die "tests failed"
 }
