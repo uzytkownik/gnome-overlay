@@ -28,6 +28,7 @@ DEPEND="${RDEPEND}
 	>=dev-util/intltool-0.35
 	>=dev-util/pkgconfig-0.9
 	doc? ( >=dev-util/gtk-doc-1.9 )"
+PDEPEND="gnome-base/libgnome-keyring"
 
 DOCS="AUTHORS ChangeLog NEWS README TODO keyring-intro.txt"
 
