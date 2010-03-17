@@ -13,16 +13,17 @@ HOMEPAGE="http://www.gnome.org/projects/evolution/"
 LICENSE="GPL-2 LGPL-2 OPENLDAP"
 SLOT="2.0"
 KEYWORDS="~alpha ~amd64 ~hppa ~ia64 ~ppc ~ppc64 ~sparc ~x86 ~x86-fbsd"
-IUSE="crypt kerberos ldap mono networkmanager pda profile python ssl
+IUSE="crypt kerberos ldap networkmanager pda profile python ssl
 gstreamer +sound"
 # pst
+# mono - disabled because it just crashes on startup :S
 
 # Pango dependency required to avoid font rendering problems
 # We need a graphical pinentry frontend to be able to ask for the GPG
 # password from inside evolution, bug 160302
 RDEPEND=">=dev-libs/glib-2.22
 	>=x11-libs/gtk+-2.18
-	>=gnome-extra/evolution-data-server-${PV}
+	>=gnome-extra/evolution-data-server-2.29.92
 	>=gnome-base/gnome-desktop-2.26.0
 	>=gnome-extra/gtkhtml-3.29.6
 	>=gnome-base/gconf-2
@@ -47,7 +48,6 @@ RDEPEND=">=dev-libs/glib-2.22
 		>=media-libs/gst-plugins-base-0.10 )
 	kerberos? ( virtual/krb5 )
 	ldap? ( >=net-nds/openldap-2 )
-	mono? ( >=dev-lang/mono-1 )
 	networkmanager? ( >=net-misc/networkmanager-0.7 )
 	pda? (
 		>=app-pda/gnome-pilot-2.0.16
@@ -59,6 +59,7 @@ RDEPEND=">=dev-libs/glib-2.22
 		>=dev-libs/nspr-4.6.1
 		>=dev-libs/nss-3.11 )"
 # champlain, geoclue, clutter, gtkimageview
+#	mono? ( >=dev-lang/mono-1 )
 
 DEPEND="${RDEPEND}
 	>=dev-util/pkgconfig-0.16
@@ -80,7 +81,6 @@ pkg_setup() {
 		--enable-weather
 		$(use_enable ssl nss)
 		$(use_enable ssl smime)
-		$(use_enable mono)
 		$(use_enable networkmanager nm)
 		$(use_enable gstreamer audio-inline)
 		$(use_enable sound canberra)
@@ -92,6 +92,8 @@ pkg_setup() {
 		$(use_with kerberos krb5 /usr)
 		--disable-contacts-map"
 
+#		$(use_enable mono)
+
 	# dang - I've changed this to do --enable-plugins=experimental.  This will
 	# autodetect new-mail-notify and exchange, but that cannot be helped for the
 	# moment.  They should be changed to depend on a --enable-<foo> like mono
@@ -100,6 +102,9 @@ pkg_setup() {
 
 src_prepare() {
 	gnome2_src_prepare
+
+	epatch "${FILESDIR}"/evolution-fix-crash-in-addressbook.patch
+	epatch "${FILESDIR}"/evolution-add-sentinel.patch
 
 	# FIXME: Fix compilation flags crazyness
 	sed 's/CFLAGS="$CFLAGS $WARNING_FLAGS"//' \
