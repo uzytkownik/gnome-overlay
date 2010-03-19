@@ -15,7 +15,7 @@ KEYWORDS="~alpha ~amd64 ~arm ~hppa ~ia64 ~ppc ~ppc64 ~sh ~sparc ~x86 ~x86-fbsd ~
 IUSE="nls"
 
 RDEPEND=">=dev-libs/glib-2.16
-	>=media-libs/gstreamer-0.10.26
+	>=media-libs/gstreamer-0.10.28
 	>=dev-libs/liboil-0.3.14
 	!<media-libs/gst-plugins-bad-0.10.10"
 DEPEND="${RDEPEND}
