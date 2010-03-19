@@ -3,7 +3,7 @@
 # $Header: /var/cvsroot/gentoo-x86/media-libs/gst-plugins-base/gst-plugins-base-0.10.25.ebuild,v 1.4 2010/01/15 09:28:03 fauli Exp $
 
 # order is important, gnome2 after gst-plugins
-inherit gst-plugins-base gst-plugins10 gnome2 flag-o-matic eutils
+inherit gst-plugins-good gst-plugins10 gnome2 flag-o-matic eutils
 # libtool
 
 DESCRIPTION="Basepack of plugins for gstreamer"
@@ -29,7 +29,7 @@ src_compile() {
 	strip-flags
 	replace-flags "-O3" "-O2"
 
-	gst-plugins-base_src_configure \
+	gst-plugins-good_src_configure \
 		--disable-introspection \
 		$(use_enable nls)
 	emake || die "emake failed."
