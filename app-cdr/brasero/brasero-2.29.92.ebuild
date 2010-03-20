@@ -50,7 +50,8 @@ DEPEND="${COMMON_DEPEND}
 PDEPEND="gnome-base/gvfs"
 
 src_prepare() {
-	epatch "${FILESDIR}/${P}-disable-autodetect.patch"
+	# Fixed just after 2.29.92
+	epatch "${FILESDIR}/${PN}-2.29.91-disable-autodetect.patch"
 	eautoreconf
 }
 
