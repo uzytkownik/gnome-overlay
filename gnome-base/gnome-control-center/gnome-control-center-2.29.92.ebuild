@@ -73,7 +73,7 @@ pkg_setup() {
 	G2CONF="${G2CONF}
 		--disable-update-mimedb
 		--disable-static
-	    --disable-libstub
+	    --disable-system-libstab
 	    --enable-mouse
 	    --enable-xinput
 		$(use_enable eds aboutme)"

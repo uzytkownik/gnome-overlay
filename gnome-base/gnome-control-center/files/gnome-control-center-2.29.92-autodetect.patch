@@ -1,24 +1,24 @@
-From 85c966324e202d4824a4a3301d84b324358c8350 Mon Sep 17 00:00:00 2001
+From 1fd1839cf5b679d9f3e1819c362a7ebe37d93642 Mon Sep 17 00:00:00 2001
 From: Maciej Piechotka <uzytkownik2@gmail.com>
-Date: Sat, 6 Mar 2010 23:56:51 +0000
+Date: Sat, 20 Mar 2010 16:25:26 +0000
 Subject: [PATCH] Change autodetection into weak autodetection.
 
 ---
- configure.ac |   69 +++++++++++++++++++++++++++++++++++++++++++++++++++++----
- 1 files changed, 64 insertions(+), 5 deletions(-)
+ configure.ac |   71 +++++++++++++++++++++++++++++++++++++++++++++++++++++----
+ 1 files changed, 66 insertions(+), 5 deletions(-)
 
 diff --git a/configure.ac b/configure.ac
-index 68de03b..ce22e53 100644
+index e199a26..b2895e0 100644
 --- a/configure.ac
 +++ b/configure.ac
-@@ -116,7 +116,27 @@ AC_SUBST(GTK_ENGINE_DIR)
+@@ -116,7 +116,29 @@ AC_SUBST(GTK_ENGINE_DIR)
  dnl
  dnl Check dependencies of libslab
  dnl
 -PKG_CHECK_MODULES(EXTERNAL_LIBSLAB, [libslab], have_libslab=yes, have_libslab=no)
-+AC_ARG_ENABLE(libslab,
-+  AC_HELP_STRING([--enable-libslab=(yes|no|auto)],
-+                 [enable libslab (default auto)]),
++AC_ARG_ENABLE(system-libslab,
++  AC_HELP_STRING([--enable-system-libslab=(yes|no|auto)],
++                 [enable external libslab (default auto)]),
 +  [ if test "x$enableval" = "xyes"; then
 +      enable_libslab=yes
 +    elif test "x$enableval" = "xno"; then
@@ -26,21 +26,23 @@ index 68de03b..ce22e53 100644
 +    elif test "x$enableval" = "xauto"; then
 +      enable_libslab=""
 +    else
-+      echo "Unknown argument --enable-libslub=$enableval"
++      echo "Unknown argument --enable-system-libslab=$enableval"
 +      exit=-1
 +    fi
 +  ], [])
 +
 +if test "x$enable_libslab" = "x"; then
 +	PKG_CHECK_MODULES(EXTERNAL_LIBSLAB, [libslab], have_libslab=yes, have_libslab=no)
-+else
++elif test "x$enable_libslab" = "xyes"; then
 +	have_libslab=yes
 +	PKG_CHECK_MODULES(EXTERNAL_LIBSLAB, [libslab])
++else
++	have_libslab=no
 +fi
  
  if test $have_libslab = no; then
  	PKG_CHECK_MODULES(LIBSLAB, [
-@@ -164,13 +184,33 @@ dnl
+@@ -164,13 +186,33 @@ dnl
  dnl Check for XCursor support.  If it exists, then we compile the
  dnl mouse capplet with support for it turned on
  dnl
@@ -61,7 +63,7 @@ index 68de03b..ce22e53 100644
 +    fi
 +  ], [])
 +
-+if test "x$enableval" = "x"; then
++if test "x$enable_mouse" = "x"; then
 +  PKG_CHECK_MODULES(XCURSOR, [
  	xcursor
  	],
@@ -76,7 +78,7 @@ index 68de03b..ce22e53 100644
  AM_CONDITIONAL(HAVE_XCURSOR, [test $have_xcursor=yes])
  AC_SUBST(XCURSOR_CFLAGS)
  AC_SUBST(XCURSOR_LIBS)
-@@ -191,11 +231,30 @@ CAPPLET_LIBS="$CAPPLET_LIBS $XCURSOR_LIBS"
+@@ -191,11 +233,30 @@ CAPPLET_LIBS="$CAPPLET_LIBS $XCURSOR_LIBS"
  dnl =============================================
  dnl X Input library >= 1.2 with property support
  dnl =============================================
@@ -110,5 +112,5 @@ index 68de03b..ce22e53 100644
  AC_SUBST(XINPUT_CFLAGS)
  AC_SUBST(XINPUT_LIBS)
 -- 
-1.7.0
+1.7.0.2
 
