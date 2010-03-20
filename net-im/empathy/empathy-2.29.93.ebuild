@@ -13,7 +13,8 @@ LICENSE="GPL-2"
 SLOT="0"
 KEYWORDS="~amd64 ~ia64 ~ppc ~sparc ~x86"
 # FIXME: Add location support once geoclue stops being idiotic with automagic deps
-IUSE="applet networkmanager python spell test webkit" # map
+# FIXME: Add telepathy-logger support when upstream bug #613437 is fixed
+IUSE="applet networkmanager python spell test webkit" # map tpl
 
 # FIXME: libnotify & libcanberra hard deps
 RDEPEND=">=dev-libs/glib-2.22.0
@@ -48,6 +49,8 @@ RDEPEND=">=dev-libs/glib-2.22.0
 #	map? (
 #		>=media-libs/libchamplain-0.4[gtk]
 #		>=media-libs/clutter-gtk-0.10:1.0 )
+#	tpl? (
+#		>=net-im/telepathy-logger-0.1.1 )
 DEPEND="${RDEPEND}
 	app-text/scrollkeeper
 	>=app-text/gnome-doc-utils-0.17.3
@@ -73,6 +76,7 @@ pkg_setup() {
 		--disable-location
 		--disable-gtk-doc
 		--disable-map
+		--disable-control-center-embedding
 		$(use_enable applet megaphone)
 		$(use_enable applet nothere)
 		$(use_enable debug)
@@ -82,6 +86,7 @@ pkg_setup() {
 		$(use_enable test coding-style-checks)
 		$(use_enable webkit)
 	"
+	#	$(use_enable tpl)
 }
 
 src_prepare() {
