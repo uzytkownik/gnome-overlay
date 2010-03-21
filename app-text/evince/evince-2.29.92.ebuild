@@ -43,7 +43,7 @@ DEPEND="${RDEPEND}
 	sys-devel/gettext
 	>=dev-util/intltool-0.35
 	dev-util/gtk-doc-am
-	doc? ( dev-util/gtk-doc )"
+	doc? ( >=dev-util/gtk-doc-1.13 )"
 
 DOCS="AUTHORS ChangeLog NEWS README TODO"
 ELTCONF="--portage"
