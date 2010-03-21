@@ -4,7 +4,7 @@
 
 EAPI="2"
 
-inherit gnome2
+inherit gnome2 autotools
 
 DESCRIPTION="Libraries for the gnome desktop that are not part of the UI"
 HOMEPAGE="http://www.gnome.org/"
@@ -40,11 +40,15 @@ pkg_setup() {
 	G2CONF="${G2CONF}
 		--with-gnome-distributor=Gentoo
 		--disable-scrollkeeper
-		--disable-static"
+		--disable-static
+		--enable-xrandr"
 }
 
 src_prepare() {
 	gnome2_src_prepare
+
+	epatch "${FILESDIR}/${P}-not-autodetect-xrandr.patch"
+	eautoconf
 
 	# Fix intltoolize broken file, see upstream #577133
 	sed "s:'\^\$\$lang\$\$':\^\$\$lang\$\$:g" -i po/Makefile.in.in \
