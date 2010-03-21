@@ -4,7 +4,7 @@
 
 EAPI="2"
 
-inherit eutils gnome2 multilib
+inherit eutils gnome2 multilib autotools
 
 DESCRIPTION="Telepathy client and library using GTK+"
 HOMEPAGE="http://live.gnome.org/Empathy"
@@ -13,8 +13,7 @@ LICENSE="GPL-2"
 SLOT="0"
 KEYWORDS="~amd64 ~ia64 ~ppc ~sparc ~x86"
 # FIXME: Add location support once geoclue stops being idiotic with automagic deps
-# FIXME: Add telepathy-logger support when upstream bug #613437 is fixed
-IUSE="applet networkmanager python spell test webkit" # map tpl
+IUSE="applet networkmanager python spell test +tpl webkit" # map
 
 # FIXME: libnotify & libcanberra hard deps
 RDEPEND=">=dev-libs/glib-2.22.0
@@ -44,13 +43,12 @@ RDEPEND=">=dev-libs/glib-2.22.0
 	spell? (
 		app-text/enchant
 		app-text/iso-codes )
+	tpl? ( >=net-im/telepathy-logger-0.1.1 )
 	webkit? ( >=net-libs/webkit-gtk-1.1.15 )
 "
 #	map? (
 #		>=media-libs/libchamplain-0.4[gtk]
 #		>=media-libs/clutter-gtk-0.10:1.0 )
-#	tpl? (
-#		>=net-im/telepathy-logger-0.1.1 )
 DEPEND="${RDEPEND}
 	app-text/scrollkeeper
 	>=app-text/gnome-doc-utils-0.17.3
@@ -84,13 +82,16 @@ pkg_setup() {
 		$(use_enable python)
 		$(use_enable spell)
 		$(use_enable test coding-style-checks)
+		$(use_enable tpl)
 		$(use_enable webkit)
 	"
-	#	$(use_enable tpl)
 }
 
 src_prepare() {
 	gnome2_src_prepare
+
+	epatch "${FILESDIR}/${P}-do-not-migrate-with-tpl.patch"
+	eautomake
 
 	# Remove hard enabled -Werror (see AM_MAINTAINER_MODE), bug 218687
 	sed -i "s:-Werror::g" configure || die "sed 1 failed"
