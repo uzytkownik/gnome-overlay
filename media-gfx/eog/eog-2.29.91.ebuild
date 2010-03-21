@@ -44,11 +44,6 @@ DEPEND="${RDEPEND}
 
 DOCS="AUTHORS ChangeLog HACKING MAINTAINERS NEWS README THANKS TODO"
 
-src_prepare() {
-	cd "${S}"
-	epatch "${FILESDIR}/${P}-RAND_MAX.patch"
-}
-
 pkg_setup() {
 	G2CONF="${G2CONF}
 		$(use_with exif libjpeg)
