@@ -19,7 +19,6 @@ RDEPEND=">=x11-libs/gtk+-2.18.0
 	>=dev-libs/glib-2
 	>=gnome-base/gconf-2.1.9
 	dev-libs/libxml2
-	net-libs/libsoup:2.4
 	!<gnome-extra/gnome-utils-2.3"
 DEPEND="${RDEPEND}
 	sys-devel/gettext
