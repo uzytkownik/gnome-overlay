@@ -1,6 +1,6 @@
 # Copyright 1999-2010 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Header: /var/cvsroot/gentoo-x86/app-text/evince/evince-2.28.2.ebuild,v 1.3 2010/02/10 17:41:05 ssuominen Exp $
+# $Header: $
 
 EAPI="2"
 
@@ -43,7 +43,7 @@ DEPEND="${RDEPEND}
 	sys-devel/gettext
 	>=dev-util/intltool-0.35
 	dev-util/gtk-doc-am
-	doc? ( >=dev-util/gtk-doc-1.13 )"
+	doc? ( dev-util/gtk-doc )"
 
 DOCS="AUTHORS ChangeLog NEWS README TODO"
 ELTCONF="--portage"
@@ -80,6 +80,10 @@ src_prepare() {
 
 	# Fix .desktop file so menu item shows up
 	epatch "${FILESDIR}"/${PN}-0.7.1-display-menu.patch
+
+	# Fix bug #279591, compilation error with
+	# --with-smclient=xsmp gave to the configure script
+	#epatch "${FILESDIR}"/${PN}-2.27.4-smclient-configure.patch
 
 	# Make it libtool-1 compatible
 	rm -v m4/lt* m4/libtool.m4 || die "removing libtool macros failed"
