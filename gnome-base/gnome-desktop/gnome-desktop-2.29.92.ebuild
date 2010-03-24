@@ -1,10 +1,10 @@
 # Copyright 1999-2010 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Header: /var/cvsroot/gentoo-x86/gnome-base/gnome-desktop/gnome-desktop-2.28.2.ebuild,v 1.2 2010/01/10 16:53:06 fauli Exp $
+# $Header: $
 
 EAPI="2"
 
-inherit gnome2 autotools
+inherit gnome2 eutils
 
 DESCRIPTION="Libraries for the gnome desktop that are not part of the UI"
 HOMEPAGE="http://www.gnome.org/"
@@ -40,15 +40,11 @@ pkg_setup() {
 	G2CONF="${G2CONF}
 		--with-gnome-distributor=Gentoo
 		--disable-scrollkeeper
-		--disable-static
-		--enable-xrandr"
+		--disable-static"
 }
 
 src_prepare() {
 	gnome2_src_prepare
-
-	epatch "${FILESDIR}/${P}-not-autodetect-xrandr.patch"
-	eautoconf
 
 	# Fix intltoolize broken file, see upstream #577133
 	sed "s:'\^\$\$lang\$\$':\^\$\$lang\$\$:g" -i po/Makefile.in.in \

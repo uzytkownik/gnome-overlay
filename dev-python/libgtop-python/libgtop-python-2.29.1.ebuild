@@ -2,20 +2,18 @@
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
+GCONF_DEBUG="no"
 G_PY_PN="gnome-python-desktop"
-G_PY_BINDINGS="braseroburn braseromedia"
+G_PY_BINDINGS="gtop"
 
 inherit gnome-python-common
 
-DESCRIPTION="Python bindings for Brasero CD/DVD burning"
+DESCRIPTION="Python bindings for the libgtop library"
 LICENSE="GPL-2"
 SLOT="0"
-KEYWORDS="~alpha ~amd64 ~ia64 ~ppc ~ppc64 ~sh ~sparc ~x86 ~x86-fbsd"
-IUSE="examples"
+KEYWORDS="~alpha ~amd64 ~arm ~hppa ~ia64 ~ppc ~ppc64 ~sh ~sparc ~x86 ~x86-fbsd"
+IUSE=""
 
-RDEPEND=">=app-cdr/brasero-2.29
+RDEPEND=">=gnome-base/libgtop-2.13.0
 	!<dev-python/gnome-python-desktop-2.22.0-r10"
 DEPEND="${RDEPEND}"
-
-EXAMPLES="examples/braseroburn/*
-	examples/braseromedia/*"

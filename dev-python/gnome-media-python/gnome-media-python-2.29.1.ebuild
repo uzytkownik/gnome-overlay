@@ -1,6 +1,6 @@
 # Copyright 1999-2009 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Header: /var/cvsroot/gentoo-x86/dev-python/gnome-media-python/gnome-media-python-2.28.0.ebuild,v 1.1 2009/10/29 23:18:45 eva Exp $
+# $Header: $
 
 GCONF_DEBUG="no"
 G_PY_PN="gnome-python-desktop"

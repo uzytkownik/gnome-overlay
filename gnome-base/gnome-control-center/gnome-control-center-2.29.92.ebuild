@@ -1,6 +1,6 @@
 # Copyright 1999-2010 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Header: /var/cvsroot/gentoo-x86/gnome-base/gnome-control-center/gnome-control-center-2.28.1-r2.ebuild,v 1.2 2010/01/16 00:31:06 abcd Exp $
+# $Header: $
 
 EAPI="2"
 
@@ -11,7 +11,7 @@ HOMEPAGE="http://www.gnome.org/"
 
 LICENSE="GPL-2"
 SLOT="2"
-KEYWORDS="~amd64 ~x86 ~x86-fbsd ~x86-freebsd ~amd64-linux ~x86-linux ~x86-solaris"
+KEYWORDS="~amd64 ~ppc ~ppc64 ~x86 ~x86-fbsd ~x86-freebsd ~amd64-linux ~x86-linux ~x86-solaris"
 IUSE="eds policykit"
 
 # Newer gconf[policykit] needed for CanSetSystem attribute for default bg patch
@@ -73,9 +73,6 @@ pkg_setup() {
 	G2CONF="${G2CONF}
 		--disable-update-mimedb
 		--disable-static
-	    --disable-system-libstab
-	    --enable-mouse
-	    --enable-xinput
 		$(use_enable eds aboutme)"
 }
 
@@ -85,14 +82,9 @@ src_prepare() {
 	# Fix intltoolize broken file, see upstream #577133
 	sed "s:'\^\$\$lang\$\$':\^\$\$lang\$\$:g" -i po/Makefile.in.in || die "sed failed"
 
-	# Fix compilation on fbsd, bug #256958
-	epatch "${FILESDIR}/${PN}-2.24.0.1-fbsd.patch"
-
 	# Add functionality for setting the default background in gdm, bug 293439
+	# gnome bug #536531
 	epatch "${FILESDIR}/${PN}-2.28.1-gdm-default-bg.patch"
-
-	epatch "${FILESDIR}/${P}-autodetect.patch"
-	eautoreconf
 }
 
 src_install() {
@@ -101,4 +93,3 @@ src_install() {
 	# (on POSIX systems gmodule uses dlopen)
 	find "${D}" -name "*.la" -delete || die "remove of la files failed"
 }
-

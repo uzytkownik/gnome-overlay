@@ -1,6 +1,6 @@
 # Copyright 1999-2010 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Header: /var/cvsroot/gentoo-x86/gnome-base/gnome-applets/gnome-applets-2.28.0.ebuild,v 1.4 2010/02/28 18:55:07 armin76 Exp $
+# $Header: $
 
 inherit eutils gnome2 python
 
@@ -9,7 +9,7 @@ HOMEPAGE="http://www.gnome.org/"
 
 LICENSE="GPL-2 FDL-1.1 LGPL-2"
 SLOT="2"
-KEYWORDS="~alpha ~amd64 ~ia64 ~sparc ~x86 ~x86-freebsd ~amd64-linux ~x86-linux"
+KEYWORDS="~alpha ~amd64 ~ia64 ~ppc ~ppc64 ~sparc ~x86 ~x86-freebsd ~amd64-linux ~x86-linux"
 IUSE="acpi apm doc gnome gstreamer hal ipv6 networkmanager policykit"
 
 # TODO: configure says python stuff is optional
@@ -52,7 +52,7 @@ RDEPEND=">=x11-libs/gtk+-2.13
 			>=media-plugins/gst-plugins-oss-0.10.14 ) )
 	hal? ( >=sys-apps/hal-0.5.3 )
 	networkmanager? ( >=net-misc/networkmanager-0.7.0 )
-	policykit? ( >=sys-auth/polkit-0.91 )"
+	policykit? ( >=sys-auth/polkit-0.92 )"
 
 DEPEND="${RDEPEND}
 	>=app-text/scrollkeeper-0.1.4
@@ -76,9 +76,6 @@ src_unpack() {
 	sed 's/^TESTS.*/TESTS=/g' -i invest-applet/invest/Makefile.am \
 		invest-applet/invest/Makefile.in || die "disabling invest tests failed"
 
-	# Fixes a crash when creating new sticky note, bug #207877, upstream #594797
-	epatch "${FILESDIR}/${PN}-2.28.0-stickynotes-duplicate-labels-ui.patch"
-
 	# Fix intltoolize broken file, see upstream #577133
 	sed "s:'\^\$\$lang\$\$':\^\$\$lang\$\$:g" -i po/Makefile.in.in \
 		|| die "intltool rules fix failed"
@@ -88,7 +85,6 @@ pkg_setup() {
 	G2CONF="${G2CONF}
 		--disable-scrollkeeper
 		--disable-schemas-install
-		--enable-flags
 		$(use_enable gstreamer mixer-applet)
 		$(use_with hal)
 		$(use_enable ipv6)
