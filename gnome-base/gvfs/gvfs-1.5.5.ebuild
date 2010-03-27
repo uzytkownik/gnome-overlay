@@ -59,6 +59,7 @@ pkg_setup() {
 	G2CONF="${G2CONF}
 		--enable-udev
 		--disable-bash-completion
+		--with-dbus-service-dir=/usr/share/dbus-1/services
 		$(use_enable archive)
 		$(use_enable avahi)
 		$(use_enable bluetooth obexftp)
@@ -72,10 +73,6 @@ pkg_setup() {
 		$(use_enable http)
 		$(use_enable gnome-keyring keyring)
 		$(use_enable samba)"
-}
-
-pkg_setup() {
-	G2CONF="${G2CONF} --with-dbus-service-dir=/usr/share/dbus-1/services"
 }
 
 src_prepare() {
