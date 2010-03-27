@@ -1,10 +1,6 @@
 # Copyright 1999-2009 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-<<<<<<< HEAD
 # $Header: /var/cvsroot/gentoo-x86/dev-python/gnome-desktop-python/gnome-desktop-python-2.28.0.ebuild,v 1.1 2009/10/29 23:17:19 eva Exp $
-=======
-# $Header: $
->>>>>>> 79e3e11e41903e0adc7532e259ec5d1e72b9342c
 
 GCONF_DEBUG="no"
 G_PY_PN="gnome-python-desktop"
