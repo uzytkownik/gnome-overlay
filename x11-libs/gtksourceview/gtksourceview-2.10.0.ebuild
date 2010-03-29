@@ -13,11 +13,12 @@ HOMEPAGE="http://www.gnome.org/"
 LICENSE="GPL-2"
 SLOT="2.0"
 KEYWORDS="~alpha ~amd64 ~arm ~hppa ~ia64 ~ppc ~ppc64 ~sh ~sparc ~x86 ~x86-fbsd"
-IUSE="doc"
+IUSE="doc glade"
 
 RDEPEND=">=x11-libs/gtk+-2.12
 	>=dev-libs/libxml2-2.5
-	>=dev-libs/glib-2.14"
+	>=dev-libs/glib-2.14
+	glade3? ( >=dev-util/glade-3.2 )"
 DEPEND="${RDEPEND}
 	sys-devel/gettext
 	>=dev-util/intltool-0.40
@@ -32,6 +33,10 @@ src_prepare() {
 	# Fix intltoolize broken file, see upstream #577133
 	sed "s:'\^\$\$lang\$\$':\^\$\$lang\$\$:g" -i po/Makefile.in.in \
 		|| die "sed failed"
+}
+
+pkg_config() {
+	G2CONF="${G2CONF} $(use-enable glade glade-catalog)"
 }
 
 src_install() {
