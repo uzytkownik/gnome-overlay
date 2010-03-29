@@ -37,7 +37,8 @@ DOCS="AUTHORS ChangeLog HACKING NEWS README"
 pkg_setup() {
 	G2CONF="${G2CONF}
 		--disable-static
-		$(use_enable startup-notification)"
+		$(use_enable startup-notification)
+		--disable-introspection"
 }
 
 src_prepare() {
