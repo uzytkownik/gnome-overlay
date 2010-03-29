@@ -30,7 +30,10 @@ pkg_setup() {
 		G2CONF="${G2CONF} --enable-debug=minimum"
 	fi
 
-	G2CONF="${G2CONF} $(use_enable python) --disable-static"
+	G2CONF=${G2CONF} \
+		$(use_enable python) \
+		--disable-static \
+		--disable-introspection
 }
 
 src_unpack() {
