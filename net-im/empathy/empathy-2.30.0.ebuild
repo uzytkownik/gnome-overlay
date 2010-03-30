@@ -78,6 +78,7 @@ pkg_setup() {
 		$(use_enable applet megaphone)
 		$(use_enable applet nothere)
 		$(use_enable debug)
+		$(use_enable tpl favourite_contacts)
 		$(use_with networkmanager connectivity nm)
 		$(use_enable python)
 		$(use_enable spell)
