@@ -4,7 +4,6 @@
 
 EAPI="2"
 GCONF_DEBUG="no"
-WANT_AUTOMAKE="1.11"
 
 # make sure games is inherited first so that the gnome2
 # functions will be called if they are not overridden
@@ -126,7 +125,7 @@ src_prepare() {
 	epatch "${FILESDIR}/${PN}-2.26.3-gtali-invalid-pointer.patch"
 
 	# If calling eautoreconf, this ebuild uses libtool-2
-	eautomake
+	eautoreconf
 }
 
 src_test() {
