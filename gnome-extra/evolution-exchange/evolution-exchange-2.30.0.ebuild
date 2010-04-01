@@ -1,6 +1,6 @@
 # Copyright 1999-2010 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Header: /var/cvsroot/gentoo-x86/gnome-extra/evolution-exchange/evolution-exchange-2.28.2.ebuild,v 1.1 2010/01/11 21:49:00 eva Exp $
+# $Header: /var/cvsroot/gentoo-x86/gnome-extra/evolution-exchange/evolution-exchange-2.28.3.ebuild,v 1.1 2010/03/14 22:46:07 eva Exp $
 
 EAPI="2"
 
@@ -20,6 +20,9 @@ RDEPEND="
 	>=dev-libs/glib-2.16.0
 	>=x11-libs/gtk+-2.10
 	>=gnome-base/gconf-2.0
+	dev-libs/libxml2
+	net-libs/libsoup:2.4
+	sys-libs/db
 	dev-libs/libxml2
 	net-libs/libsoup:2.4
 	>=net-nds/openldap-2.1.30-r2"
@@ -44,7 +47,7 @@ src_prepare() {
 	gnome2_src_prepare
 
 	# Fix build with --as-needed, upstream bug #597489
-	#epatch "${FILESDIR}/${PN}-2.28.0-as-needed.patch"
+	epatch "${FILESDIR}/${PN}-2.28.0-as-needed.patch"
 
 	# FIXME: Fix compilation flags crazyness
 	sed 's/CFLAGS="$CFLAGS $WARNING_FLAGS"//' \
