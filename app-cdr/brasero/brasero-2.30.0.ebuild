@@ -1,11 +1,11 @@
 # Copyright 1999-2010 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Header: /var/cvsroot/gentoo-x86/app-cdr/brasero/brasero-2.28.3.ebuild,v 1.5 2010/03/06 21:50:31 nirbheek Exp $
+# $Header: $
 
 EAPI="2"
 GCONF_DEBUG="no"
 
-inherit gnome2 multilib eutils autotools
+inherit gnome2 multilib
 
 DESCRIPTION="Brasero (aka Bonfire) is yet another application to burn CD/DVD for the gnome desktop."
 HOMEPAGE="http://www.gnome.org/projects/brasero"
@@ -13,23 +13,23 @@ HOMEPAGE="http://www.gnome.org/projects/brasero"
 LICENSE="GPL-2"
 SLOT="0"
 KEYWORDS="~alpha ~amd64 ~hppa ~ia64 ~ppc ~ppc64 ~sparc ~x86"
-IUSE="beagle +cdr +css doc +libburn nautilus playlist test tracker"
+IUSE="beagle +cdr +css doc +libburn nautilus playlist test"
 
-COMMON_DEPEND=">=dev-libs/glib-2.22.0:2
-	>=x11-libs/gtk+-2.17:2
+COMMON_DEPEND=">=dev-libs/glib-2.22
+	>=x11-libs/gtk+-2.19.7
 	>=gnome-base/gconf-2
 	>=media-libs/gstreamer-0.10.15
 	>=media-libs/gst-plugins-base-0.10
 	>=dev-libs/libxml2-2.6
 	>=dev-libs/libunique-1
 	>=dev-libs/dbus-glib-0.7.2
+	media-libs/libcanberra[gtk]
 	beagle? ( >=dev-libs/libbeagle-0.3 )
 	libburn? (
 		>=dev-libs/libburn-0.4
 		>=dev-libs/libisofs-0.6.4 )
 	nautilus? ( >=gnome-base/nautilus-2.22.2 )
-	playlist? ( >=dev-libs/totem-pl-parser-2.29.1 )
-	tracker? ( >=app-misc/tracker-0.7 )"
+	playlist? ( >=dev-libs/totem-pl-parser-2.29.1 )"
 RDEPEND="${COMMON_DEPEND}
 	app-cdr/cdrdao
 	app-cdr/dvd+rw-tools
@@ -49,18 +49,14 @@ DEPEND="${COMMON_DEPEND}
 #	dev-util/gtk-doc-am
 PDEPEND="gnome-base/gvfs"
 
-src_prepare() {
-	# Fixed just after 2.29.92
-	epatch "${FILESDIR}/${PN}-2.29.91-disable-autodetect.patch"
-	eautoreconf
-}
-
 pkg_setup() {
 	G2CONF="${G2CONF}
+		--disable-introspection
 		--disable-schemas-install
 		--disable-scrollkeeper
 		--disable-caches
 		--disable-dependency-tracking
+		$(use_enable beagle search)
 		$(use_enable cdr cdrtools)
 		$(use_enable cdr cdrkit)
 		$(use_enable libburn libburnia)
@@ -69,18 +65,6 @@ pkg_setup() {
 
 	if ! use libburn; then
 		G2CONF="${G2CONF} --enable-cdrtools --enable-cdrkit"
-	fi
-
-	if use tracker ; then
-		if use beagle ; then
-			einfo "Both tracker and beagle USE flags enabled."
-			einfo "Choosing tracker."
-		fi
-		G2CONF="${G2CONF} --enable-search=tracker"
-	elif use beagle ; then
-		G2CONF="${G2CONF} --enable-search=beagle"
-	else
-		G2CONF="${G2CONF} --disable-search"
 	fi
 
 	DOCS="AUTHORS ChangeLog MAINTAINERS NEWS README"

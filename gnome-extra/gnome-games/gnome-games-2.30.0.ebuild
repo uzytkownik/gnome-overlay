@@ -4,6 +4,7 @@
 
 EAPI="2"
 GCONF_DEBUG="no"
+WANT_AUTOMAKE="1.11"
 
 # make sure games is inherited first so that the gnome2
 # functions will be called if they are not overridden
@@ -15,7 +16,7 @@ HOMEPAGE="http://live.gnome.org/GnomeGames/"
 LICENSE="GPL-2 FDL-1.1"
 SLOT="0"
 KEYWORDS="~alpha ~amd64 ~arm ~hppa ~ia64 ~ppc ~ppc64 ~sh ~sparc ~x86 ~x86-fbsd"
-IUSE="artworkextra guile opengl sdl test" # introspection
+IUSE="artworkextra guile opengl sound test" # introspection
 
 # Introspection support needs
 #	media-libs/clutter
@@ -37,10 +38,7 @@ RDEPEND="
 	>=x11-libs/gtk+-2.16
 	x11-libs/libSM
 
-	!sdl? ( media-libs/libcanberra[gtk] )
-	sdl? (
-		media-libs/libsdl
-		media-libs/sdl-mixer[vorbis] )
+	sound? ( media-libs/libcanberra[gtk] )
 	guile? ( >=dev-scheme/guile-1.6.5[deprecated,regex] )
 	artworkextra? ( gnome-extra/gnome-games-extra-data )
 	opengl? (
@@ -73,23 +71,15 @@ pkg_setup() {
 	# create the games user / group
 	games_pkg_setup
 
-	# Decide the sound backend to use - GStreamer gets preference over SDL
-	if use sdl; then
-		G2CONF="${G2CONF} --with-sound=sdl_mixer"
-	else
-		G2CONF="${G2CONF} --with-sound=libcanberra"
-	fi
-
 	# Needs "seed", which needs gobject-introspection, libffi, etc.
 	#$(use_enable clutter)
 	#$(use_enable clutter staging)
 	#$(use_enable introspection)
 	G2CONF="${G2CONF}
-		$(use_enable test tests)
+		$(use_enable sound)
 		--disable-introspection
 		--disable-card-themes-installer
 		--with-scores-group=${GAMES_GROUP}
-		--enable-noregistry=\"${GGZ_MODDIR}\"
 		--with-platform=gnome
 		--with-card-theme-formats=all
 		--with-smclient
@@ -123,9 +113,6 @@ src_prepare() {
 
 	# Fix bug #281718 -- *** glibc detected *** gtali: free(): invalid pointer
 	epatch "${FILESDIR}/${PN}-2.26.3-gtali-invalid-pointer.patch"
-
-	# If calling eautoreconf, this ebuild uses libtool-2
-	eautoreconf
 }
 
 src_test() {

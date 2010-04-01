@@ -1,6 +1,6 @@
 # Copyright 1999-2010 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Header: /var/cvsroot/gentoo-x86/gnome-extra/gtkhtml/gtkhtml-3.28.2.ebuild,v 1.2 2010/01/07 21:40:14 fauli Exp $
+# $Header: $
 
 EAPI="2"
 GCONF_DEBUG="no"
@@ -50,7 +50,4 @@ src_prepare() {
 		-i configure.ac configure || die "sed 1 failed"
 	sed -i -e 's:-DGTK_DISABLE_DEPRECATED=1 -DGDK_DISABLE_DEPRECATED=1 -DG_DISABLE_DEPRECATED=1 -DGNOME_DISABLE_DEPRECATED=1::g' \
 		a11y/Makefile.am a11y/Makefile.in || die "sed 2 failed"
-
-	# Already fixed upstream...
-	epatch ${FILESDIR}/${PN}-fix-crash-on-paste.patch
 }
