@@ -1,6 +1,6 @@
 # Copyright 1999-2010 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Header: /var/cvsroot/gentoo-x86/gnome-extra/gnome-power-manager/gnome-power-manager-2.28.3.ebuild,v 1.1 2010/01/25 15:32:01 mrpouet Exp $
+# $Header: $
 
 EAPI="2"
 
@@ -30,7 +30,7 @@ COMMON_DEPEND=">=dev-libs/glib-2.13.0
 	>=gnome-base/gconf-2.10
 	>=media-libs/libcanberra-0.10[gtk]
 	>=sys-apps/devicekit-power-008
-	>=dev-libs/libunique-1
+	>=dev-libs/libunique-1.1.0
 	>=x11-apps/xrandr-1.2
 	x11-libs/libX11
 	x11-libs/libXext
@@ -68,7 +68,6 @@ pkg_setup() {
 		$(use_enable doc docbook-docs)
 		$(use_enable policykit gconf-defaults)
 		--enable-compile-warnings=minimum
-		--with-dpms-ext
 		--enable-applets"
 
 	if ! use hal; then
@@ -78,8 +77,6 @@ pkg_setup() {
 
 src_prepare() {
 	gnome2_src_prepare
-
-	epatch "${FILESDIR}/${P}-brightness.patch"
 
 	# Fix crazy cflags
 	sed 's:-DG.*DISABLE_DEPRECATED::g' -i configure.ac configure \
