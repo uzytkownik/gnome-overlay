@@ -40,7 +40,7 @@ RDEPEND=">=dev-libs/glib-2.23.4
 		cdda? ( >=dev-libs/libcdio-0.78.2[-minimal] )
 		>=sys-apps/hal-0.5.10 )
 	http? ( >=net-libs/libsoup-gnome-2.26.0 )
-	samba? ( || ( net-fs/samba-libs[smbclient]
+	samba? ( || ( >=net-fs/samba-3.4[smbclient]
 			<=net-fs/samba-3.3 ) )"
 DEPEND="${RDEPEND}
 	>=dev-util/intltool-0.40
@@ -77,6 +77,9 @@ pkg_setup() {
 
 src_prepare() {
 	gnome2_src_prepare
+
+	# Fix intltoolize broken file, see upstream #577133
+	sed "s:'\^\$\$lang\$\$':\^\$\$lang\$\$:g" -i po/Makefile.in.in || die "sed failed"
 
 	# Conditional patching purely to avoid eautoreconf
 	use gphoto2 && epatch "${FILESDIR}/${PN}-1.2.2-gphoto2-stricter-checks.patch"
