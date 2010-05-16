@@ -18,7 +18,6 @@
 #   This happens when a cp is specified in the cpv list, and is resolved as
 #   a dependency as well.
 # TODO:
-# * Only supports ebuilds in PORTDIR
 # * Support recursive checking of needed keywords in deps
 #
 
@@ -29,16 +28,15 @@ import portage
 ###############
 ## Constants ##
 ###############
-#PORTDB = portage.db['/']['porttree'].dbapi
 #GNOME_OVERLAY = PORTDB.getRepositoryPath('gnome')
-PORTDIR = portage.settings['PORTDIR']
+portage.portdb.porttrees = [portage.settings['PORTDIR']]
 STABLE_ARCHES = ('alpha', 'amd64', 'arm', 'hppa', 'ia64', 'm68k', 'ppc',
         'ppc64', 's390', 'sh', 'sparc', 'x86')
-UNSTABLE_ARCHES = ('~alpha', '~amd64', '~arm', '~hppa', '~ia64', 'm68k', '~ppc',
+UNSTABLE_ARCHES = ('~alpha', '~amd64', '~arm', '~hppa', '~ia64', '~m68k', '~ppc',
         '~ppc64', '~s390', '~sh', '~sparc', '~x86', '~x86-fbsd')
 ALL_ARCHES = STABLE_ARCHES+UNSTABLE_ARCHES
 SYSTEM_PACKAGES = []
-LINE_SEP = '\n'
+LINE_SEP = ''
 
 ##############
 ## Settings ##
@@ -52,6 +50,7 @@ STABLE = True
 #################
 ## Preparation ##
 #################
+ALL_CPV_KWS = []
 OLD_REL = None
 NEW_REL = None
 if __name__ == "__main__":
@@ -78,14 +77,12 @@ if STABLE:
 else:
     ARCHES = UNSTABLE_ARCHES
 
-if os.environ.has_key('STABLE'):
-    STABLE = os.environ['STABLE']
 if os.environ.has_key('CHECK_DEPS'):
     CHECK_DEPS = os.environ['CHECK_DEPS']
 
-if CHECK_DEPS and not STABLE:
-    print 'Dep-checking mode is broken with keyword checking'
-    # Causes infinite loops.
+if not STABLE:
+    print 'Currently broken for anything except STABLEREQ'
+    print 'Please set STABLE to True'
     sys.exit(1)
 
 ######################
@@ -175,10 +172,12 @@ def get_best_deps(cpv, kws, release=None):
     Returns a list of the best deps of a cpv, optionally matching a release, and
     with max of the specified keywords
     """
-    atoms = portage.portdb.aux_get(cpv, ['DEPEND', 'RDEPEND'])
-    deps = []
+    atoms = portage.portdb.aux_get(cpv, ['DEPEND', 'RDEPEND', 'PDEPEND'])
+    atoms = ' '.join(atoms).split() # consolidate atoms
+    atoms = list(set(atoms)) # de-duplicate
+    deps = set()
     tmp = []
-    for atom in atoms[0].split()+atoms[1].split():
+    for atom in atoms:
         if atom.find('/') is -1:
             # It's not a dep atom
             continue
@@ -196,18 +195,18 @@ def get_best_deps(cpv, kws, release=None):
                     best_kws = 'none'
                     if DEBUG: debug('Insufficient unstable keywords in: %s' % i)
                     continue
-            cur_kws = get_kws(i, arches=kws)
-            if set(cur_kws) == set(kws):
+            cur_match_kws = get_kws(i, arches=kws)
+            if set(cur_match_kws) == set(kws):
                 # This dep already has all keywords
                 best_kws = 'alreadythere'
                 break
             # Select the version which needs least new keywords
-            if len(cur_kws) > len(best_kws[1]):
-                best_kws = [i, cur_kws]
-            elif not best_kws[1]:
-                # We do this so that if none of the versions have any stable
-                # keywords, the latest version gets selected as the "best" one.
-                best_kws = [i, ['iSuck']]
+            if len(cur_match_kws) > len(best_kws[1]):
+                best_kws = [i, cur_match_kws]
+            elif not best_kws[0]:
+                # This means that none of the versions have any of the stable
+                # keywords that *we checked* (i.e. kws).
+                best_kws = [i, []]
         if best_kws == 'alreadythere':
             if DEBUG: nothing_to_be_done(atom, type='dep')
             continue
@@ -220,25 +219,59 @@ def get_best_deps(cpv, kws, release=None):
             # This mostly happens because an || or use dep exists. However, we
             # make such deps strict while parsing
             # XXX: We arbitrarily select the most recent version for this case
-            deps.append(ret[0])
+            deps.add(ret[0])
+        elif not best_kws[1]:
+            # This means that none of the versions have any of the stable
+            # keywords that *we checked* (i.e. kws). Hence, we do another pass;
+            # this time checking *all* keywords.
+            #
+            # XXX: We duplicate some of the things from the for loop above
+            # We don't need to duplicate anything that caused a 'continue' or
+            # a 'break' above
+            ret = match_wanted_atoms(atom, release)
+            best_kws = ['', []]
+            for i in ret:
+                cur_kws = get_kws(i)
+                if len(cur_kws) > len(best_kws[1]):
+                    best_kws = [i, cur_kws]
+                elif not best_kws[0]:
+                    # This means that none of the versions have any of the stable
+                    # keywords *at all*. No choice but to arbitrarily select the
+                    # latest version in that case.
+                    best_kws = [i, []]
+            deps.add(best_kws[0])
         else:
-            deps.append(best_kws[0])
-    return deps
+            deps.add(best_kws[0])
+    return list(deps)
 
-def prev_cpv_with_kws(cpv, release=None):
+def max_kws(cpv, release=None):
     """
-    Given a cpv, find the previous cpv that had more kws than this
+    Given a cpv, find the intersection of "most keywords it can have" and
+    "keywords it has", and returns a sorted list
 
-    Returns None is there is no better previous cpv
+    If STABLE; makes sure it has unstable keywords right now
+
+    Returns [] if current cpv has best keywords
+    Returns None if no cpv has keywords
     """
-    best_prev_cpv = cpv
-    for atom in match_wanted_atoms('<'+cpv, release):
-        # XXX: Random heuristic, say 3/4th of the keywords are new
-        if len(get_kws(best_prev_cpv)) < len(get_kws(atom))*3/4:
-            best_prev_cpv = atom
-    if best_prev_cpv is cpv:
+    current_kws = get_kws(cpv, arches=ALL_ARCHES)
+    maximum_kws = [] # Maximum keywords that a cpv has
+    missing_kws = []
+    for atom in match_wanted_atoms('<='+cpv, release):
+        kws = get_kws(atom)
+        if len(kws) > len(maximum_kws):
+            maximum_kws = kws
+        for kw in kws:
+            if kw not in missing_kws+current_kws:
+                if STABLE and '~'+kw not in current_kws:
+                    continue
+                missing_kws.append(kw)
+    missing_kws.sort()
+    if maximum_kws != []:
+        return missing_kws
+    else:
+        # No cpv has the keywords we need
         return None
-    return best_prev_cpv
 
 # FIXME: This is broken
 def kws_wanted(cpv_kws, prev_cpv_kws):
@@ -252,7 +285,8 @@ def kws_wanted(cpv_kws, prev_cpv_kws):
             wanted.append(kw)
     return wanted
 
-def gen_cpv_kws(cpv, kws_aim):
+def gen_cpv_kws(cpv, kws_aim, depgraph):
+    depgraph.add(cpv)
     cpv_kw_list = [[cpv, kws_wanted(get_kws(cpv, arches=ALL_ARCHES), kws_aim)]]
     if not cpv_kw_list[0][1]:
         # This happens when cpv has less keywords than kws_aim
@@ -269,14 +303,17 @@ def gen_cpv_kws(cpv, kws_aim):
     if CHECK_DEPS and not issystempackage(cpv):
         deps = get_best_deps(cpv, cpv_kw_list[0][1], release=NEW_REL)
         if EXTREME_DEBUG:
-            print cpv, cpv_kw_list[0][1], deps
+            debug('The deps of %s are %s' % (cpv, deps))
         for dep in deps:
+            if dep in depgraph:
+                continue
+            depgraph.add(dep)
             # Assumes that keyword deps are OK if STABLE
-            dep_deps = gen_cpv_kws(dep, cpv_kw_list[0][1])
+            dep_deps = gen_cpv_kws(dep, cpv_kw_list[0][1], depgraph)
             dep_deps.reverse()
             for i in dep_deps:
                 # Make sure we don't already have the same [cpv, [kws]]
-                if i not in ord_kws and i not in cpv_kw_list:
+                if i not in ALL_CPV_KWS and i not in cpv_kw_list:
                     cpv_kw_list.append(i)
     cpv_kw_list.reverse()
     return cpv_kw_list
@@ -300,35 +337,52 @@ def fix_nesting(nested_list):
     return nice_list
 
 def consolidate_dupes(cpv_kws):
-    """Consolidate duplicate cpvs with differing keywords"""
-    cpv_kw_hash = {}
+    """
+    Consolidate duplicate cpvs with differing keywords
 
-    for i in cpv_kws:
-        # Ignore comments/whitespace carried over from original list
-        if type(i) is not list:
+    Cannot handle cps with different versions since we don't know if they are
+    inter-changeable
+    """
+    cpv_indices = {}
+
+    # Find all indices of each cpv
+    for each in cpv_kws:
+        # Comments/whitespace carried over from original list
+        if type(each) is not list:
             continue
-        if not cpv_kw_hash.has_key(i[0]):
-            cpv_kw_hash[i[0]] = set()
-        cpv_kw_hash[i[0]].update(i[1])
+        else:
+            if not cpv_indices.has_key(each[0]):
+                cpv_indices[each[0]] = []
+            cpv_indices[each[0]].append(cpv_kws.index(each))
 
-    i = 0
-    cpv_done_list = []
-    while i < len(cpv_kws):
+    # Replace the keywords of each cpv with the union of all keywords in the
+    # list belonging to this cpv
+    for each in cpv_kws:
         # Ignore comments/whitespace carried over from original list
-        if type(cpv_kws[i]) is not list:
-            i += 1
+        if type(each) is not list:
             continue
-        cpv = cpv_kws[i][0]
-        if cpv_kw_hash.has_key(cpv):
-            cpv_kws[i][1] = list(cpv_kw_hash.pop(cpv))
-            cpv_kws[i][1].sort()
-            cpv_done_list.append(cpv)
-            i += 1
-        elif cpv in cpv_done_list:
-            print cpv, cpv_done_list
-            cpv_kws.remove(cpv_kws[i])
+        kws = set()
+        for index in cpv_indices[each[0]]:
+            kws.update(cpv_kws[index][1])
+        each[1] = list(kws)
+        each[1].sort()
 
-    return cpv_kws
+    index = 0
+    deduped_cpv_kws = cpv_kws[:]
+    deduped_cpv_kws.reverse()
+    while index < len(deduped_cpv_kws):
+        item = deduped_cpv_kws[index]
+        if type(item) is not list:
+            index += 1
+            continue
+        if deduped_cpv_kws.count(item) is 1:
+            index += 1
+        else:
+            while deduped_cpv_kws.count(item) is not 1:
+                deduped_cpv_kws.remove(item)
+    deduped_cpv_kws.reverse()
+
+    return deduped_cpv_kws
 
 # FIXME: This is broken
 def prettify(cpv_kws):
@@ -374,13 +428,12 @@ def prettify(cpv_kws):
 # cpvs that will make it to the final list
 if __name__ == "__main__":
     index = 0
-    ord_kws = []
     array = []
 
     for i in open(CP_FILE).readlines():
         cpv = i[:-1]
         if cpv.startswith('#') or cpv.isspace() or not cpv:
-            ord_kws.append(cpv)
+            ALL_CPV_KWS.append(cpv)
             continue
         if cpv.find('#') is not -1:
             raise Exception('Inline comments are not supported')
@@ -390,17 +443,21 @@ if __name__ == "__main__":
             if not cpv:
                 debug('%s: Invalid cpv' % cpv)
                 continue
-        prev_cpv = prev_cpv_with_kws(cpv, release=OLD_REL)
-        if not prev_cpv:
+        kws_missing = max_kws(cpv, release=OLD_REL)
+        if kws_missing == []:
+            # Current cpv has the max keywords => nothing to do
             nothing_to_be_done(cpv)
             continue
-        ord_kws += fix_nesting(gen_cpv_kws(cpv, get_kws(prev_cpv)))
+        elif kws_missing == None:
+            debug ('No versions with stable keywords for %s' % cpv)
+            # No cpv with stable keywords => select latest
+            arches = make_unstable(ARCHES)
+            kws_missing = [kw[1:] for kw in get_kws(cpv, arches)]
+        ALL_CPV_KWS += fix_nesting(gen_cpv_kws(cpv, kws_missing, set()))
         if CHECK_DEPS:
-            ord_kws.append(LINE_SEP)
+            ALL_CPV_KWS.append(LINE_SEP)
 
-    # FIXME: This is incomplete; it doesn't take care of the deps of the cpv
-    # FIXME: It also eats data...
-    #ord_kws = consolidate_dupes(ord_kws)
+    ALL_CPV_KWS = consolidate_dupes(ALL_CPV_KWS)
 
-    for i in prettify(ord_kws):
+    for i in prettify(ALL_CPV_KWS):
         print i[0], flatten(i[1])
