@@ -1,0 +1,678 @@
+From 14f9ab09e275c01e91e0c4ede8822831aa948e6a Mon Sep 17 00:00:00 2001
+From: Klaus Trainer <klaus.trainer@web.de>
+Date: Sun, 21 Feb 2010 14:33:06 +0100
+Subject: [PATCH] Ported Simon Ward's Session Manager extension from Python to C
+
+---
+ configure.ac                                       |    5 +-
+ extensions/session-manager/Makefile.am             |   38 ++
+ .../ephy-session-manager-extension.c               |  444 ++++++++++++++++++++
+ .../ephy-session-manager-extension.h               |   60 +++
+ extensions/session-manager/extension.c             |   44 ++
+ .../session-manager.ephy-extension.in.in           |   10 +
+ 6 files changed, 599 insertions(+), 2 deletions(-)
+ create mode 100644 extensions/session-manager/Makefile.am
+ create mode 100644 extensions/session-manager/ephy-session-manager-extension.c
+ create mode 100644 extensions/session-manager/ephy-session-manager-extension.h
+ create mode 100644 extensions/session-manager/extension.c
+ create mode 100644 extensions/session-manager/session-manager.ephy-extension.in.in
+
+diff --git a/configure.ac b/configure.ac
+index 90de71d..0f7fe09 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -170,7 +170,7 @@ AM_CONDITIONAL([HAVE_OPENSP],[test "x$enable_opensp" = "xyes"])
+ 
+ AC_MSG_CHECKING([which extensions to build])
+ 
+-ALL_EXTENSIONS="actions adblock auto-reload auto-scroller certificates error-viewer extensions-manager-ui gestures greasemonkey html5tube java-console livehttpheaders page-info permissions push-scroller rss sample select-stylesheet smart-bookmarks soup-fly tab-groups tab-key-tab-navigate tab-states"
++ALL_EXTENSIONS="actions adblock auto-reload auto-scroller certificates error-viewer extensions-manager-ui gestures greasemonkey html5tube java-console livehttpheaders page-info permissions push-scroller rss sample select-stylesheet session-manager smart-bookmarks soup-fly tab-groups tab-key-tab-navigate tab-states"
+ USEFUL_EXTENSIONS="actions adblock auto-reload auto-scroller certificates extensions-manager-ui html5tube java-console page-info push-scroller select-stylesheet smart-bookmarks soup-fly tab-groups tab-key-tab-navigate tab-states"
+ DEFAULT_EXTENSIONS="actions adblock auto-reload auto-scroller certificates extensions-manager-ui greasemonkey gestures html5tube push-scroller soup-fly tab-groups tab-key-tab-navigate tab-states rss"
+ 
+@@ -189,7 +189,7 @@ AC_ARG_WITH([extensions],
+ 			  certificates, error-viewer, extensions-manager-ui,
+ 			  gestures, greasemonkey, java-console, livehttpheaders, page-info,
+ 			  permissions, push-scroller, rss, sample,
+-			  select-stylesheet,
++			  select-stylesheet, session-manager,
+ 			  smart-bookmarks, soup-fly, tab-groups, tab-states,
+ 			  as well as the aliases default, all, and really-all],
+ 			  [extensions=$with_extensions],
+@@ -297,6 +297,7 @@ extensions/rss/Makefile
+ extensions/sample/Makefile
+ extensions/select-stylesheet/Makefile
+ extensions/select-stylesheet/mozilla/Makefile
++extensions/session-manager/Makefile
+ extensions/smart-bookmarks/Makefile
+ extensions/smart-bookmarks/mozilla/Makefile
+ extensions/soup-fly/Makefile
+diff --git a/extensions/session-manager/Makefile.am b/extensions/session-manager/Makefile.am
+new file mode 100644
+index 0000000..1537b2e
+--- /dev/null
++++ b/extensions/session-manager/Makefile.am
+@@ -0,0 +1,38 @@
++extensiondir = $(EXTENSIONS_DIR)
++extension_LTLIBRARIES = libsessionmanagerextension.la
++
++libsessionmanagerextension_la_SOURCES = \
++	ephy-session-manager-extension.c	\
++	ephy-session-manager-extension.h	\
++	extension.c
++	
++libsessionmanagerextension_la_LDFLAGS = \
++	-module -avoid-version \
++	-export-symbols $(top_srcdir)/ephy-extension.symbols \
++	$(AM_LDFLAGS)
++
++libsessionmanagerextension_la_CPPFLAGS = \
++        -I$(top_srcdir)/include				\
++	-DSHARE_DIR=\"$(pkgdatadir)\"			\
++	-DEPHY_EXTENSIONS_LOCALEDIR=\"$(datadir)/locale\"  \
++	$(AM_CPPFLAGS)
++
++libsessionmanagerextension_la_CFLAGS = \
++	$(EPIPHANY_DEPENDENCY_CFLAGS)	\
++	$(AM_CFLAGS)
++
++extensioninidir = $(extensiondir)
++extensionini_in_files = session-manager.ephy-extension.in.in
++extensionini_DATA = $(extensionini_in_files:.ephy-extension.in.in=.ephy-extension)
++
++%.ephy-extension.in: %.ephy-extension.in.in $(extension_LTLIBRARIES)
++	sed -e "s|%LIBRARY%|`. ./$(extension_LTLIBRARIES) && echo $$dlname`|" \
++	    -e "s|%EXTENSION_DIR%|$(extensiondir)|" \
++	$< > $@
++
++@EPIPHANY_EXTENSION_RULE@
++
++CLEANFILES = $(extensionini_DATA)
++DISTCLEANFILES = $(extensionini_DATA)
++
++EXTRA_DIST = $(extensionini_in_files)
+diff --git a/extensions/session-manager/ephy-session-manager-extension.c b/extensions/session-manager/ephy-session-manager-extension.c
+new file mode 100644
+index 0000000..093b4c7
+--- /dev/null
++++ b/extensions/session-manager/ephy-session-manager-extension.c
+@@ -0,0 +1,444 @@
++/*
++ *  Copyright © 2010 Klaus Trainer
++ *
++ *  This program is free software; you can redistribute it and/or modify
++ *  it under the terms of the GNU General Public License as published by
++ *  the Free Software Foundation; either version 2, or (at your option)
++ *  any later version.
++ *
++ *  This program is distributed in the hope that it will be useful,
++ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
++ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ *  GNU General Public License for more details.
++ *
++ *  You should have received a copy of the GNU General Public License
++ *  along with this program; if not, write to the Free Software
++ *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
++ *
++ *  $Id$
++ */
++
++#include "config.h"
++
++#include "ephy-session-manager-extension.h"
++
++#include "ephy-file-helpers.h"
++#include "ephy-debug.h"
++
++#include <epiphany/epiphany.h>
++
++#include <gio/gio.h>
++
++#include <gtk/gtk.h>
++
++#include <glib/gi18n-lib.h>
++#include <glib/gstdio.h>
++
++#include <gmodule.h>
++
++#define EPHY_SESSION_MANAGER_EXTENSION_GET_PRIVATE(object)	(G_TYPE_INSTANCE_GET_PRIVATE ((object), EPHY_TYPE_SESSION_MANAGER_EXTENSION, EphySessionManagerExtensionPrivate))
++
++#define PREVIOUS_SESSION_FILENAME "previous_session"
++#define PREVIOUS_SESSION_FILENAME_TMP "previous_session~"
++
++#define WINDOW_DATA_KEY	"EphySessionManagerWindowData"
++
++#define UI_STR "<ui> \
++                  <menubar name=\"menubar\"> \
++                    <menu name=\"ToolsMenu\" action=\"Tools\"> \
++                      <separator/> \
++                      <menuitem name=\"SaveSession\" action=\"SaveSession\"/> \
++                      <menuitem name=\"LoadSession\" action=\"LoadSession\"/> \
++                      <menuitem name=\"LoadPreviousSession\" action=\"LoadPreviousSession\"/> \
++                      <separator/> \
++                    </menu> \
++                  </menubar> \
++                </ui>"
++
++static void save_session_cb (GtkAction *action, EphySession *session);
++static void load_session_cb (GtkAction *action, EphySession *session);
++static void load_previous_session_cb (GtkAction *action, EphySession *session);
++
++static const GtkActionEntry actions [] =
++{
++	{ "SaveSession",
++	  NULL,
++	  N_("_Save Session…"),
++	  NULL,
++	  NULL,
++	  G_CALLBACK (save_session_cb) },
++	{ "LoadSession",
++	  NULL,
++	  N_("_Load Session…"),
++	  NULL,
++	  NULL,
++	  G_CALLBACK (load_session_cb) },
++	{ "LoadPreviousSession",
++	  NULL,
++	  N_("Load _Previous Session…"),
++	  NULL,
++	  NULL,
++	  G_CALLBACK (load_previous_session_cb) }
++};
++
++static GObjectClass *parent_class = NULL;
++
++static GType type = 0;
++
++typedef struct
++{
++	GtkActionGroup *action_group;
++	guint ui_id;
++} WindowData;
++
++
++static GtkResponseType
++warn_on_overwrite (GtkWidget *parent, const gchar *filename)
++{
++	GtkResponseType overwrite;
++	GtkWidget *dialog;
++
++	dialog = gtk_message_dialog_new (GTK_WINDOW (parent),
++					 GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
++					 GTK_MESSAGE_WARNING,
++					 GTK_BUTTONS_YES_NO,
++					 "%s:\n'%s'.\n%s",
++					 N_("The file already exists"),
++					 filename,
++					 N_("Do you want to overwrite it?"));
++	overwrite = gtk_dialog_run (GTK_DIALOG (dialog));
++
++	gtk_widget_destroy (dialog);
++
++	return overwrite;
++}
++
++static gchar *
++show_file_chooser_dialog (const gchar *title, GtkFileChooserAction action)
++{
++	GtkWidget *dialog;
++	gchar *filename = NULL;
++
++	dialog = gtk_file_chooser_dialog_new (title,
++					      NULL,
++					      action,
++					      GTK_STOCK_CANCEL,
++					      GTK_RESPONSE_CANCEL,
++					      (action == GTK_FILE_CHOOSER_ACTION_SAVE) ? GTK_STOCK_SAVE : GTK_STOCK_OPEN,
++					      GTK_RESPONSE_OK,
++					      NULL);
++	gtk_dialog_set_default_response (GTK_DIALOG (dialog), GTK_RESPONSE_OK);
++	gtk_file_chooser_set_current_folder (GTK_FILE_CHOOSER (dialog),
++					     g_get_home_dir ());
++
++	if (gtk_dialog_run (GTK_DIALOG (dialog)) == GTK_RESPONSE_OK)
++	{
++		filename = gtk_file_chooser_get_filename (GTK_FILE_CHOOSER (dialog));
++		if (action == GTK_FILE_CHOOSER_ACTION_SAVE)
++		{
++			while (g_file_test (filename, G_FILE_TEST_IS_REGULAR | G_FILE_TEST_EXISTS))
++			{
++				if (warn_on_overwrite (dialog, filename) == GTK_RESPONSE_YES)
++					break;
++				if (gtk_dialog_run (GTK_DIALOG (dialog)) != GTK_RESPONSE_OK)
++					break;
++				filename = gtk_file_chooser_get_filename (GTK_FILE_CHOOSER (dialog));
++			}
++		}
++
++	}
++
++	gtk_widget_destroy (dialog);
++
++	return filename;
++}
++
++static gboolean
++set_load_previous_action_sensivity (EphyWindow *window)
++{
++	gboolean sensitive;
++	GtkAction *action;
++	WindowData *data;
++
++	gchar *prev_filename = g_build_filename (ephy_dot_dir (),
++						 "extensions",
++						 "data",
++						 "session-manager",
++						 PREVIOUS_SESSION_FILENAME,
++						 NULL);
++	
++	data = (WindowData *) g_object_get_data (G_OBJECT (window),
++						 WINDOW_DATA_KEY);
++
++	if (g_file_test (prev_filename, G_FILE_TEST_IS_REGULAR | G_FILE_TEST_EXISTS))
++	{
++		action = gtk_action_group_get_action (data->action_group,
++						      "LoadPreviousSession");
++		gtk_action_set_sensitive (action, TRUE);
++		sensitive = TRUE;
++	}
++	else
++	{
++		action = gtk_action_group_get_action (data->action_group,
++						      "LoadPreviousSession");
++		gtk_action_set_sensitive (action, FALSE);
++		sensitive = FALSE;
++	}
++	
++	g_free (prev_filename);
++
++	return sensitive;
++}
++
++static void
++save_session_cb (GtkAction *action, EphySession *session)
++{
++	EphyWindow *window;
++	gchar *prev_filename;
++	gchar *filename = show_file_chooser_dialog (N_("Save Session"),
++						   GTK_FILE_CHOOSER_ACTION_SAVE);
++
++	if (filename != NULL)
++	{
++		prev_filename = g_build_filename (ephy_dot_dir (),
++						  "extensions",
++						  "data",
++						  "session-manager",
++						  PREVIOUS_SESSION_FILENAME,
++						  NULL);
++		if (ephy_session_save (session, prev_filename))
++		{
++			window = ephy_session_get_active_window (session);
++			set_load_previous_action_sensivity (window);
++		}
++		else
++		{
++			LOG ("WARNING: Could not save session to file %s\n",
++			     prev_filename);
++		}
++		if (!ephy_session_save (session, filename))
++		{
++			LOG ("WARNING: Could not save session to file %s\n",
++			     filename);
++		}
++		g_free (filename);
++		g_free (prev_filename);
++	}
++}
++
++static void
++load_session_cb (GtkAction *action, EphySession *session)
++{
++	gboolean success;
++	EphyWindow *window;
++	GList *windows = NULL;
++	gchar *prev_filename;
++	
++	gchar *filename = show_file_chooser_dialog (N_("Load Session"),
++						   GTK_FILE_CHOOSER_ACTION_OPEN);
++
++	if (filename != NULL)
++	{
++		windows = ephy_session_get_windows (session);
++		g_return_if_fail (windows != NULL);
++
++		prev_filename = g_build_filename (ephy_dot_dir (),
++						  "extensions",
++						  "data",
++						  "session-manager",
++						  PREVIOUS_SESSION_FILENAME,
++						  NULL);
++		success = ephy_session_save (session, prev_filename);
++		if (success)
++		{
++			window = ephy_session_get_active_window (session);
++			set_load_previous_action_sensivity (window);
++		}
++		success = success & ephy_session_load (session, filename, 0);
++		if (success)
++			do
++			{
++				gtk_widget_destroy (windows->data);
++				windows = windows->next;
++			} while (windows != NULL);
++
++		g_list_free (windows);
++		g_free (prev_filename);
++		g_free (filename);
++	}
++}
++
++static void
++load_previous_session_cb (GtkAction *action, EphySession *session)
++{
++	gboolean success;
++	EphyWindow *window;
++	GList *windows = NULL;
++	
++	gchar *prev_filename = g_build_filename (ephy_dot_dir (),
++						 "extensions",
++						 "data",
++						 "session-manager",
++						 PREVIOUS_SESSION_FILENAME,
++						 NULL);
++	gchar *prev_filename_tmp = g_build_filename (ephy_dot_dir (),
++						     "extensions",
++						     "data",
++						     "session-manager",
++						     PREVIOUS_SESSION_FILENAME_TMP,
++						     NULL);
++
++	windows = ephy_session_get_windows (session);
++	g_return_if_fail (windows != NULL);
++
++	if (g_rename (prev_filename, prev_filename_tmp) == 0)
++	{
++		success = ephy_session_save (session, prev_filename);
++		if (success)
++		{
++			window = ephy_session_get_active_window (session);
++			set_load_previous_action_sensivity (window);
++		}
++		success = success & ephy_session_load (session,
++						       prev_filename_tmp, 0);
++		g_remove (prev_filename_tmp);
++	}
++	else
++	{
++		success = FALSE;
++	}
++
++	if (success)
++	{
++		do
++		{
++			gtk_widget_destroy (windows->data);
++			windows = windows->next;
++		} while (windows != NULL);
++	}
++	else
++	{
++		LOG ("WARNING: Could not load prev session from file %s\n",
++		     prev_filename);
++	}
++
++	g_list_free (windows);
++	g_free (prev_filename);
++	g_free (prev_filename_tmp);
++}
++
++static void
++ephy_session_manager_extension_init (EphySessionManagerExtension *extension)
++{
++	gchar *dirname = g_build_filename (ephy_dot_dir (), "extensions",
++					   "data", "session-manager", NULL);
++
++	g_mkdir_with_parents (dirname, 0775);
++	g_free (dirname);
++}
++
++static void
++ephy_session_manager_extension_finalize (GObject *object)
++{
++	G_OBJECT_CLASS (parent_class)->finalize (object);
++}
++
++static void
++impl_attach_window (EphyExtension *ext,
++		    EphyWindow *window)
++{
++	GtkUIManager *manager;
++	WindowData *data;
++	
++	/* The window data */
++	data = g_new (WindowData, 1);
++	g_object_set_data_full (G_OBJECT (window), WINDOW_DATA_KEY, data,
++				(GDestroyNotify) g_free);
++
++	manager =  GTK_UI_MANAGER (ephy_window_get_ui_manager (window));
++
++	data->action_group = gtk_action_group_new ("EphySessionManagerExtension");
++	gtk_action_group_add_actions(data->action_group, actions, 3,
++				     ephy_shell_get_session (ephy_shell));
++	gtk_ui_manager_insert_action_group (manager, data->action_group, -1);
++	g_object_unref (data->action_group);
++	
++	set_load_previous_action_sensivity (window);
++
++	data->ui_id = gtk_ui_manager_add_ui_from_string (manager, UI_STR, -1,
++							 NULL);
++}
++
++static void
++impl_detach_window (EphyExtension *ext,
++		    EphyWindow *window)
++{
++	WindowData *data = NULL;
++	GtkUIManager *manager;
++
++	manager =  GTK_UI_MANAGER (ephy_window_get_ui_manager (window));
++	data = (WindowData *) g_object_get_data (G_OBJECT (window),
++						 WINDOW_DATA_KEY);
++	g_return_if_fail (data != NULL);
++
++	/* Remove the menu item */
++	gtk_ui_manager_remove_ui (manager, data->ui_id);
++	gtk_ui_manager_remove_action_group (manager, data->action_group);
++
++	/* Destroy data */
++	g_object_set_data (G_OBJECT (window), WINDOW_DATA_KEY, NULL);
++}
++
++static void
++ephy_session_manager_extension_iface_init (EphyExtensionIface *iface)
++{
++	iface->attach_window = impl_attach_window;
++	iface->detach_window = impl_detach_window;
++}
++
++static void
++ephy_session_manager_extension_class_init (EphySessionManagerExtensionClass *klass)
++{
++	GObjectClass *object_class = G_OBJECT_CLASS (klass);
++	parent_class = g_type_class_peek_parent (klass);
++	object_class->finalize = ephy_session_manager_extension_finalize;
++}
++
++GType
++ephy_session_manager_extension_get_type (void)
++{
++	return type;
++}
++
++GType
++ephy_session_manager_extension_register_type (GTypeModule *module)
++{
++	const GTypeInfo our_info =
++	{
++		sizeof (EphySessionManagerExtensionClass),
++		NULL, /* base_init */
++		NULL, /* base_finalize */
++		(GClassInitFunc) ephy_session_manager_extension_class_init,
++		NULL,
++		NULL, /* class_data */
++		sizeof (EphySessionManagerExtension),
++		0, /* n_preallocs */
++		(GInstanceInitFunc) ephy_session_manager_extension_init
++	};
++
++	const GInterfaceInfo extension_info =
++	{
++		(GInterfaceInitFunc) ephy_session_manager_extension_iface_init,
++		NULL,
++		NULL
++	};
++
++	type = g_type_module_register_type (module, G_TYPE_OBJECT,
++					    "EphySessionManagerExtension",
++					    &our_info, 0);
++
++	g_type_module_add_interface (module, type, EPHY_TYPE_EXTENSION, 
++				     &extension_info);
++
++	return type;
++}
+diff --git a/extensions/session-manager/ephy-session-manager-extension.h b/extensions/session-manager/ephy-session-manager-extension.h
+new file mode 100644
+index 0000000..6818737
+--- /dev/null
++++ b/extensions/session-manager/ephy-session-manager-extension.h
+@@ -0,0 +1,60 @@
++/*
++ *  Copyright © 2010 Klaus Trainer
++ *
++ *  This program is free software; you can redistribute it and/or modify
++ *  it under the terms of the GNU General Public License as published by
++ *  the Free Software Foundation; either version 2, or (at your option)
++ *  any later version.
++ *
++ *  This program is distributed in the hope that it will be useful,
++ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
++ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ *  GNU General Public License for more details.
++ *
++ *  You should have received a copy of the GNU General Public License
++ *  along with this program; if not, write to the Free Software
++ *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
++ *
++ *  $Id$
++ */
++
++#ifndef EPHY_SESSION_MANAGER_EXTENSION_H
++#define EPHY_SESSION_MANAGER_EXTENSION_H
++
++#include <glib.h>
++#include <glib-object.h>
++
++G_BEGIN_DECLS
++
++#define EPHY_TYPE_SESSION_MANAGER_EXTENSION			(ephy_session_manager_extension_get_type ())
++#define EPHY_SESSION_MANAGER_EXTENSION(o)			(G_TYPE_CHECK_INSTANCE_CAST ((o), EPHY_TYPE_SESSION_MANAGER_EXTENSION, EphySessionManagerExtension))
++#define EPHY_SESSION_MANAGER_EXTENSION_CLASS(k)		(G_TYPE_CHECK_CLASS_CAST((k), EPHY_TYPE_SESSION_MANAGER_EXTENSION, EphySessionManagerExtensionClass))
++#define EPHY_IS_SESSION_MANAGER_EXTENSION(o)		(G_TYPE_CHECK_INSTANCE_TYPE ((o), EPHY_TYPE_SESSION_MANAGER_EXTENSION))
++#define EPHY_IS_SESSION_MANAGER_EXTENSION_CLASS(k)	(G_TYPE_CHECK_CLASS_TYPE ((k), EPHY_TYPE_SESSION_MANAGER_EXTENSION))
++#define EPHY_SESSION_MANAGER_EXTENSION_GET_CLASS(o)	(G_TYPE_INSTANCE_GET_CLASS ((o), EPHY_TYPE_SESSION_MANAGER_EXTENSION, EphySessionManagerExtensionClass))
++
++typedef struct _EphySessionManagerExtension	EphySessionManagerExtension;
++typedef struct _EphySessionManagerExtensionClass	EphySessionManagerExtensionClass;
++typedef struct _EphySampleExtensionPrivate	EphySampleExtensionPrivate;
++
++
++struct _EphySessionManagerExtensionClass
++{
++	GObjectClass parent_class;
++};
++
++struct _EphySessionManagerExtension
++{
++	GObject parent_instance;
++
++	/*< private >*/
++	EphySampleExtensionPrivate *priv;
++};
++
++GType	ephy_session_manager_extension_get_type			(void);
++
++GType	ephy_session_manager_extension_register_type	(GTypeModule *module);
++
++G_END_DECLS
++
++#endif
+diff --git a/extensions/session-manager/extension.c b/extensions/session-manager/extension.c
+new file mode 100644
+index 0000000..7ee6437
+--- /dev/null
++++ b/extensions/session-manager/extension.c
+@@ -0,0 +1,44 @@
++/*
++ *  Copyright © 2003 Marco Pesenti Gritti
++ *  Copyright © 2003, 2004 Christian Persch
++ *
++ *  This program is free software; you can redistribute it and/or modify
++ *  it under the terms of the GNU General Public License as published by
++ *  the Free Software Foundation; either version 2, or (at your option)
++ *  any later version.
++ *
++ *  This program is distributed in the hope that it will be useful,
++ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
++ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ *  GNU General Public License for more details.
++ *
++ *  You should have received a copy of the GNU General Public License
++ *  along with this program; if not, write to the Free Software
++ *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
++ *
++ *  $Id$
++ */
++
++#include "config.h"
++
++#include "ephy-session-manager-extension.h"
++#include "ephy-debug.h"
++
++#include <glib/gi18n-lib.h>
++#include <gmodule.h>
++
++G_MODULE_EXPORT GType register_module (GTypeModule *module);
++
++G_MODULE_EXPORT GType
++register_module (GTypeModule *module)
++{
++	LOG ("Registering EphySessionManagerExtension");
++
++#ifdef ENABLE_NLS
++	/* Initialise the i18n stuff */
++	bindtextdomain (GETTEXT_PACKAGE, EPHY_EXTENSIONS_LOCALEDIR);
++	bind_textdomain_codeset (GETTEXT_PACKAGE, "UTF-8");
++#endif /* ENABLE_NLS */
++
++	return ephy_session_manager_extension_register_type (module);
++}
+diff --git a/extensions/session-manager/session-manager.ephy-extension.in.in b/extensions/session-manager/session-manager.ephy-extension.in.in
+new file mode 100644
+index 0000000..76283b9
+--- /dev/null
++++ b/extensions/session-manager/session-manager.ephy-extension.in.in
+@@ -0,0 +1,10 @@
++[Epiphany Extension]
++_Name=Session Manager
++_Description=Adds the ability to save the current session to a file and restore saved sessions.
++Authors=Simon Ward <simon@bleah.co.uk>;Klaus Trainer <klaus.trainer@web.de>;
++Version=0.2
++URL=http://projects.gnome.org/epiphany/extensions
++
++[Loader]
++Type=shlib
++Library=%EXTENSION_DIR%/%LIBRARY%
+-- 
+1.6.3.3
+
