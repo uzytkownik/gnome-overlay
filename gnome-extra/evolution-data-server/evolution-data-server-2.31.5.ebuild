@@ -16,12 +16,12 @@ KEYWORDS="~alpha ~amd64 ~arm ~hppa ~ia64 ~ppc ~ppc64 ~sparc ~x86 ~x86-fbsd ~x86-
 IUSE="doc ipv6 kerberos gnome-keyring ldap nntp ssl"
 
 RDEPEND=">=dev-libs/glib-2.16.1
-	>=x11-libs/gtk+-2.20:2
+	>=x11-libs/gtk+-2.90.4
+	>=dev-libs/libgweather-2.31
 	>=gnome-base/gconf-2
 	>=dev-db/sqlite-3.5
 	>=dev-libs/libxml2-2
 	>=net-libs/libsoup-2.3
-	>=dev-libs/libgweather-2.25.4
 	>=dev-libs/libical-0.43
 	>=dev-libs/dbus-glib-0.6
 	>=dev-libs/libgdata-0.6.3
@@ -57,6 +57,7 @@ pkg_setup() {
 		$(use_enable ssl smime)
 		--with-weather
 		--enable-largefile
+		--enable-gtk3
 		--with-libdb=/usr/$(get_libdir)"
 }
 
@@ -65,9 +66,6 @@ src_prepare() {
 
 	# Adjust to gentoo's /etc/service
 	epatch "${FILESDIR}/${PN}-2.28.0-gentoo_etc_services.patch"
-
-	# Rewind in camel-disco-diary to fix a crash
-	epatch "${FILESDIR}/${PN}-1.8.0-camel-rewind.patch"
 
 	# GNOME bug 611353 (skips failing test atm)
 	epatch "${FILESDIR}/e-d-s-camel-skip-failing-test.patch"
