@@ -11,7 +11,7 @@ DESCRIPTION="Lightweight HTML Rendering/Printing/Editing Engine"
 HOMEPAGE="http://www.gnome.org/"
 
 LICENSE="GPL-2 LGPL-2"
-SLOT="3.14"
+SLOT="4.0"
 KEYWORDS="~alpha ~amd64 ~arm ~hppa ~ia64 ~ppc ~ppc64 ~sh ~sparc ~x86 ~x86-fbsd ~x86-freebsd ~amd64-linux ~ia64-linux ~x86-linux"
 # Glade support is disabled, because it's install broken by design:
 # Install directories for glade are queried from gladeui-1.0.pc which doesn't
@@ -21,7 +21,7 @@ KEYWORDS="~alpha ~amd64 ~arm ~hppa ~ia64 ~ppc ~ppc64 ~sh ~sparc ~x86 ~x86-fbsd ~
 
 # We keep bonobo until we can make sure no apps in tree uses
 # the old composer code.
-RDEPEND=">=x11-libs/gtk+-2.18:2
+RDEPEND=">=x11-libs/gtk+-2.90.4
 	>=x11-themes/gnome-icon-theme-2.22.0
 	>=gnome-base/orbit-2
 	>=app-text/enchant-1.1.7
@@ -38,6 +38,7 @@ DOCS="AUTHORS BUGS ChangeLog NEWS README TODO"
 pkg_setup() {
 	ELTCONF="--reverse-deps"
 	G2CONF="${G2CONF}
+		--enable-gtk3
 		--disable-static"
 }
 
