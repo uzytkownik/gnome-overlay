@@ -60,6 +60,7 @@ gnome-base/gnome-shell
 =gnome-extra/yelp-2.31*
 gnome-extra/yelp-xsl
 =gnome-extra/zenity-2.31*
+=mail-client/evolution-2.31*
 =media-gfx/eog-2.31*
 =media-sound/sound-juicer-2.31*
 =media-video/cheese-2.31*
