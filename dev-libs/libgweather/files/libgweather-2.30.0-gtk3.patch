@@ -1,0 +1,1806 @@
+diff --git a/Makefile.am b/Makefile.am
+index 43d3f25..de5f377 100644
+--- a/Makefile.am
++++ b/Makefile.am
+@@ -1,8 +1,8 @@
+-SUBDIRS = po po-locations libgweather doc data python icons
++SUBDIRS = po po-locations libgweather doc data icons
+ 
+ ACLOCAL_AMFLAGS = -I m4
+ 
+-DISTCHECK_CONFIGURE_FLAGS = --enable-gtk-doc
++DISTCHECK_CONFIGURE_FLAGS = --enable-gtk-doc --enable-introspection
+ 
+ EXTRA_DIST = \
+ 	MAINTAINERS
+diff --git a/configure.in b/configure.in
+index 7d47f5a..bf4a83f 100644
+--- a/configure.in
++++ b/configure.in
+@@ -1,5 +1,5 @@
+-AC_INIT([libgweather],[2.30.2])
+-AC_PREREQ(2.59)
++AC_INIT([libgweather],[2.90.1])
++AC_PREREQ(2.62)
+ 
+ AM_CONFIG_HEADER(config.h)
+ AM_INIT_AUTOMAKE([1.9 no-dist-gzip dist-bzip2])
+@@ -14,7 +14,7 @@ AC_CONFIG_MACRO_DIR([m4])
+ #   change to C+1:0:0
+ # - If the interface is the same as the previous version, change to C:R+1:A
+ 
+-LT_VERSION=7:9:6
++LT_VERSION=0:0:0
+ AC_SUBST(LT_VERSION)
+ 
+ AC_CANONICAL_HOST
+@@ -30,7 +30,7 @@ esac
+ AC_MSG_RESULT([$gweather_native_win32])
+ AM_CONDITIONAL(OS_WIN32, [test "$gweather_native_win32" = "yes"])
+ 
+-GTK_REQUIRED=2.11.0
++GTK_REQUIRED=2.90.0
+ GLIB_REQUIRED=2.13.0
+ LIBSOUP_REQUIRED=2.4.0
+ LIBSOUP_GNOME_REQUIRED=2.25.1
+@@ -113,8 +113,8 @@ if test "x$enable_maintainer_mode" = "xyes"; then
+ 	CFLAGS="$CFLAGS $DISABLE_DEPRECATED"
+ fi
+ 
+-dnl -- Check for GTK+ 2.0 (required) ------------------------------------------
+-PKG_CHECK_MODULES(GTK, gtk+-2.0 >= $GTK_REQUIRED)
++dnl -- Check for GTK+ 3.0 (required) ------------------------------------------
++PKG_CHECK_MODULES(GTK, gtk+-3.0 >= $GTK_REQUIRED)
+ GTK_CFLAGS="$GTK_CFLAGS -DGTK_DISABLE_SINGLE_INCLUDES"
+ AC_SUBST(GTK_CFLAGS)
+ AC_SUBST(GTK_LIBS)
+@@ -148,7 +148,7 @@ CFLAGS="$CFLAGS -DG_DISABLE_SINGLE_INCLUDES"
+ 
+ dnl gettext
+ 
+-GETTEXT_PACKAGE=libgweather
++GETTEXT_PACKAGE=libgweather-3.0
+ AC_SUBST(GETTEXT_PACKAGE)
+ AC_DEFINE_UNQUOTED(GETTEXT_PACKAGE, "$GETTEXT_PACKAGE", [Gettext Package])
+ AM_GLIB_GNU_GETTEXT
+@@ -211,24 +211,6 @@ fi
+ AC_DEFINE_UNQUOTED(ZONEINFO_DIR, "$ZONEINFO_DIR", [zoneinfo directory])
+ 
+ dnl ***************************************************************************
+-dnl *** Python bindings
+-dnl ***************************************************************************
+-AC_ARG_ENABLE(python,
+-        [AC_HELP_STRING([--enable-python],
+-                        [Build libgweather python bindings])],
+-        [enable_python=yes],
+-        [enable_python=no])
+-if test "$enable_python" = "yes"; then
+-   AM_PATH_PYTHON()
+-   AM_CHECK_PYTHON_HEADERS(,enable_python=no)
+-   PKG_CHECK_MODULES(PYGOBJECT, pygobject-2.0)
+-   pygtk_defsdir=`$PKG_CONFIG --variable=defsdir pygtk-2.0`
+-   PYGTK_DEFS="$pygtk_defsdir/gtk.defs"
+-   AC_SUBST(PYGTK_DEFS)
+-fi
+-AM_CONDITIONAL(BUILD_PYTHON, test "x$enable_python" = "xyes")
+-
+-dnl ***************************************************************************
+ dnl *** Honour aclocal flags                                                ***
+ dnl ***************************************************************************
+ ACLOCAL_AMFLAGS="\${ACLOCAL_FLAGS}"
+@@ -238,7 +220,6 @@ AC_SUBST(VERSION)
+ AC_SUBST(PACKAGE)
+ AC_SUBST(DATADIR)
+ AC_SUBST(LIBDIR)
+-AC_SUBST(PYTHONDIR)
+ AC_SUBST(GLADEDIR)
+ 
+ ##################################################
+@@ -246,6 +227,8 @@ AC_SUBST(GLADEDIR)
+ ##################################################
+ GTK_DOC_CHECK([1.9])
+ 
++GOBJECT_INTROSPECTION_CHECK([0.6.7])
++
+ dnl ***************************************************************************
+ dnl *** Output Makefiles et al                                              ***
+ dnl ***************************************************************************
+@@ -255,10 +238,9 @@ doc/Makefile
+ po/Makefile.in
+ po-locations/Makefile
+ libgweather/Makefile
+-libgweather/gweather.pc
+-libgweather/gweather-uninstalled.pc
++libgweather/gweather-3.0.pc
++libgweather/gweather-3.0-uninstalled.pc
+ data/Makefile
+-python/Makefile
+ icons/Makefile
+ ])
+ 
+@@ -277,7 +259,7 @@ libgweather-$VERSION configure summary:
+ 	Prefix:				${prefix}
+ 	Source code location:		${srcdir}
+ 	Compiler:			${CC}
+-	Python bindings:		${enable_python}
++	Introspection support:          ${found_introspection}
+ 	Locations.xml translations:	${LOCATIONS_XML_TRANSLATIONS}
+ 	Locations.xml compression:	${enable_locations_compression}
+ " >&2
+diff --git a/doc/Makefile.am b/doc/Makefile.am
+index 8b21afd..4c30709 100644
+--- a/doc/Makefile.am
++++ b/doc/Makefile.am
+@@ -4,7 +4,7 @@
+ AUTOMAKE_OPTIONS = 1.6
+ 
+ # The name of the module, e.g. 'glib'.
+-DOC_MODULE=libgweather
++DOC_MODULE=libgweather-3.0
+ 
+ # Uncomment for versioned docs and specify the version of the module, e.g. '2'.
+ #DOC_MODULE_VERSION=2
+@@ -69,7 +69,7 @@ expand_content_files=
+ # e.g. GTKDOC_CFLAGS=-I$(top_srcdir) -I$(top_builddir) $(GTK_DEBUG_FLAGS)
+ # e.g. GTKDOC_LIBS=$(top_builddir)/gtk/$(gtktargetlib)
+ GTKDOC_CFLAGS = -I$(top_srcdir) $(GTK_CFLAGS) $(LIBXML_CFLAGS) $(LIBSOUP_CFLAGS) $(GCONF_CFLAGS) -DGWEATHER_I_KNOW_THIS_IS_UNSTABLE
+-GTKDOC_LIBS = $(top_builddir)/libgweather/libgweather.la $(GTK_LIBS) $(LIBXML_LIBS) $(LIBSOUP_LIBS) $(GCONF_LIBS)
++GTKDOC_LIBS = $(top_builddir)/libgweather/libgweather-3.la $(GTK_LIBS) $(LIBXML_LIBS) $(LIBSOUP_LIBS) $(GCONF_LIBS)
+ 
+ # This includes the standard gtk-doc make rules, copied by gtkdocize.
+ include $(top_srcdir)/gtk-doc.make
+diff --git a/doc/libgweather-3.0-docs.sgml b/doc/libgweather-3.0-docs.sgml
+new file mode 100644
+index 0000000..2dbb507
+--- /dev/null
++++ b/doc/libgweather-3.0-docs.sgml
+@@ -0,0 +1,39 @@
++<?xml version="1.0"?>
++<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.3//EN"
++               "http://www.oasis-open.org/docbook/xml/4.3/docbookx.dtd"
++[
++  <!ENTITY % local.common.attrib "xmlns:xi  CDATA  #FIXED 'http://www.w3.org/2003/XInclude'">
++]>
++<book id="index">
++  <bookinfo>
++    <title>libgweather-3.0 Reference Manual</title>
++    <releaseinfo>
++      for libgweather-3.0 [VERSION].
++      The latest version of this documentation can be found on-line at
++      <ulink role="online-location" url="http://[SERVER]/libgweather-3.0/index.html">http://[SERVER]/libgweather-3.0/</ulink>.
++    </releaseinfo>
++  </bookinfo>
++
++  <chapter>
++    <title>[Insert title here]</title>
++        <xi:include href="xml/timezone-menu.xml"/>
++    <xi:include href="xml/location-entry.xml"/>
++    <xi:include href="xml/gweather-location.xml"/>
++    <xi:include href="xml/weather.xml"/>
++    <xi:include href="xml/gweather-prefs.xml"/>
++    <xi:include href="xml/gweather-gconf.xml"/>
++    <xi:include href="xml/gweather-xml.xml"/>
++    <xi:include href="xml/gweather-timezone.xml"/>
++
++  </chapter>
++  <chapter id="object-tree">
++    <title>Object Hierarchy</title>
++     <xi:include href="xml/tree_index.sgml"/>
++  </chapter>
++  <index id="api-index-full">
++    <title>API Index</title>
++    <xi:include href="xml/api-index-full.xml"><xi:fallback /></xi:include>
++  </index>
++
++  <xi:include href="xml/annotation-glossary.xml"><xi:fallback /></xi:include>
++</book>
+diff --git a/doc/libgweather-3.0-overrides.txt b/doc/libgweather-3.0-overrides.txt
+new file mode 100644
+index 0000000..e69de29
+diff --git a/doc/libgweather-3.0-sections.txt b/doc/libgweather-3.0-sections.txt
+new file mode 100644
+index 0000000..2b9105d
+--- /dev/null
++++ b/doc/libgweather-3.0-sections.txt
+@@ -0,0 +1,192 @@
++<SECTION>
++<FILE>timezone-menu</FILE>
++<TITLE>GWeatherTimezoneMenu</TITLE>
++GWeatherTimezoneMenu
++GWeatherTimezoneMenuClass
++gweather_timezone_menu_new
++gweather_timezone_menu_set_tzid
++gweather_timezone_menu_get_tzid
++<SUBSECTION Standard>
++GWEATHER_TIMEZONE_MENU
++GWEATHER_IS_TIMEZONE_MENU
++GWEATHER_TYPE_TIMEZONE_MENU
++gweather_timezone_menu_get_type
++GWEATHER_TIMEZONE_MENU_CLASS
++GWEATHER_IS_TIMEZONE_MENU_CLASS
++GWEATHER_TIMEZONE_MENU_GET_CLASS
++</SECTION>
++
++<SECTION>
++<FILE>location-entry</FILE>
++<TITLE>GWeatherLocationEntry</TITLE>
++GWeatherLocationEntry
++GWeatherLocationEntryClass
++gweather_location_entry_new
++gweather_location_entry_set_location
++gweather_location_entry_get_location
++gweather_location_entry_has_custom_text
++gweather_location_entry_set_city
++<SUBSECTION Standard>
++GWEATHER_LOCATION_ENTRY
++GWEATHER_IS_LOCATION_ENTRY
++GWEATHER_TYPE_LOCATION_ENTRY
++gweather_location_entry_get_type
++GWEATHER_LOCATION_ENTRY_CLASS
++GWEATHER_IS_LOCATION_ENTRY_CLASS
++GWEATHER_LOCATION_ENTRY_GET_CLASS
++</SECTION>
++
++<SECTION>
++<FILE>gweather-location</FILE>
++GWeatherLocation
++GWeatherLocationLevel
++gweather_location_get_type
++GWEATHER_TYPE_LOCATION
++gweather_location_new_world
++gweather_location_ref
++gweather_location_unref
++gweather_location_get_name
++gweather_location_get_sort_name
++gweather_location_get_level
++gweather_location_get_parent
++gweather_location_get_children
++gweather_location_free_children
++gweather_location_has_coords
++gweather_location_get_coords
++gweather_location_get_distance
++gweather_location_get_country
++gweather_location_get_timezone
++gweather_location_get_timezones
++gweather_location_free_timezones
++gweather_location_get_code
++gweather_location_get_city_name
++gweather_location_get_weather
++</SECTION>
++
++<SECTION>
++<FILE>weather</FILE>
++WeatherLocation
++weather_location_new
++weather_location_clone
++weather_location_free
++weather_location_equal
++WeatherForecastType
++TempUnit
++SpeedUnit
++PressureUnit
++DistanceUnit
++WeatherPrefs
++WeatherInfo
++WeatherInfoFunc
++weather_info_new
++weather_info_update
++weather_info_abort
++weather_info_clone
++weather_info_free
++weather_info_is_valid
++weather_info_network_error
++weather_info_to_metric
++weather_info_to_imperial
++weather_info_get_location
++weather_info_get_location_name
++weather_info_get_update
++weather_info_get_sky
++weather_info_get_conditions
++weather_info_get_temp
++weather_info_get_temp_min
++weather_info_get_temp_max
++weather_info_get_dew
++weather_info_get_humidity
++weather_info_get_wind
++weather_info_get_pressure
++weather_info_get_visibility
++weather_info_get_apparent
++weather_info_get_sunrise
++weather_info_get_sunset
++weather_info_get_forecast
++weather_info_get_forecast_list
++weather_info_get_radar
++weather_info_get_temp_summary
++weather_info_get_weather_summary
++weather_info_get_icon_name
++weather_info_next_sun_event
++WeatherWindDirection
++WeatherSky
++WeatherConditionPhenomenon
++WeatherConditionQualifier
++WeatherMoonPhase
++WeatherMoonLatitude
++weather_info_get_value_update
++weather_info_get_value_sky
++weather_info_get_value_conditions
++weather_info_get_value_temp
++weather_info_get_value_temp_min
++weather_info_get_value_temp_max
++weather_info_get_value_dew
++weather_info_get_value_apparent
++weather_info_get_value_wind
++weather_info_get_value_pressure
++weather_info_get_value_visibility
++weather_info_get_value_sunrise
++weather_info_get_value_sunset
++weather_info_get_value_moonphase
++weather_info_get_upcoming_moonphases
++</SECTION>
++
++<SECTION>
++<FILE>gweather-prefs</FILE>
++GCONF_TEMP_UNIT
++GCONF_SPEED_UNIT
++GCONF_PRESSURE_UNIT
++GCONF_DISTANCE_UNIT
++GWeatherPrefs
++gweather_prefs_load
++gweather_prefs_temp_enum_to_string
++gweather_prefs_speed_enum_to_string
++gweather_prefs_pressure_enum_to_string
++gweather_prefs_distance_enum_to_string
++gweather_prefs_parse_temperature
++gweather_prefs_parse_speed
++gweather_prefs_get_temp_display_name
++gweather_prefs_get_speed_display_name
++gweather_prefs_get_pressure_display_name
++gweather_prefs_get_distance_display_name
++</SECTION>
++
++<SECTION>
++<FILE>gweather-gconf</FILE>
++GWeatherGConf
++gweather_gconf_new
++gweather_gconf_free
++gweather_gconf_get_client
++gweather_gconf_get_location
++gweather_gconf_get_full_key
++gweather_gconf_set_bool
++gweather_gconf_set_int
++gweather_gconf_set_string
++gweather_gconf_get_bool
++gweather_gconf_get_int
++gweather_gconf_get_string
++</SECTION>
++
++<SECTION>
++<FILE>gweather-xml</FILE>
++gweather_xml_load_locations
++gweather_xml_free_locations
++</SECTION>
++
++<SECTION>
++<FILE>gweather-timezone</FILE>
++GWeatherTimezone
++gweather_timezone_get_type
++GWEATHER_TYPE_TIMEZONE
++gweather_timezone_get_name
++gweather_timezone_get_tzid
++gweather_timezone_get_offset
++gweather_timezone_has_dst
++gweather_timezone_get_dst_offset
++gweather_timezone_ref
++gweather_timezone_unref
++gweather_timezone_get_utc
++</SECTION>
++
+diff --git a/doc/libgweather-3.0.types b/doc/libgweather-3.0.types
+new file mode 100644
+index 0000000..c4d6cac
+--- /dev/null
++++ b/doc/libgweather-3.0.types
+@@ -0,0 +1,4 @@
++gweather_location_entry_get_type
++gweather_location_get_type
++gweather_timezone_get_type
++gweather_timezone_menu_get_type
+diff --git a/doc/libgweather-docs.sgml b/doc/libgweather-docs.sgml
+deleted file mode 100644
+index 08c3b05..0000000
+--- a/doc/libgweather-docs.sgml
++++ /dev/null
+@@ -1,25 +0,0 @@
+-<?xml version="1.0"?>
+-<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.3//EN"
+-               "http://www.oasis-open.org/docbook/xml/4.3/docbookx.dtd">
+-<book id="index" xmlns:xi="http://www.w3.org/2001/XInclude">
+-  <bookinfo>
+-    <title>libgweather Reference Manual</title>
+-    <releaseinfo>
+-      for libgweather [VERSION]
+-      The latest version of this documentation can be found on-line at
+-      <ulink role="online-location" url="http://[SERVER]/libgweather/index.html">http://[SERVER]/libgweather/</ulink>.
+-    </releaseinfo>
+-  </bookinfo>
+-
+-  <chapter>
+-    <title>[Insert title here]</title>
+-    <xi:include href="xml/gweather-location.xml"/>
+-    <xi:include href="xml/location-entry.xml"/>
+-    <xi:include href="xml/gweather-timezone.xml"/>
+-    <xi:include href="xml/timezone-menu.xml"/>
+-    <xi:include href="xml/weather.xml"/>
+-    <xi:include href="xml/gweather-xml.xml"/>
+-    <xi:include href="xml/gweather-gconf.xml"/>
+-    <xi:include href="xml/gweather-prefs.xml"/>
+-  </chapter>
+-</book>
+diff --git a/doc/libgweather-overrides.txt b/doc/libgweather-overrides.txt
+deleted file mode 100644
+index e69de29..0000000
+diff --git a/doc/libgweather-sections.txt b/doc/libgweather-sections.txt
+deleted file mode 100644
+index 2da85f9..0000000
+--- a/doc/libgweather-sections.txt
++++ /dev/null
+@@ -1,185 +0,0 @@
+-<SECTION>
+-<FILE>timezone-menu</FILE>
+-<TITLE>GWeatherTimezoneMenu</TITLE>
+-GWeatherTimezoneMenu
+-gweather_timezone_menu_new
+-gweather_timezone_menu_set_tzid
+-gweather_timezone_menu_get_tzid
+-<SUBSECTION Standard>
+-GWEATHER_TIMEZONE_MENU
+-GWEATHER_IS_TIMEZONE_MENU
+-GWEATHER_TYPE_TIMEZONE_MENU
+-gweather_timezone_menu_get_type
+-GWEATHER_TIMEZONE_MENU_CLASS
+-GWEATHER_IS_TIMEZONE_MENU_CLASS
+-GWEATHER_TIMEZONE_MENU_GET_CLASS
+-</SECTION>
+-
+-<SECTION>
+-<FILE>location-entry</FILE>
+-<TITLE>GWeatherLocationEntry</TITLE>
+-GWeatherLocationEntry
+-gweather_location_entry_new
+-gweather_location_entry_set_location
+-gweather_location_entry_get_location
+-gweather_location_entry_set_city
+-<SUBSECTION Standard>
+-GWEATHER_LOCATION_ENTRY
+-GWEATHER_IS_LOCATION_ENTRY
+-GWEATHER_TYPE_LOCATION_ENTRY
+-gweather_location_entry_get_type
+-GWEATHER_LOCATION_ENTRY_CLASS
+-GWEATHER_IS_LOCATION_ENTRY_CLASS
+-GWEATHER_LOCATION_ENTRY_GET_CLASS
+-</SECTION>
+-
+-<SECTION>
+-<FILE>gweather-timezone</FILE>
+-GWeatherTimezone
+-gweather_timezone_get_name
+-gweather_timezone_get_tzid
+-gweather_timezone_get_offset
+-gweather_timezone_has_dst
+-gweather_timezone_get_dst_offset
+-gweather_timezone_ref
+-gweather_timezone_unref
+-<SUBSECTION Standard>
+-gweather_timezone_get_type
+-GWEATHER_TYPE_TIMEZONE
+-</SECTION>
+-
+-<SECTION>
+-<FILE>gweather-xml</FILE>
+-gweather_xml_load_locations
+-</SECTION>
+-
+-<SECTION>
+-<FILE>gweather-gconf</FILE>
+-GWeatherGConf
+-gweather_gconf_new
+-gweather_gconf_free
+-gweather_gconf_get_client
+-gweather_gconf_get_location
+-gweather_gconf_get_full_key
+-gweather_gconf_set_bool
+-gweather_gconf_set_int
+-gweather_gconf_set_string
+-gweather_gconf_get_bool
+-gweather_gconf_get_int
+-gweather_gconf_get_string
+-</SECTION>
+-
+-<SECTION>
+-<FILE>gweather-prefs</FILE>
+-GCONF_TEMP_UNIT
+-GCONF_SPEED_UNIT
+-GCONF_PRESSURE_UNIT
+-GCONF_DISTANCE_UNIT
+-GWeatherPrefs
+-gweather_prefs_load
+-gweather_prefs_temp_enum_to_string
+-gweather_prefs_speed_enum_to_string
+-gweather_prefs_pressure_enum_to_string
+-gweather_prefs_distance_enum_to_string
+-gweather_prefs_parse_temperature
+-gweather_prefs_parse_speed
+-gweather_prefs_get_temp_display_name
+-gweather_prefs_get_speed_display_name
+-gweather_prefs_get_pressure_display_name
+-gweather_prefs_get_distance_display_name
+-</SECTION>
+-
+-<SECTION>
+-<FILE>gweather-location</FILE>
+-GWeatherLocation
+-GWeatherLocationLevel
+-gweather_location_new_world
+-gweather_location_ref
+-gweather_location_unref
+-gweather_location_get_name
+-gweather_location_get_sort_name
+-gweather_location_get_level
+-gweather_location_get_parent
+-gweather_location_get_children
+-gweather_location_free_children
+-gweather_location_has_coords
+-gweather_location_get_coords
+-gweather_location_get_distance
+-gweather_location_get_country
+-gweather_location_get_timezone
+-gweather_location_get_timezones
+-gweather_location_free_timezones
+-gweather_location_get_code
+-gweather_location_get_city_name
+-gweather_location_get_weather
+-<SUBSECTION Standard>
+-gweather_location_get_type
+-GWEATHER_TYPE_LOCATION
+-</SECTION>
+-
+-<SECTION>
+-<FILE>weather</FILE>
+-WeatherLocation
+-weather_location_new
+-weather_location_clone
+-weather_location_free
+-weather_location_equal
+-WeatherForecastType
+-TempUnit
+-SpeedUnit
+-PressureUnit
+-DistanceUnit
+-WeatherPrefs
+-WeatherInfo
+-WeatherInfoFunc
+-weather_info_new
+-weather_info_update
+-weather_info_abort
+-weather_info_clone
+-weather_info_free
+-weather_info_is_valid
+-weather_info_network_error
+-weather_info_to_metric
+-weather_info_to_imperial
+-weather_info_get_location
+-weather_info_get_location_name
+-weather_info_get_update
+-weather_info_get_sky
+-weather_info_get_conditions
+-weather_info_get_temp
+-weather_info_get_temp_min
+-weather_info_get_temp_max
+-weather_info_get_dew
+-weather_info_get_humidity
+-weather_info_get_wind
+-weather_info_get_pressure
+-weather_info_get_visibility
+-weather_info_get_apparent
+-weather_info_get_sunrise
+-weather_info_get_sunset
+-weather_info_get_forecast
+-weather_info_get_forecast_list
+-weather_info_get_radar
+-weather_info_get_temp_summary
+-weather_info_get_weather_summary
+-weather_info_get_icon_name
+-weather_info_next_sun_event
+-WeatherWindDirection
+-WeatherSky
+-WeatherConditionPhenomenon
+-WeatherConditionQualifier
+-weather_info_get_value_update
+-weather_info_get_value_sky
+-weather_info_get_value_conditions
+-weather_info_get_value_temp
+-weather_info_get_value_temp_min
+-weather_info_get_value_temp_max
+-weather_info_get_value_dew
+-weather_info_get_value_apparent
+-weather_info_get_value_wind
+-weather_info_get_value_pressure
+-weather_info_get_value_visibility
+-weather_info_get_value_sunrise
+-weather_info_get_value_sunset
+-</SECTION>
+-
+diff --git a/doc/libgweather.types b/doc/libgweather.types
+deleted file mode 100644
+index ae55363..0000000
+--- a/doc/libgweather.types
++++ /dev/null
+@@ -1,5 +0,0 @@
+-gweather_location_level_get_type
+-gweather_timezone_get_type
+-gweather_timezone_menu_get_type
+-gweather_location_entry_get_type
+-gweather_location_get_type
+diff --git a/doc/tmpl/gweather-gconf.sgml b/doc/tmpl/gweather-gconf.sgml
+index 771d86c..205ae72 100644
+--- a/doc/tmpl/gweather-gconf.sgml
++++ b/doc/tmpl/gweather-gconf.sgml
+@@ -17,6 +17,9 @@ gweather-gconf
+ <!-- ##### SECTION Stability_Level ##### -->
+ 
+ 
++<!-- ##### SECTION Image ##### -->
++
++
+ <!-- ##### STRUCT GWeatherGConf ##### -->
+ <para>
+ 
+diff --git a/doc/tmpl/gweather-location.sgml b/doc/tmpl/gweather-location.sgml
+index 8465e39..c4e38e5 100644
+--- a/doc/tmpl/gweather-location.sgml
++++ b/doc/tmpl/gweather-location.sgml
+@@ -17,6 +17,9 @@ gweather-location
+ <!-- ##### SECTION Stability_Level ##### -->
+ 
+ 
++<!-- ##### SECTION Image ##### -->
++
++
+ <!-- ##### STRUCT GWeatherLocation ##### -->
+ <para>
+ 
+@@ -36,6 +39,22 @@ gweather-location
+ @GWEATHER_LOCATION_CITY: 
+ @GWEATHER_LOCATION_WEATHER_STATION: 
+ 
++<!-- ##### FUNCTION gweather_location_get_type ##### -->
++<para>
++
++</para>
++
++@void: 
++@Returns: 
++
++
++<!-- ##### MACRO GWEATHER_TYPE_LOCATION ##### -->
++<para>
++
++</para>
++
++
++
+ <!-- ##### FUNCTION gweather_location_new_world ##### -->
+ <para>
+ 
+diff --git a/doc/tmpl/gweather-prefs.sgml b/doc/tmpl/gweather-prefs.sgml
+index 4ef170b..162348a 100644
+--- a/doc/tmpl/gweather-prefs.sgml
++++ b/doc/tmpl/gweather-prefs.sgml
+@@ -17,6 +17,9 @@ gweather-prefs
+ <!-- ##### SECTION Stability_Level ##### -->
+ 
+ 
++<!-- ##### SECTION Image ##### -->
++
++
+ <!-- ##### MACRO GCONF_TEMP_UNIT ##### -->
+ <para>
+ 
+diff --git a/doc/tmpl/gweather-timezone.sgml b/doc/tmpl/gweather-timezone.sgml
+index 58ebd47..70078ca 100644
+--- a/doc/tmpl/gweather-timezone.sgml
++++ b/doc/tmpl/gweather-timezone.sgml
+@@ -17,12 +17,31 @@ gweather-timezone
+ <!-- ##### SECTION Stability_Level ##### -->
+ 
+ 
++<!-- ##### SECTION Image ##### -->
++
++
+ <!-- ##### STRUCT GWeatherTimezone ##### -->
+ <para>
+ 
+ </para>
+ 
+ 
++<!-- ##### FUNCTION gweather_timezone_get_type ##### -->
++<para>
++
++</para>
++
++@void: 
++@Returns: 
++
++
++<!-- ##### MACRO GWEATHER_TYPE_TIMEZONE ##### -->
++<para>
++
++</para>
++
++
++
+ <!-- ##### FUNCTION gweather_timezone_get_name ##### -->
+ <para>
+ 
+@@ -85,3 +104,12 @@ gweather-timezone
+ @zone: 
+ 
+ 
++<!-- ##### FUNCTION gweather_timezone_get_utc ##### -->
++<para>
++
++</para>
++
++@void: 
++@Returns: 
++
++
+diff --git a/doc/tmpl/gweather-xml.sgml b/doc/tmpl/gweather-xml.sgml
+index 4314356..6c072d2 100644
+--- a/doc/tmpl/gweather-xml.sgml
++++ b/doc/tmpl/gweather-xml.sgml
+@@ -17,11 +17,23 @@ gweather-xml
+ <!-- ##### SECTION Stability_Level ##### -->
+ 
+ 
++<!-- ##### SECTION Image ##### -->
++
++
+ <!-- ##### FUNCTION gweather_xml_load_locations ##### -->
+ <para>
+ 
+ </para>
+ 
++@void: 
+ @Returns: 
+ 
+ 
++<!-- ##### FUNCTION gweather_xml_free_locations ##### -->
++<para>
++
++</para>
++
++@locations: 
++
++
+diff --git a/doc/tmpl/location-entry.sgml b/doc/tmpl/location-entry.sgml
+index 46f58ae..e3f04fd 100644
+--- a/doc/tmpl/location-entry.sgml
++++ b/doc/tmpl/location-entry.sgml
+@@ -17,6 +17,9 @@ GWeatherLocationEntry
+ <!-- ##### SECTION Stability_Level ##### -->
+ 
+ 
++<!-- ##### SECTION Image ##### -->
++
++
+ <!-- ##### STRUCT GWeatherLocationEntry ##### -->
+ <para>
+ 
+@@ -33,6 +36,13 @@ GWeatherLocationEntry
+ 
+ </para>
+ 
++<!-- ##### STRUCT GWeatherLocationEntryClass ##### -->
++<para>
++
++</para>
++
++@parent_class: 
++
+ <!-- ##### FUNCTION gweather_location_entry_new ##### -->
+ <para>
+ 
+@@ -60,6 +70,15 @@ GWeatherLocationEntry
+ @Returns: 
+ 
+ 
++<!-- ##### FUNCTION gweather_location_entry_has_custom_text ##### -->
++<para>
++
++</para>
++
++@entry: 
++@Returns: 
++
++
+ <!-- ##### FUNCTION gweather_location_entry_set_city ##### -->
+ <para>
+ 
+diff --git a/doc/tmpl/timezone-menu.sgml b/doc/tmpl/timezone-menu.sgml
+index b52e065..dc1a350 100644
+--- a/doc/tmpl/timezone-menu.sgml
++++ b/doc/tmpl/timezone-menu.sgml
+@@ -17,6 +17,9 @@ GWeatherTimezoneMenu
+ <!-- ##### SECTION Stability_Level ##### -->
+ 
+ 
++<!-- ##### SECTION Image ##### -->
++
++
+ <!-- ##### STRUCT GWeatherTimezoneMenu ##### -->
+ <para>
+ 
+@@ -33,6 +36,13 @@ GWeatherTimezoneMenu
+ 
+ </para>
+ 
++<!-- ##### STRUCT GWeatherTimezoneMenuClass ##### -->
++<para>
++
++</para>
++
++@parent_class: 
++
+ <!-- ##### FUNCTION gweather_timezone_menu_new ##### -->
+ <para>
+ 
+diff --git a/doc/tmpl/weather.sgml b/doc/tmpl/weather.sgml
+index 3df6757..80d733f 100644
+--- a/doc/tmpl/weather.sgml
++++ b/doc/tmpl/weather.sgml
+@@ -17,6 +17,9 @@ weather
+ <!-- ##### SECTION Stability_Level ##### -->
+ 
+ 
++<!-- ##### SECTION Image ##### -->
++
++
+ <!-- ##### STRUCT WeatherLocation ##### -->
+ <para>
+ 
+@@ -541,6 +544,18 @@ weather
+ @QUALIFIER_FREEZING: 
+ @QUALIFIER_LAST: 
+ 
++<!-- ##### TYPEDEF WeatherMoonPhase ##### -->
++<para>
++
++</para>
++
++
++<!-- ##### TYPEDEF WeatherMoonLatitude ##### -->
++<para>
++
++</para>
++
++
+ <!-- ##### FUNCTION weather_info_get_value_update ##### -->
+ <para>
+ 
+@@ -681,3 +696,24 @@ weather
+ @Returns: 
+ 
+ 
++<!-- ##### FUNCTION weather_info_get_value_moonphase ##### -->
++<para>
++
++</para>
++
++@info: 
++@value: 
++@lat: 
++@Returns: 
++
++
++<!-- ##### FUNCTION weather_info_get_upcoming_moonphases ##### -->
++<para>
++
++</para>
++
++@info: 
++@phases: 
++@Returns: 
++
++
+diff --git a/libgweather/Makefile.am b/libgweather/Makefile.am
+index 2ab3d77..1f2548b 100644
+--- a/libgweather/Makefile.am
++++ b/libgweather/Makefile.am
+@@ -1,6 +1,6 @@
+-lib_LTLIBRARIES = libgweather.la
++lib_LTLIBRARIES = libgweather-3.la
+ 
+-libgweatherincdir = $(includedir)/libgweather
++libgweatherincdir = $(includedir)/libgweather-3.0/libgweather
+ gweather_old_headers = \
+ 	weather.h gweather-gconf.h gweather-prefs.h gweather-xml.h
+ gweather_new_headers = \
+@@ -12,9 +12,9 @@ libgweatherinc_HEADERS = \
+ 	gweather-enum-types.h
+ 
+ pkgconfigdir = $(libdir)/pkgconfig
+-pkgconfig_DATA = gweather.pc
++pkgconfig_DATA = gweather-3.0.pc
+ 
+-libgweather_la_SOURCES = \
++libgweather_3_la_SOURCES = \
+ 	weather.c weather.h weather-priv.h \
+ 	weather-metar.c weather-iwin.c weather-met.c \
+ 	weather-bom.c weather-wx.c \
+@@ -31,12 +31,12 @@ libgweather_la_SOURCES = \
+ 	parser.c parser.h
+ 
+ if OS_WIN32
+-libgweather_la_SOURCES += gweather-win32.c
++libgweather_3_la_SOURCES += gweather-win32.c
+ else
+-EXTRA_libgweather_la_SOURCES = gweather-win32.c
++EXTRA_libgweather_3_la_SOURCES = gweather-win32.c
+ endif
+ 
+-libgweather_la_CFLAGS = \
++libgweather_3_la_CFLAGS = \
+ 	-I$(top_srcdir)			\
+ 	-I$(srcdir)			\
+ 	$(WARN_CFLAGS)			\
+@@ -48,7 +48,7 @@ libgweather_la_CFLAGS = \
+ 	-DGNOMELOCALEDIR=\""$(datadir)/locale"\" \
+ 	-DGWEATHER_XML_LOCATION_DIR=\""$(pkgdatadir)"\"
+ 
+-libgweather_la_LIBADD = \
++libgweather_3_la_LIBADD = \
+ 	-lm		\
+ 	$(GTK_LIBS)	\
+ 	$(LIBXML_LIBS)	\
+@@ -56,7 +56,7 @@ libgweather_la_LIBADD = \
+ 	$(GCONF_LIBS) \
+ 	$(REGEX_LIBS)
+ 
+-libgweather_la_LDFLAGS = \
++libgweather_3_la_LDFLAGS = \
+ 	-version-info $(LT_VERSION) -no-undefined
+ 
+ MKENUMS_GENERATED = gweather-enum-types.c gweather-enum-types.h
+@@ -88,7 +88,7 @@ test_metar_CFLAGS = \
+ test_metar_LDADD = \
+ 	$(LIBSOUP_LIBS)	\
+ 	$(REGEX_LIBS) \
+-	libgweather.la
++	libgweather-3.la
+ 
+ test_locations_SOURCES = test_locations.c
+ 
+@@ -100,7 +100,7 @@ test_locations_CFLAGS = \
+ 	$(GNOME_VFS_APPLETS_CFLAGS)	\
+ 	-DG_LOG_DOMAIN=\"GWeather\"
+ 
+-test_locations_LDADD = libgweather.la
++test_locations_LDADD = libgweather-3.la
+ 
+ test_sun_moon_SOURCES = \
+ 	test_sun_moon.c
+@@ -115,7 +115,7 @@ test_sun_moon_CFLAGS = \
+ 
+ test_sun_moon_LDADD = \
+ 	$(LIBSOUP_LIBS)	\
+-	libgweather.la
++	libgweather-3.la
+ 
+ noinst_HEADERS = weather-priv.h gweather-win32.h
+ noinst_PROGRAMS = test_metar test_locations test_sun_moon
+@@ -126,6 +126,49 @@ schema_DATA = $(schema_in_files:.schemas.in=.schemas)
+ 
+ @INTLTOOL_SCHEMAS_RULE@
+ 
++EXTRA_DIST = gweather.pc.in gweather-uninstalled.pc.in $(schema_in_files)
++
++EXTRA_PROGRAMS = test_metar test_sun_moon
++
++CLEANFILES = $(schema_DATA) $(EXTRA_PROGRAMS) $(MKENUMS_GENERATED)
++
++# Introspection
++-include $(INTROSPECTION_MAKEFILE)
++INTROSPECTION_GIRS =
++INTROSPECTION_SCANNER_ARGS = --add-include-path=$(srcdir)
++INTROSPECTION_COMPILER_ARGS = --includedir=$(srcdir)
++
++if HAVE_INTROSPECTION
++introspection_sources = 	\
++	weather.c weather.h \
++	gweather-location.c gweather-location.h \
++	gweather-timezone.c gweather-timezone.h \
++	location-entry.c location-entry.h \
++	timezone-menu.c timezone-menu.h \
++	gweather-enum-types.h
++
++GWeather-3.0.gir: libgweather-3.la Makefile
++GWeather_3_0_gir_INCLUDES = GObject-2.0 Gtk-3.0
++GWeather_3_0_gir_CFLAGS =	\
++       -I$(top_srcdir)		\
++       $(GTK_CFLAGS)		\
++       $(LIBXML_CFLAGS)		\
++       $(LIBSOUP_CFLAGS)	\
++       $(GCONF_CFLAGS)		\
++       -DGWEATHER_I_KNOW_THIS_IS_UNSTABLE
++GWeather_3_0_gir_LIBS = libgweather-3.la
++GWeather_3_0_gir_FILES = $(addprefix $(srcdir)/,$(introspection_sources))
++INTROSPECTION_GIRS += GWeather-3.0.gir
++
++girdir = $(datadir)/gir-1.0
++gir_DATA = $(INTROSPECTION_GIRS)
++
++typelibdir = $(libdir)/girepository-1.0
++typelib_DATA = $(INTROSPECTION_GIRS:.gir=.typelib)
++
++CLEANFILES += $(gir_DATA) $(typelib_DATA)
++endif
++
+ if GCONF_SCHEMAS_INSTALL
+ install-data-local:
+ 	if test -z "$(DESTDIR)" ; then \
+@@ -139,10 +182,4 @@ uninstall-local:
+ 	done
+ endif
+ 
+-EXTRA_DIST = gweather.pc.in gweather-uninstalled.pc.in $(schema_in_files)
+-
+-EXTRA_PROGRAMS = test_metar test_sun_moon
+-
+-CLEANFILES = $(schema_DATA) $(EXTRA_PROGRAMS) $(MKENUMS_GENERATED)
+-
+ -include $(top_srcdir)/git.mk
+diff --git a/libgweather/gweather-3.0-uninstalled.pc.in b/libgweather/gweather-3.0-uninstalled.pc.in
+new file mode 100644
+index 0000000..2d32723
+--- /dev/null
++++ b/libgweather/gweather-3.0-uninstalled.pc.in
+@@ -0,0 +1,13 @@
++prefix=@prefix@
++exec_prefix=@exec_prefix@
++datarootdir=@datarootdir@
++libdir=@libdir@
++includedir=@includedir@
++
++Name: GWeather
++Description: GWeather shared library
++Version: @VERSION@
++Requires: glib-2.0 gobject-2.0 gdk-pixbuf-2.0 gtk+-3.0 gconf-2.0
++Requires.private: libxml-2.0 libsoup-2.4
++Libs: ${pc_top_builddir}/${pcfiledir}/libgweather-3.la
++Cflags: -I${pc_top_builddir}/${pcfiledir}/..
+diff --git a/libgweather/gweather-3.0.pc.in b/libgweather/gweather-3.0.pc.in
+new file mode 100644
+index 0000000..132ba27
+--- /dev/null
++++ b/libgweather/gweather-3.0.pc.in
+@@ -0,0 +1,14 @@
++prefix=@prefix@
++exec_prefix=@exec_prefix@
++datarootdir=@datarootdir@
++libdir=@libdir@
++includedir=@includedir@
++
++Name: GWeather
++Description: GWeather shared library
++Version: @VERSION@
++Requires: glib-2.0 gobject-2.0 gdk-pixbuf-2.0 gtk+-3.0 gconf-2.0
++Requires.private: libxml-2.0 libsoup-2.4
++Libs: -L${libdir} -lgweather-3
++Libs.private: -lm
++Cflags: -I${includedir}/libgweather-3.0
+diff --git a/libgweather/gweather-uninstalled.pc.in b/libgweather/gweather-uninstalled.pc.in
+deleted file mode 100644
+index c5c66fa..0000000
+--- a/libgweather/gweather-uninstalled.pc.in
++++ /dev/null
+@@ -1,13 +0,0 @@
+-prefix=@prefix@
+-exec_prefix=@exec_prefix@
+-datarootdir=@datarootdir@
+-libdir=@libdir@
+-includedir=@includedir@
+-
+-Name: GWeather
+-Description: GWeather shared library
+-Version: @VERSION@
+-Requires: glib-2.0 gobject-2.0 gdk-pixbuf-2.0 gtk+-2.0 gconf-2.0
+-Requires.private: libxml-2.0 libsoup-2.4
+-Libs: ${pc_top_builddir}/${pcfiledir}/libgweather.la
+-Cflags: -I${pc_top_builddir}/${pcfiledir}/..
+diff --git a/libgweather/gweather.pc.in b/libgweather/gweather.pc.in
+deleted file mode 100644
+index 55a48fc..0000000
+--- a/libgweather/gweather.pc.in
++++ /dev/null
+@@ -1,14 +0,0 @@
+-prefix=@prefix@
+-exec_prefix=@exec_prefix@
+-datarootdir=@datarootdir@
+-libdir=@libdir@
+-includedir=@includedir@
+-
+-Name: GWeather
+-Description: GWeather shared library
+-Version: @VERSION@
+-Requires: glib-2.0 gobject-2.0 gdk-pixbuf-2.0 gtk+-2.0 gconf-2.0
+-Requires.private: libxml-2.0 libsoup-2.4
+-Libs: -L${libdir} -lgweather
+-Libs.private: -lm
+-Cflags: -I${includedir}
+diff --git a/po/et.po b/po/et.po
+index d4d8ed1..98c7167 100644
+--- a/po/et.po
++++ b/po/et.po
+@@ -14,11 +14,10 @@
+ msgid ""
+ msgstr ""
+ "Project-Id-Version: libgweather HEAD\n"
+-"Report-Msgid-Bugs-To: http://bugzilla.gnome.org/enter_bug.cgi?product=gnome-"
+-"applets&component=gweather\n"
++"Report-Msgid-Bugs-To: http://bugzilla.gnome.org/enter_bug.cgi?product=gnome-applets&component=gweather\n"
+ "POT-Creation-Date: 2009-08-12 09:02+0000\n"
+-"PO-Revision-Date: 2009-08-12 15:20+0300\n"
+-"Last-Translator: Ivar Smolin <okul@linux.ee>\n"
++"PO-Revision-Date: 2010-07-02 23:19+0300\n"
++"Last-Translator: Mattias Põldaru <mahfiaz gmail com>\n"
+ "Language-Team: Estonian <gnome-et@linux.ee>\n"
+ "MIME-Version: 1.0\n"
+ "Content-Type: text/plain; charset=UTF-8\n"
+@@ -194,27 +193,14 @@ msgstr "km"
+ msgid "Greenwich Mean Time"
+ msgstr "Greenwichi ajavöönd"
+ 
+-msgid ""
+-"A three-digit-long code for retrieving radar maps from weather.com, found "
+-"from http://git.gnome.org/cgit/libgweather/plain/data/Locations.xml.in"
+-msgstr ""
+-"Kolmekohaline number radarikaardi vastuvõtmiseks weather.com saidist. "
+-"Numbrid leiab aadressilt http://git.gnome.org/cgit/libgweather/plain/data/"
+-"Locations.xml.in"
++msgid "A three-digit-long code for retrieving radar maps from weather.com, found from http://git.gnome.org/cgit/libgweather/plain/data/Locations.xml.in"
++msgstr "Kolmekohaline number radarikaardi vastuvõtmiseks weather.com saidist. Numbrid leiab aadressilt http://git.gnome.org/cgit/libgweather/plain/data/Locations.xml.in"
+ 
+-msgid ""
+-"A unique zone for the city, as found from http://git.gnome.org/cgit/"
+-"libgweather/plain/data/Locations.xml.in"
+-msgstr ""
+-"Unikaalne piirkond linna jaoks, nagu on näidatud aadressil http://git.gnome."
+-"org/cgit/libgweather/plain/data/Locations.xml.in"
++msgid "A unique zone for the city, as found from http://git.gnome.org/cgit/libgweather/plain/data/Locations.xml.in"
++msgstr "Unikaalne piirkond linna jaoks, nagu on näidatud aadressil http://git.gnome.org/cgit/libgweather/plain/data/Locations.xml.in"
+ 
+-msgid ""
+-"Determines whether the applet automatically updates its weather statistics "
+-"or not."
+-msgstr ""
+-"Selle abil määratakse, kas rakend uuendab ilmastatistikat automaatselt või "
+-"mitte."
++msgid "Determines whether the applet automatically updates its weather statistics or not."
++msgstr "Selle abil määratakse, kas rakend uuendab ilmastatistikat automaatselt või mitte."
+ 
+ msgid "Display radar map"
+ msgstr "Näita _radarikaarti"
+@@ -225,18 +211,11 @@ msgstr "Kaugusühik"
+ msgid "Fetch a radar map on each update."
+ msgstr "Radarikaardi hankimine iga uuenduse korral."
+ 
+-msgid ""
+-"If true, then retrieve a radar map from a location specified by the \"radar"
+-"\" key."
+-msgstr ""
+-"Kui märgitud, siis võetakse radarikaart \"radar\" võtmega määratud asukohast."
++msgid "If true, then retrieve a radar map from a location specified by the \"radar\" key."
++msgstr "Kui märgitud, siis võetakse radarikaart \"radar\" võtmega määratud asukohast."
+ 
+-msgid ""
+-"Latitude and longitude of your location expressed in DD-MM-SS[NS] DD-MM-SS"
+-"[EW]."
+-msgstr ""
+-"Sinu asukoha laius- ja pikkuskraad väljendatuna DD-MM-SS[NS] DD-MM-SS[EW] "
+-"vormingus"
++msgid "Latitude and longitude of your location expressed in DD-MM-SS[NS] DD-MM-SS[EW]."
++msgstr "Sinu asukoha laius- ja pikkuskraad väljendatuna DD-MM-SS[NS] DD-MM-SS[EW] vormingus"
+ 
+ msgid "Location coordinates"
+ msgstr "Asukoha koordinaadid"
+@@ -244,12 +223,8 @@ msgstr "Asukoha koordinaadid"
+ msgid "Nearby city"
+ msgstr "Lähim linn"
+ 
+-msgid ""
+-"Nearby major zone, such as a capital city, as found from http://git.gnome."
+-"org/cgit/libgweather/plain/data/Locations.xml.in"
+-msgstr ""
+-"Lähim tähtsam piirkond (näiteks pealinn), nagu on näidatud aadressil http://"
+-"git.gnome.org/cgit/libgweather/plain/data/Locations.xml.in"
++msgid "Nearby major zone, such as a capital city, as found from http://git.gnome.org/cgit/libgweather/plain/data/Locations.xml.in"
++msgstr "Lähim tähtsam piirkond (näiteks pealinn), nagu on näidatud aadressil http://git.gnome.org/cgit/libgweather/plain/data/Locations.xml.in"
+ 
+ msgid "Not used anymore"
+ msgstr "Enam ei kasutata"
+@@ -387,7 +362,7 @@ msgid "Clear Sky"
+ msgstr "Selge taevas"
+ 
+ msgid "Broken clouds"
+-msgstr "Pilvitus selginemistega"
++msgstr "Pilves selgimistega"
+ 
+ msgid "Scattered clouds"
+ msgstr "Vahelduv pilvisus"
+diff --git a/python/Makefile.am b/python/Makefile.am
+deleted file mode 100644
+index 9bf0e37..0000000
+--- a/python/Makefile.am
++++ /dev/null
+@@ -1,37 +0,0 @@
+-if BUILD_PYTHON
+-INCLUDES =			\
+-	-I$(top_srcdir)		\
+-	$(PYTHON_INCLUDES)	\
+-	$(PYGOBJECT_CFLAGS)	\
+-	$(GTK_CFLAGS)
+-
+-pyunstabledir = $(pyexecdir)/gweather/I_KNOW_THIS_IS_UNSTABLE
+-pyunstable_LTLIBRARIES = gweather.la
+-gweather_la_LDFLAGS = -module -avoid-version -export-symbols-regex initgweather
+-gweather_la_LIBADD = ../libgweather/libgweather.la
+-gweather_la_SOURCES = gweathermodule.c
+-nodist_gweather_la_SOURCES = gweather.c
+-gweather.c: gweather.defs gweather.override
+-
+-.defs.c:
+-	$(AM_V_GEN)(cd $(srcdir)\
+-	 && pygobject-codegen-2.0 \
+-		--register $(PYGTK_DEFS) \
+-		--override $*.override \
+-		--prefix py$* $*.defs) > gen-$*.c \
+-	&& cp gen-$*.c $*.c \
+-	&& rm -f gen-$*.c
+-
+-install-exec-hook:
+-	$(MKDIR_P) "$(DESTDIR)$(pyunstabledir)"
+-	$(INSTALL_DATA) $(srcdir)/bad__init__.py "$(DESTDIR)$(pyexecdir)/gweather/__init__.py"
+-	touch $(DESTDIR)$(pyunstabledir)/__init__.py
+-	chmod a+x $(DESTDIR)$(pyunstabledir)/__init__.py
+-
+-endif
+-
+-EXTRA_DIST = gweather.defs gweather.override bad__init__.py demo.py
+-
+-CLEANFILES = gweather.c
+-
+--include $(top_srcdir)/git.mk
+diff --git a/python/bad__init__.py b/python/bad__init__.py
+deleted file mode 100644
+index 1279f57..0000000
+--- a/python/bad__init__.py
++++ /dev/null
+@@ -1,11 +0,0 @@
+-# The correct idiom is
+-# from gweather.I_KNOW_THIS_IS_UNSTABLE import gweather
+-
+-def location_new_world(use_regions):
+-    raise ImportError("libgweather should only be used if you understand that it's subject to change, and is not supported as a fixed API/ABI or as part of the platform")
+-
+-def location_entry_new(top):
+-    raise ImportError("libgweather should only be used if you understand that it's subject to change, and is not supported as a fixed API/ABI or as part of the platform")
+-
+-def timezone_menu_new(top):
+-    raise ImportError("libgweather should only be used if you understand that it's subject to change, and is not supported as a fixed API/ABI or as part of the platform")
+diff --git a/python/demo.py b/python/demo.py
+deleted file mode 100644
+index 8f323c6..0000000
+--- a/python/demo.py
++++ /dev/null
+@@ -1,7 +0,0 @@
+-from gweather.I_KNOW_THIS_IS_UNSTABLE import gweather
+-
+-for loc in gweather.location_new_world(False).get_children():
+-    print loc.get_name()
+-    for zone in loc.get_timezones():
+-        if zone.get_name() is not None:
+-            print "  %s" % zone.get_name()
+diff --git a/python/gweather.defs b/python/gweather.defs
+deleted file mode 100644
+index ec171f4..0000000
+--- a/python/gweather.defs
++++ /dev/null
+@@ -1,326 +0,0 @@
+-;; -*- scheme -*-
+-; boxed definitions ...
+-
+-(define-boxed Location
+-  (in-module "GWeather")
+-  (c-name "GWeatherLocation")
+-  (gtype-id "GWEATHER_TYPE_LOCATION")
+-)
+-
+-(define-boxed Timezone
+-  (in-module "GWeather")
+-  (c-name "GWeatherTimezone")
+-  (gtype-id "GWEATHER_TYPE_TIMEZONE")
+-)
+-
+-; interface definitions ...
+-
+-; object definitions ...
+-
+-(define-object LocationEntry
+-  (in-module "GWeather")
+-  (parent "GtkEntry")
+-  (c-name "GWeatherLocationEntry")
+-  (gtype-id "GWEATHER_TYPE_LOCATION_ENTRY")
+-)
+-
+-(define-object TimezoneMenu
+-  (in-module "GWeather")
+-  (parent "GtkComboBox")
+-  (c-name "GWeatherTimezoneMenu")
+-  (gtype-id "GWEATHER_TYPE_TIMEZONE_MENU")
+-)
+-
+-; pointer definitions ...
+-
+-;; Enumerations and Flags ...
+-
+-(define-enum LocationLevel
+-  (in-module "GWeather")
+-  (c-name "GWeatherLocationLevel")
+-  (gtype-id "GWEATHER_TYPE_LOCATION_LEVEL")
+-  (values
+-    '("world" "GWEATHER_LOCATION_WORLD")
+-    '("region" "GWEATHER_LOCATION_REGION")
+-    '("country" "GWEATHER_LOCATION_COUNTRY")
+-    '("adm1" "GWEATHER_LOCATION_ADM1")
+-    '("adm2" "GWEATHER_LOCATION_ADM2")
+-    '("city" "GWEATHER_LOCATION_CITY")
+-    '("weather-station" "GWEATHER_LOCATION_WEATHER_STATION")
+-  )
+-)
+-
+-
+-;; From gweather-enum-types.h
+-
+-(define-function g_weather_location_level_get_type
+-  (c-name "g_weather_location_level_get_type")
+-  (return-type "GType")
+-)
+-
+-
+-
+-;; From gweather-location.h
+-
+-(define-function location_get_type
+-  (c-name "gweather_location_get_type")
+-  (return-type "GType")
+-)
+-
+-(define-function location_new_world
+-  (c-name "gweather_location_new_world")
+-  (return-type "GWeatherLocation*")
+-  (parameters
+-    '("gboolean" "use_regions")
+-  )
+-)
+-
+-(define-method ref
+-  (of-object "GWeatherLocation")
+-  (c-name "gweather_location_ref")
+-  (return-type "GWeatherLocation*")
+-)
+-
+-(define-method unref
+-  (of-object "GWeatherLocation")
+-  (c-name "gweather_location_unref")
+-  (return-type "none")
+-)
+-
+-(define-method get_name
+-  (of-object "GWeatherLocation")
+-  (c-name "gweather_location_get_name")
+-  (return-type "const-char*")
+-)
+-
+-(define-method get_sort_name
+-  (of-object "GWeatherLocation")
+-  (c-name "gweather_location_get_sort_name")
+-  (return-type "const-char*")
+-)
+-
+-(define-method get_level
+-  (of-object "GWeatherLocation")
+-  (c-name "gweather_location_get_level")
+-  (return-type "GWeatherLocationLevel")
+-)
+-
+-(define-method get_parent
+-  (of-object "GWeatherLocation")
+-  (c-name "gweather_location_get_parent")
+-  (return-type "GWeatherLocation*")
+-)
+-
+-(define-method get_children
+-  (of-object "GWeatherLocation")
+-  (c-name "gweather_location_get_children")
+-  (return-type "GWeatherLocation**")
+-)
+-
+-(define-method free_children
+-  (of-object "GWeatherLocation")
+-  (c-name "gweather_location_free_children")
+-  (return-type "none")
+-  (parameters
+-    '("GWeatherLocation**" "children")
+-  )
+-)
+-
+-(define-method has_coords
+-  (of-object "GWeatherLocation")
+-  (c-name "gweather_location_has_coords")
+-  (return-type "gboolean")
+-)
+-
+-(define-method get_coords
+-  (of-object "GWeatherLocation")
+-  (c-name "gweather_location_get_coords")
+-  (return-type "none")
+-  (parameters
+-    '("double*" "latitude")
+-    '("double*" "longitude")
+-  )
+-)
+-
+-(define-method get_distance
+-  (of-object "GWeatherLocation")
+-  (c-name "gweather_location_get_distance")
+-  (return-type "double")
+-  (parameters
+-    '("GWeatherLocation*" "loc2")
+-  )
+-)
+-
+-(define-method get_country
+-  (of-object "GWeatherLocation")
+-  (c-name "gweather_location_get_country")
+-  (return-type "const-char*")
+-)
+-
+-(define-method get_timezone
+-  (of-object "GWeatherLocation")
+-  (c-name "gweather_location_get_timezone")
+-  (return-type "GWeatherTimezone*")
+-)
+-
+-(define-method get_timezones
+-  (of-object "GWeatherLocation")
+-  (c-name "gweather_location_get_timezones")
+-  (return-type "GWeatherTimezone**")
+-)
+-
+-(define-method free_timezones
+-  (of-object "GWeatherLocation")
+-  (c-name "gweather_location_free_timezones")
+-  (return-type "none")
+-  (parameters
+-    '("GWeatherTimezone**" "zones")
+-  )
+-)
+-
+-(define-method get_code
+-  (of-object "GWeatherLocation")
+-  (c-name "gweather_location_get_code")
+-  (return-type "const-char*")
+-)
+-
+-(define-method get_city_name
+-  (of-object "GWeatherLocation")
+-  (c-name "gweather_location_get_city_name")
+-  (return-type "char*")
+-)
+-
+-(define-method get_weather
+-  (of-object "GWeatherLocation")
+-  (c-name "gweather_location_get_weather")
+-  (return-type "WeatherInfo*")
+-)
+-
+-
+-
+-;; From gweather-timezone.h
+-
+-(define-function timezone_get_type
+-  (c-name "gweather_timezone_get_type")
+-  (return-type "GType")
+-)
+-
+-(define-method get_name
+-  (of-object "GWeatherTimezone")
+-  (c-name "gweather_timezone_get_name")
+-  (return-type "const-char*")
+-)
+-
+-(define-method get_tzid
+-  (of-object "GWeatherTimezone")
+-  (c-name "gweather_timezone_get_tzid")
+-  (return-type "const-char*")
+-)
+-
+-(define-method get_offset
+-  (of-object "GWeatherTimezone")
+-  (c-name "gweather_timezone_get_offset")
+-  (return-type "int")
+-)
+-
+-(define-method has_dst
+-  (of-object "GWeatherTimezone")
+-  (c-name "gweather_timezone_has_dst")
+-  (return-type "gboolean")
+-)
+-
+-(define-method get_dst_offset
+-  (of-object "GWeatherTimezone")
+-  (c-name "gweather_timezone_get_dst_offset")
+-  (return-type "int")
+-)
+-
+-(define-method ref
+-  (of-object "GWeatherTimezone")
+-  (c-name "gweather_timezone_ref")
+-  (return-type "GWeatherTimezone*")
+-)
+-
+-(define-method unref
+-  (of-object "GWeatherTimezone")
+-  (c-name "gweather_timezone_unref")
+-  (return-type "none")
+-)
+-
+-
+-
+-;; From location-entry.h
+-
+-(define-function location_entry_get_type
+-  (c-name "gweather_location_entry_get_type")
+-  (return-type "GType")
+-)
+-
+-(define-function location_entry_new
+-  (c-name "gweather_location_entry_new")
+-  (is-constructor-of "GWeatherLocationEntry")
+-  (return-type "GtkWidget*")
+-  (properties
+-    '("top")
+-  )
+-)
+-
+-(define-method set_location
+-  (of-object "GWeatherLocationEntry")
+-  (c-name "gweather_location_entry_set_location")
+-  (return-type "none")
+-  (parameters
+-    '("GWeatherLocation*" "loc")
+-  )
+-)
+-
+-(define-method get_location
+-  (of-object "GWeatherLocationEntry")
+-  (c-name "gweather_location_entry_get_location")
+-  (return-type "GWeatherLocation*")
+-)
+-
+-(define-method set_city
+-  (of-object "GWeatherLocationEntry")
+-  (c-name "gweather_location_entry_set_city")
+-  (return-type "none")
+-  (parameters
+-    '("const-char*" "city_name")
+-    '("const-char*" "code")
+-  )
+-)
+-
+-
+-
+-;; From timezone-menu.h
+-
+-(define-function timezone_menu_get_type
+-  (c-name "gweather_timezone_menu_get_type")
+-  (return-type "GType")
+-)
+-
+-(define-function timezone_menu_new
+-  (c-name "gweather_timezone_menu_new")
+-  (is-constructor-of "GWeatherTimezoneMenu")
+-  (return-type "GtkWidget*")
+-  (properties
+-    '("top")
+-  )
+-)
+-
+-(define-method set_tzid
+-  (of-object "GWeatherTimezoneMenu")
+-  (c-name "gweather_timezone_menu_set_tzid")
+-  (return-type "none")
+-  (parameters
+-    '("const-char*" "tzid")
+-  )
+-)
+-
+-(define-method get_tzid
+-  (of-object "GWeatherTimezoneMenu")
+-  (c-name "gweather_timezone_menu_get_tzid")
+-  (return-type "const-char*")
+-)
+-
+-
+diff --git a/python/gweather.override b/python/gweather.override
+deleted file mode 100644
+index 7e0da27..0000000
+--- a/python/gweather.override
++++ /dev/null
+@@ -1,104 +0,0 @@
+-/* -*- Mode: C; c-basic-offset: 4 -*-
+- *
+- * gweather.override: overrides for gweather
+- */
+-%%
+-headers
+-#define NO_IMPORT_PYGOBJECT
+-#include "pygobject.h"
+-
+-#define GWEATHER_I_KNOW_THIS_IS_UNSTABLE
+-#include <libgweather/gweather-location.h>
+-#include <libgweather/gweather-timezone.h>
+-#include <libgweather/location-entry.h>
+-#include <libgweather/timezone-menu.h>
+-#include <libgweather/gweather-enum-types.h>
+-
+-%%
+-modulename gweather
+-%%
+-import gtk.Entry as PyGtkEntry_Type
+-import gtk.ComboBox as PyGtkComboBox_Type
+-%%
+-ignore
+-  gweather_location_get_weather
+-  gweather_location_free_children
+-  gweather_location_free_timezones
+-%%
+-ignore-glob
+-  *_get_type
+-  *_ref
+-  *_unref
+-%%
+-override gweather_location_get_children
+-static PyObject *
+-_wrap_gweather_location_get_children (PyGObject *self, PyObject *args)
+-{
+-    GWeatherLocation *loc, **children;
+-    int i;
+-    PyObject *pychildren, *pychild;
+-
+-    loc = pyg_boxed_get (self, GWeatherLocation);
+-    children = gweather_location_get_children (loc);
+-    for (i = 0; children[i]; i++)
+-	;
+-
+-    pychildren = PyList_New (i);
+-    for (i = 0; children[i]; i++) {
+-	pychild = pyg_boxed_new (GWEATHER_TYPE_LOCATION, children[i], TRUE, TRUE);
+-	PyList_SetItem (pychildren, i, pychild);
+-    }
+-
+-    gweather_location_free_children (loc, children);
+-    return pychildren;
+-}
+-%%
+-override gweather_location_get_timezones
+-static PyObject *
+-_wrap_gweather_location_get_timezones (PyGObject *self, PyObject *args)
+-{
+-    GWeatherLocation *loc;
+-    GWeatherTimezone **zones;
+-    int i;
+-    PyObject *pyzones, *pyzone;
+-
+-    loc = pyg_boxed_get (self, GWeatherLocation);
+-    zones = gweather_location_get_timezones (loc);
+-    for (i = 0; zones[i]; i++)
+-	;
+-
+-    pyzones = PyList_New (i);
+-    for (i = 0; zones[i]; i++) {
+-	pyzone = pyg_boxed_new (GWEATHER_TYPE_TIMEZONE, zones[i], TRUE, TRUE);
+-	PyList_SetItem (pyzones, i, pyzone);
+-    }
+-
+-    gweather_location_free_timezones (loc, zones);
+-    return pyzones;
+-}
+-%%
+-override gweather_location_get_coords
+-static PyObject *
+-_wrap_gweather_location_get_coords (PyGObject *self, PyObject *args)
+-{
+-    GWeatherLocation *loc;
+-    double latitude, longitude;
+-    PyObject *ret;
+-
+-    loc = pyg_boxed_get (self, GWeatherLocation);
+-    if (!gweather_location_has_coords (loc)) {
+-	Py_INCREF (Py_None);
+-	return Py_None;
+-    }
+-
+-    gweather_location_get_coords (loc, &latitude, &longitude);
+-    ret = PyTuple_New (2);
+-    PyTuple_SetItem (ret, 0, PyFloat_FromDouble (latitude));
+-    PyTuple_SetItem (ret, 1, PyFloat_FromDouble (longitude));
+-    return ret;
+-}
+-%%
+-new-constructor GWEATHER_TYPE_LOCATION_ENTRY
+-%%
+-new-constructor GWEATHER_TYPE_TIMEZONE_MENU
+-%%
+diff --git a/python/gweathermodule.c b/python/gweathermodule.c
+deleted file mode 100644
+index 116230c..0000000
+--- a/python/gweathermodule.c
++++ /dev/null
+@@ -1,45 +0,0 @@
+-/* -*- Mode: C; c-basic-offset: 4 -*-
+- *
+- * gweathermodule.c: module wrapping gweather.
+- *
+- * This library is free software; you can redistribute it and/or
+- * modify it under the terms of the GNU Lesser General Public License
+- * as published by the Free Software Foundation; either version 2.1 of
+- * the License, or (at your option) any later version.
+- *
+- * This library is distributed in the hope that it will be useful, but
+- * WITHOUT ANY WARRANTY; without even the implied warranty of
+- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+- * Lesser General Public License for more details.
+- *
+- * You should have received a copy of the GNU Lesser General Public
+- * License along with this library; if not, see
+- * <http://www.gnu.org/licenses/>.
+- */
+-
+-#ifdef HAVE_CONFIG_H
+-#include "config.h"
+-#endif
+-
+-/* include this first, before NO_IMPORT_PYGOBJECT is defined */
+-#include <pygobject.h>
+-
+-void pygweather_register_classes (PyObject *d);
+-void pygweather_add_constants(PyObject *module, const gchar *strip_prefix);
+-void _pygweather_register_boxed_types(void);	
+-
+-extern PyMethodDef pygweather_functions[];
+-
+-DL_EXPORT(void)
+-initgweather(void)
+-{
+-    PyObject *m, *d;
+-
+-    init_pygobject ();
+-    g_thread_init (NULL);
+-
+-    m = Py_InitModule ("gweather", pygweather_functions);
+-    d = PyModule_GetDict (m);
+-    pygweather_register_classes (d);
+-    pygweather_add_constants(m, "GWEATHER_");
+-}
