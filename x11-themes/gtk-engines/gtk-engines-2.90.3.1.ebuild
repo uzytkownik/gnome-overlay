@@ -5,7 +5,7 @@
 EAPI="2"
 GCONF_DEBUG="no"
 
-inherit gnome2 eutils
+inherit gnome2 eutils autotools
 
 DESCRIPTION="GTK+3 standard engines and themes"
 HOMEPAGE="http://www.gtk.org/"
