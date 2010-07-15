@@ -62,6 +62,8 @@ src_prepare() {
 	# We need to run elibtoolize to ensure correct so versioning on FreeBSD
 	# upgraded to an eautoreconf for the above interix patch.
 	eautoreconf
+
+	cp build/{compile,config.guess,config.sub,depconf,install-sh,ltmain.sh,missing} ./
 }
 
 src_configure() {
