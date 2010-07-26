@@ -46,9 +46,6 @@ pkg_setup() {
 src_prepare() {
 	gnome2_src_prepare
 
-	# Fix build with --as-needed, upstream bug #597489
-	epatch "${FILESDIR}/${PN}-2.28.0-as-needed.patch"
-
 	# FIXME: Fix compilation flags crazyness
 	sed 's/CFLAGS="$CFLAGS $WARNING_FLAGS"//' \
 		-i configure.ac configure || die "sed 1 failed"

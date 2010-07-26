@@ -4,7 +4,7 @@
 
 EAPI="2"
 
-inherit gnome2 eutils versionator
+inherit gnome2 eutils versionator autotools
 
 MY_MAJORV=$(get_version_component_range 1-2)
 
@@ -38,8 +38,11 @@ DOCS="AUTHORS ChangeLog HACKING NEWS README"
 
 # FIXME: Open security issues:
 # FIXME: - adblock        ( https://bugzilla.gnome.org/show_bug.cgi?id=595255 )
-# FIXME: broken extensions:
-# FIXME: - session-saver  ( https://bugzilla.gnome.org/show_bug.cgi?id=316245 )
+
+src_prepare() {
+	epatch "${FILESDIR}/${P}-session-manager.patch"
+	eautoreconf
+}
 
 pkg_setup() {
 	local extensions=""
@@ -47,7 +50,7 @@ pkg_setup() {
 	extensions="actions auto-reload auto-scroller certificates \
 			   error-viewer extensions-manager-ui gestures html5tube \
 			   java-console livehttpheaders page-info permissions \
-			   push-scroller select-stylesheet \
+			   push-scroller select-stylesheet session-manager \
 			   smart-bookmarks soup-fly tab-groups tab-states"
 	use dbus && extensions="${extensions} rss"
 

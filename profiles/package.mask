@@ -6,37 +6,79 @@
 # NOTE: Please add your entry at the top!
 #
 
+# Priit Laes <plaes@plaes.org> (19 Jul 2010)
+# Requires gobject-introspection-0.9 which is masked
+=dev-python/pygobject-2.21.5 
+
+# Jonathan Callen <abcd@gentoo.org> (13 Jul 2010)
+# Breaks ABI and API with older versions, masked until
+# everything is fixed
+=dev-libs/gobject-introspection-0.9*
+
+# Nirbheek Chauhan <nirbheek@gentoo.org> (9 Jul 2010)
+# New rhythmbox needs libdmapsharing with USE=daap
+# also uses >=dev-libs/glib-2.25.6
+=media-sound/rhythmbox-0.13*
+
+# Jonathan Callen <abcd@gentoo.org> (23 Jun 2010)
+# Mask dev version
+=x11-libs/cairo-1.9*
+=x11-libs/libnotify-0.5*
+=x11-misc/alacarte-0.13*
+=x11-misc/notification-daemon-0.5*
+
+# Jonathan Callen <abcd@gentoo.org> (22 Jun 2010)
+# Mask GTK+ 2.21 / GTK+ 3 / GLib 2.25 / Gnome 2.31
+=app-arch/file-roller-2.31*
+=app-cdr/brasero-2.31*
+=app-editors/gedit-2.31*
+=app-text/evince-2.31*
+=dev-libs/glib-2.25*
+dev-libs/seed
+dev-libs/libpeas
+dev-libs/libunique:3
+=gnome-base/gconf-2.31*
+=gnome-base/gnome-applets-2.31*
+=gnome-base/gnome-control-center-2.31*
+=gnome-base/gnome-desktop-2.31*:0
+gnome-base/gnome-desktop:3
+gnome-base/gnome-js-common
+=gnome-base/gnome-keyring-2.31*
+=gnome-base/gnome-session-2.31*
+=gnome-base/gnome-settings-daemon-2.31*
+gnome-base/gnome-shell
+=gnome-base/libgnomekbd-2.31*
+=gnome-base/librsvg-2.31*
+=gnome-base/nautilus-2.31*
+=gnome-base/libgnomekbd-2.31*
+=gnome-extra/bug-buddy-2.31*
+=gnome-extra/evolution-data-server-2.31*
+=gnome-extra/gcalctool-5.31*
+=gnome-extra/gnome-games-2.31*
+=gnome-extra/gnome-media-2.31*
+=gnome-extra/gtkhtml-2.31*
+=gnome-extra/yelp-2.31*
+gnome-extra/yelp-xsl
+=gnome-extra/zenity-2.31*
+=mail-client/evolution-2.31*
+=media-gfx/eog-2.31*
+=media-sound/sound-juicer-2.31*
+=media-video/totem-2.90*
+net-libs/webkit-gtk:3.0
+=www-client/epiphany-2.31*
+x11-libs/gdk-pixbuf
+=x11-libs/gtk+-2.21*
+x11-libs/gtk+:3
+x11-libs/gtksourceview:3.0
+=x11-libs/vte-0.25*
+=x11-terms/gnome-terminal-2.31*
+=x11-themes/gnome-themes-2.31*
+x11-themes/gtk-engines:3
+
 # Steev Klimaszewski <steev@gentoo.org> (14 Apr 2010)
 # Upstream says this should not be used, and isn't ready.
 net-im/telepathy-logger
 
-# Nirbheek Chauhan <nirbheek@gentoo.org> (7 Apr 2010)
-# Revert portage sys-fs/udisks mask
-# Somehow it's not working w/o unconditional unmask
--sys-fs/udisks
-
-# Maciej Piechotka <uzytkownik2@gmail.com> (7 Mar 2010)
-# Revert portage libxklavier mask. Needed by >=gnome-base/libgnomekbd-2.29.5
-->=x11-libs/libxklavier-5
-
-# Nirbheek Chauhan <nirbheek@gentoo.org> (27 Feb 2010)
-# Revert portage introspection mask
-# You will have to unmask the use.mask yourself. See man portage
--dev-libs/gir-repository
--dev-libs/gobject-introspection
-
-# Arun Raghavan <ford_prefect@gentoo.org> (9 Dec 2009)
-# Mask live version of gst-convenience
-~media-libs/gst-conveninence-9999
-
-# Nirbheek Chauhan <nirbheek@gentoo.org> (9 Aug 2009)
-# Mask live version of packagekit
-~app-portage/packagekit-9999
-
-# Gilles Dartiguelongue <eva@gentoo.org> (15 Feb 2010)
-# Mask Gnome 2.29 ebuilds
-#=www-client/epiphany-2.29*
-#=www-client/epiphany-extensions-2.29*
-#=net-libs/libsoup-gnome-2.29*
-#=net-libs/libsoup-2.29*
-#=net-libs/webkit-gtk-1.1.19
+# Arun Raghavan <ford_prefect@gentoo.org> (23 Jun 2010)
+# We don't actually want gir-repository being used.
+dev-libs/gir-repository

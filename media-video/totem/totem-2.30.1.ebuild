@@ -14,7 +14,10 @@ SLOT="0"
 #KEYWORDS="~amd64 ~x86 ~x86-fbsd"
 KEYWORDS="-amd64 -x86 -x86-fbsd"
 
-IUSE="bluetooth debug doc galago iplayer lirc nautilus nsplugin python tracker +youtube" #zeroconf
+# FIXME: Enable for now python USE flag per bug #316409
+# this change should only be noticed by people not following current
+# current linux profiles default
+IUSE="bluetooth debug doc galago iplayer lirc nautilus nsplugin +python tracker +youtube" #zeroconf
 
 # TODO:
 # Cone (VLC) plugin needs someone with the right setup (remi ?)
@@ -22,7 +25,7 @@ IUSE="bluetooth debug doc galago iplayer lirc nautilus nsplugin python tracker +
 # coherence plugin not enabled until we have deps in tree
 # vala ( dev-lang/vala ) requires 0.7.5
 RDEPEND=">=dev-libs/glib-2.22
-	>=x11-libs/gtk+-2.19.5
+	>=x11-libs/gtk+-2.19.5:2
 	>=gnome-base/gconf-2.0
 	>=dev-libs/totem-pl-parser-2.29.1
 	>=x11-themes/gnome-icon-theme-2.16
@@ -41,7 +44,7 @@ RDEPEND=">=dev-libs/glib-2.22
 	>=media-plugins/gst-plugins-x-0.10
 	>=media-plugins/gst-plugins-meta-0.10-r2
 
-	dev-libs/libunique
+	dev-libs/libunique:0
 	x11-libs/libSM
 	x11-libs/libX11
 	x11-libs/libXtst

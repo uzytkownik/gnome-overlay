@@ -1,0 +1,59 @@
+From 1a8f315db5d40623aebec3808eb41db1ccc15b6b Mon Sep 17 00:00:00 2001
+From: Milan Crha <mcrha@redhat.com>
+Date: Thu, 22 Jul 2010 12:08:45 +0000
+Subject: Bug 624525 - Variable name collision in gtk-compat macro
+
+---
+diff --git a/e-util/gtk-compat.h b/e-util/gtk-compat.h
+index 3e531b2..7dc61f3 100644
+--- a/e-util/gtk-compat.h
++++ b/e-util/gtk-compat.h
+@@ -53,15 +53,15 @@
+ #define gdk_region_get_rectangles(region, rectangles, n_rectangles) \
+ 	G_STMT_START { \
+ 		GdkRectangle *__rects; \
+-		gint __i, __n; \
++		gint __i, __nrects; \
+ 		\
+-		__n = cairo_region_num_rectangles (region); \
+-		__rects = g_new (GdkRectangle, __n); \
++		__nrects = cairo_region_num_rectangles (region); \
++		__rects = g_new (GdkRectangle, __nrects); \
+ 		\
+-		for (__i = 0; __i < __n; __i++) \
++		for (__i = 0; __i < __nrects; __i++) \
+ 			cairo_region_get_rectangle ((region), __i, &__rects[__i]); \
+ 		\
+-		*(n_rectangles) = __n; \
++		*(n_rectangles) = __nrects; \
+ 		*(rectangles) = __rects; \
+ 	} G_STMT_END
+ 
+diff --git a/libgnomecanvas/gailcanvas.c b/libgnomecanvas/gailcanvas.c
+index fb64204..f88debc 100644
+--- a/libgnomecanvas/gailcanvas.c
++++ b/libgnomecanvas/gailcanvas.c
+@@ -29,7 +29,7 @@
+ #include "gailcanvasitemfactory.h"
+ #include "gailcanvaswidgetfactory.h"
+ 
+-#include <e-util/gtk-compat.h>
++#include "e-util/gtk-compat.h"
+ 
+ static void       gail_canvas_class_init          (GailCanvasClass *klass);
+ static void       gail_canvas_real_initialize     (AtkObject       *obj,
+diff --git a/libgnomecanvas/gnome-canvas.c b/libgnomecanvas/gnome-canvas.c
+index 1ca6e5f..261a739 100644
+--- a/libgnomecanvas/gnome-canvas.c
++++ b/libgnomecanvas/gnome-canvas.c
+@@ -94,7 +94,7 @@
+ #include "gnome-canvas-marshal.h"
+ #include "gnome-canvas-marshal.c"
+ 
+-#include <e-util/gtk-compat.h>
++#include "e-util/gtk-compat.h"
+ 
+ /* We must run our idle update handler *before* GDK wants to redraw. */
+ #define CANVAS_IDLE_PRIORITY (GDK_PRIORITY_REDRAW - 5)
+--
+cgit v0.8.3.1

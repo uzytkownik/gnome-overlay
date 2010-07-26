@@ -19,7 +19,7 @@ RESTRICT="test"
 
 # HAL is used purely as a fallback for setting brightness if xrandr fail
 COMMON_DEPEND=">=dev-libs/glib-2.13.0
-	>=x11-libs/gtk+-2.17.7
+	>=x11-libs/gtk+-2.17.7:2
 	>=gnome-base/gconf-2.10.0
 	>=gnome-base/gnome-keyring-0.6.0
 	>=dev-libs/dbus-glib-0.71
@@ -30,7 +30,7 @@ COMMON_DEPEND=">=dev-libs/glib-2.13.0
 	>=gnome-base/gconf-2.10
 	>=media-libs/libcanberra-0.10[gtk]
 	|| ( sys-power/upower >=sys-apps/devicekit-power-008 )
-	>=dev-libs/libunique-1.1.0
+	>=dev-libs/libunique-1.1.0:0
 	>=x11-apps/xrandr-1.2
 	x11-libs/libX11
 	x11-libs/libXext
