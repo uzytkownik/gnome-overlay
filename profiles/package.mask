@@ -64,6 +64,7 @@ gnome-extra/yelp-xsl
 =media-video/totem-2.90*
 net-libs/webkit-gtk:3.0
 =www-client/epiphany-2.31*
+=www-client/epiphany-extensions-2.31*
 x11-libs/gdk-pixbuf
 =x11-libs/gtk+-2.21*
 x11-libs/gtk+:3
