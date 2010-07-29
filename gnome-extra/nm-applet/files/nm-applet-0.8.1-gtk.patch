@@ -1,0 +1,13 @@
+diff --git a/src/utils/nma-bling-spinner.c b/src/utils/nma-bling-spinner.c
+index 5522046..12a2489 100644
+--- a/src/utils/nma-bling-spinner.c
++++ b/src/utils/nma-bling-spinner.c
+@@ -154,7 +154,7 @@ nma_bling_spinner_init (NmaBlingSpinner *spinner)
+ 	priv->current = 0;
+ 	priv->timeout = 0;
+ 
+-	GTK_WIDGET_SET_FLAGS (GTK_WIDGET (spinner), GTK_NO_WINDOW);
++	gtk_widget_set_has_window (GTK_WIDGET (spinner), FALSE);
+ }
+ 
+ static gboolean
