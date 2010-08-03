@@ -11,27 +11,27 @@ SRC_URI="http://telepathy.freedesktop.org/releases/${PN}/${P}.tar.gz"
 LICENSE="LGPL-2.1"
 SLOT="0"
 KEYWORDS="~alpha ~amd64 ~arm ~hppa ~ia64 ~ppc ~ppc64 ~sparc ~x86 ~x86-fbsd"
-# vala - needs bumping in portage
-IUSE="debug introspection"
+IUSE="debug introspection vala"
 
 RDEPEND=">=dev-libs/glib-2.24
 	>=dev-libs/dbus-glib-0.82
-	>=dev-lang/python-2.5"
+	>=dev-lang/python-2.5
+	vala? ( >=dev-lang/vala-0.9.3 )"
 
 DEPEND="${RDEPEND}
 	dev-libs/libxslt
 	>=dev-util/gtk-doc-1.15
 	>=dev-util/pkgconfig-0.21
-	introspection? ( >=dev-libs/gobject-introspection-0.6.14 )"
-#	vala? ( >=dev-lang/vala-0.9.x )
+	introspection? ( >=dev-libs/gobject-introspection-0.6.14 )
+	vala? ( >=dev-lang/vala-0.9.3[vapigen] )"
 
 src_configure() {
 	econf \
 		$(use_enable debug) \
 		$(use_enable debug backtrace) \
 		$(use_enable debug handle-leak-debug) \
-		$(use_enable introspection)
-#		$(use_enable vala)
+		$(use_enable introspection) \
+		$(use_enable vala vala-bindings)
 }
 
 src_test() {
