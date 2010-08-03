@@ -13,10 +13,11 @@ HOMEPAGE="http://fileroller.sourceforge.net/"
 LICENSE="GPL-2"
 SLOT="0"
 KEYWORDS="~alpha ~amd64 ~hppa ~ia64 ~ppc ~ppc64 ~sparc ~x86 ~x86-fbsd ~x86-freebsd ~amd64-linux ~x86-linux"
-IUSE="nautilus"
+IUSE="gtk3 nautilus"
 
 RDEPEND=">=dev-libs/glib-2.25.5
-	>=x11-libs/gtk+-2.19.7:2
+	gtk3? ( >=x11-libs/gtk+-2.90.0:3 )
+	!gtk3? ( >=x11-libs/gtk+-2.19.7:2 )
 	>=gnome-base/gconf-2.6
 	nautilus? ( >=gnome-base/nautilus-2.22.2 )"
 DEPEND="${RDEPEND}
@@ -29,6 +30,11 @@ DEPEND="${RDEPEND}
 DOCS="AUTHORS ChangeLog HACKING MAINTAINERS NEWS README TODO"
 
 pkg_setup() {
+	if use gtk3; then
+		G2CONF="${G2CONF} --with-gtk=3.0"
+	else
+		G2CONF="${G2CONF} --with-gtk=2.0"
+	fi
 	G2CONF="${G2CONF}
 		--disable-dependency-tracking
 		--disable-scrollkeeper
