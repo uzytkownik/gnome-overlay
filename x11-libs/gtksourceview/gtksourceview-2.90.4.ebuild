@@ -19,7 +19,7 @@ RDEPEND=">=x11-libs/gtk+-2.90:3[introspection?]
 	>=dev-libs/libxml2-2.6
 	>=dev-libs/glib-2.14
 	glade? ( >=dev-util/glade-3.2 )
-	introspection? ( >=dev-libs/gobject-introspection-0.6.7 )"
+	introspection? ( >=dev-libs/gobject-introspection-0.9.0 )"
 DEPEND="${RDEPEND}
 	sys-devel/gettext
 	>=dev-util/intltool-0.40
