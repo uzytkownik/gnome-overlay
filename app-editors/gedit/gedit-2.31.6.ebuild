@@ -6,7 +6,7 @@ EAPI="2"
 GCONF_DEBUG="no"
 PYTHON_DEPEND="2"
 
-inherit gnome2 python
+inherit gnome2 python autotools
 
 DESCRIPTION="A text editor for the GNOME desktop"
 HOMEPAGE="http://www.gnome.org/"
@@ -20,10 +20,11 @@ IUSE="doc +introspection spell"
 # gi.repository.Gtk, etc.
 RDEPEND=">=x11-libs/libSM-1.0
 	>=dev-libs/libxml2-2.5.0
-	>=dev-libs/glib-2.25.10
-	>=x11-libs/gtk+-2.90:3[introspection?]
+	>=dev-libs/glib-2.25.12
+	>=x11-libs/gtk+-2.90.5:3[introspection?]
 	>=x11-libs/gtksourceview-2.11.2:3.0[introspection?]
-	>=dev-libs/libpeas-0.5.2[gtk]
+	>=dev-libs/libpeas-0.5.4[gtk]
+	gnome-base/gsettings-desktop-schemas
 	dev-python/pygobject[introspection]
 	spell? (
 		>=app-text/enchant-1.2
@@ -47,6 +48,11 @@ pkg_setup() {
 		--disable-scrollkeeper
 		--disable-updater
 		$(use_enable spell)"
+}
+
+src_prepare() {
+	epatch "${FILESDIR}/${P}-gtk.patch"
+	eautoconf
 }
 
 src_install() {
