@@ -22,7 +22,7 @@ DEPEND="${RDEPEND}
 	>=sys-devel/gettext-0.11
 	doc? (
 		>=dev-libs/libxslt-1.0
-		>=dev-util/gtk-doc-1.11
+		>=dev-util/gtk-doc-1.12
 		~app-text/docbook-xml-dtd-4.1.2 )
 	test? ( >=sys-apps/dbus-1.2.14 )"
 PDEPEND="introspection? ( dev-libs/gobject-introspection )"
