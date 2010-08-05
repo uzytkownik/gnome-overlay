@@ -14,11 +14,12 @@ SLOT="0"
 KEYWORDS="~amd64 ~x86"
 IUSE="doc +introspection"
 
-RDEPEND=">=dev-libs/glib-2.25.10
+RDEPEND=">=dev-lang/vala-0.9.4
+	>=dev-libs/glib-2.25.12
 	>=dev-libs/libgee-0.5.1
 	>=dev-libs/libxml2-2.7.7
 	x11-libs/gtk+:2
-	introspection? ( >=dev-libs/gobject-introspection-0.6.7 )"
+	introspection? ( >=dev-libs/gobject-introspection-0.9.3 )"
 DEPEND="${RDEPEND}
 	>=dev-lang/vala-0.9.2
 	doc? ( >=dev-util/gtk-doc-1.14 )"
