@@ -13,7 +13,7 @@ LICENSE="GPL-2"
 SLOT="0"
 KEYWORDS="~alpha ~amd64 ~arm ~hppa ~ia64 ~ppc ~ppc64 ~sparc ~x86 ~x86-fbsd ~x86-freebsd ~x86-interix ~amd64-linux ~x86-linux ~x64-solaris"
 
-IUSE="dbus debug djvu doc dvi gnome gnome-keyring +introspection nautilus t1lib tiff"
+IUSE="dbus debug djvu doc dvi gtk3 gnome gnome-keyring +introspection nautilus t1lib tiff"
 
 # Since 2.26.2, can handle poppler without cairo support. Make it optional ?
 # not mature enough
@@ -21,9 +21,16 @@ RDEPEND="
 	>=app-text/libspectre-0.2.0
 	>=dev-libs/glib-2.25.11
 	>=dev-libs/libxml2-2.5
-	>=x11-libs/gtk+-2.90.5:3[introspection?]
+	>=x11-libs/cairo-1.9.10
+	gtk3? (
+		>=x11-libs/gtk+-2.90.5:3[introspection?]
+	)
+	!gtk3? (
+		>=x11-libs/gtk+-2.21.5:2[introspection?]
+	)
 	>=x11-libs/libSM-1
 	>=x11-themes/gnome-icon-theme-2.17.1
+	gnome-base/gsettings-desktop-schemas
 	gnome? ( >=gnome-base/gconf-2[introspection?] )
 	gnome-keyring? ( >=gnome-base/gnome-keyring-2.22.0 )
 	nautilus? ( >=gnome-base/nautilus-2.10[introspection?] )
