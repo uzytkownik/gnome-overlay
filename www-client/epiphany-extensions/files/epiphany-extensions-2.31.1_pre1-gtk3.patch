@@ -1,0 +1,3418 @@
+diff --git a/NEWS b/NEWS
+index 6de48df..f110508 100644
+--- a/NEWS
++++ b/NEWS
+@@ -1,13 +1,4 @@
+ ==========================
+-Epiphany Extensions 2.30.1
+-==========================
+-
+-Fix a few compiler warnings. We are mostly pushing this release out to
+-force a rebuild in distros and fix incompatibility problems if
+-extensions were built against Epiphany 2.30.0; they need to be rebuild
+-against 2.30.2.
+-
+-==========================
+ Epiphany Extensions 2.30.0
+ ==========================
+ 
+diff --git a/configure.ac b/configure.ac
+index f35f5c3..bea018b 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -15,7 +15,7 @@
+ # 59 Temple Place, Suite 330, Boston, MA 02111-1307  USA
+ 
+ m4_define([e_e_version_major],[2])
+-m4_define([e_e_version_minor],[30])
++m4_define([e_e_version_minor],[31])
+ m4_define([e_e_version_micro],[1])
+ m4_define([e_e_version],[e_e_version_major.e_e_version_minor.e_e_version_micro])
+ 
+@@ -24,7 +24,7 @@ m4_define([e_e_branch],["trunk"])
+ 
+ AC_INIT([GNOME Web Browser Extensions],[e_e_version],[http://bugzilla.gnome.org/enter_bug.cgi?product=epiphany-extensions],[epiphany-extensions])
+ 
+-EPIPHANY_API_VERSION=2.29
++EPIPHANY_API_VERSION=2.31
+ 
+ EPIPHANY_EXTENSIONS_MAJOR=e_e_version_major.e_e_version_minor
+ AC_SUBST(EPIPHANY_EXTENSIONS_MAJOR)
+@@ -108,7 +108,7 @@ GNOME_DOC_INIT
+ EPIPHANY_REQUIRED=2.27.4
+ LIBXML_REQUIRED=2.6.0
+ LIBGLIB_REQUIRED=2.15.5
+-LIBGTK_REQUIRED=2.19.5
++LIBGTK_REQUIRED=2.90.4
+ 
+ AC_SUBST([EPIPHANY_REQUIRED])
+ AC_SUBST([LIBXML_REQUIRED])
+@@ -123,13 +123,13 @@ PKG_CHECK_MODULES([EPIPHANY_DEPENDENCY], [\
+ 		  glib-2.0 >= $LIBGLIB_REQUIRED \
+ 		  gio-2.0 >= $LIBGLIB_REQUIRED \
+ 		  gmodule-2.0 \
+-		  gtk+-2.0 >= $LIBGTK_REQUIRED \
++		  gtk+-3.0 >= $LIBGTK_REQUIRED \
+ 		  gconf-2.0 \
+ 		  epiphany-$EPIPHANY_API_VERSION >= $EPIPHANY_REQUIRED])
+ AC_SUBST([EPIPHANY_DEPENDENCY_CFLAGS])
+ AC_SUBST([EPIPHANY_DEPENDENCY_LIBS])
+ 
+-PKG_CHECK_MODULES([WEBKIT], [webkit-1.0])
++PKG_CHECK_MODULES([WEBKIT], [webkitgtk-3.0])
+ AC_SUBST([WEBKIT_CFLAGS])
+ AC_SUBST([WEBKIT_LIBS])
+ 
+diff --git a/extensions/adblock/ephy-adblock-extension.c b/extensions/adblock/ephy-adblock-extension.c
+index a9cef07..dddc232 100644
+--- a/extensions/adblock/ephy-adblock-extension.c
++++ b/extensions/adblock/ephy-adblock-extension.c
+@@ -231,6 +231,7 @@ static const GtkActionEntry edit_entries[] = {
+ 	  G_CALLBACK (ephy_adblock_extension_edit_cb) }
+ };
+ 
++#if 0
+ static gboolean
+ ephy_adblock_statusbar_icon_clicked_cb (GtkWidget *widget,
+ 				        GdkEventButton *event,
+@@ -355,6 +356,7 @@ destroy_statusbar_icon (EphyWindow *window)
+ 
+ 	ephy_statusbar_remove_widget (statusbar, evbox);
+ }
++#endif
+ 
+ static void
+ ephy_adblock_extension_edit_cb (GtkAction *action, EphyWindow *window)
+@@ -393,8 +395,9 @@ switch_page_cb (GtkNotebook *notebook,
+ 	/* FIXME: this shouldn't happen anymore with gtk 2.10 ! Test & remove */
+ 	if (gtk_widget_get_realized (GTK_WIDGET (window)) == FALSE)
+ 		return; /* on startup */
+-
++#if 0
+ 	update_statusbar (window);
++#endif
+ }
+ 
+ static void
+@@ -441,7 +444,9 @@ impl_attach_window (EphyExtension *ext,
+ 	g_object_set_data (G_OBJECT (window), EXTENSION_KEY, ext);
+ 
+ 	/* The ad blocked icon */
++#if 0
+ 	create_statusbar_icon (window);
++#endif
+ 
+ 	notebook = ephy_window_get_notebook (window);
+ 
+@@ -474,7 +479,9 @@ impl_detach_window (EphyExtension *ext,
+ 	g_signal_handlers_disconnect_by_func
+ 		(notebook, G_CALLBACK (switch_page_cb), window);
+ 
++#if 0
+ 	destroy_statusbar_icon (window);
++#endif
+ }
+ 
+ static void
+@@ -509,7 +516,9 @@ num_blocked_cb (AdBlocker *blocker,
+ 
+ 	if (embed == ephy_embed_container_get_active_child (EPHY_EMBED_CONTAINER (window)))
+ 	{
++#if 0
+ 		update_statusbar (window);
++#endif
+ 	}
+ }
+ 
+diff --git a/extensions/auto-scroller/ephy-auto-scroller.c b/extensions/auto-scroller/ephy-auto-scroller.c
+index 2153dfc..241d471 100644
+--- a/extensions/auto-scroller/ephy-auto-scroller.c
++++ b/extensions/auto-scroller/ephy-auto-scroller.c
+@@ -366,7 +366,7 @@ ephy_auto_scroller_start (EphyAutoScroller *scroller,
+ 	/* grab the pointer */
+ 	widget = GTK_WIDGET (priv->window);
+ 	gtk_grab_add (widget);
+-	if (gdk_pointer_grab (widget->window, FALSE,
++	if (gdk_pointer_grab (gtk_widget_get_window (widget), FALSE,
+ 			      GDK_POINTER_MOTION_MASK |
+ 			      GDK_BUTTON_PRESS_MASK,
+ 			      NULL, priv->cursor, timestamp) != GDK_GRAB_SUCCESS)
+@@ -375,7 +375,7 @@ ephy_auto_scroller_start (EphyAutoScroller *scroller,
+ 		return;
+ 	}
+ 
+-	if (gdk_keyboard_grab (widget->window, FALSE, timestamp) != GDK_GRAB_SUCCESS)
++	if (gdk_keyboard_grab (gtk_widget_get_window (widget), FALSE, timestamp) != GDK_GRAB_SUCCESS)
+ 	{
+ 		ephy_auto_scroller_stop (scroller, timestamp);
+ 		return;
+diff --git a/extensions/gestures/ephy-gesture.c b/extensions/gestures/ephy-gesture.c
+index 2c73056..c252598 100644
+--- a/extensions/gestures/ephy-gesture.c
++++ b/extensions/gestures/ephy-gesture.c
+@@ -262,12 +262,12 @@ ephy_gesture_start (EphyGesture *gesture)
+ 	g_object_ref (priv->window);
+ 	gtk_grab_add (priv->window);
+ 
+-	if (gdk_pointer_grab (priv->window->window, FALSE,
++	if (gdk_pointer_grab (gtk_widget_get_window (priv->window), FALSE,
+ 			     GDK_POINTER_MOTION_MASK |
+ 			     GDK_BUTTON_RELEASE_MASK |
+ 			     GDK_BUTTON_PRESS_MASK,
+ 			     NULL, priv->cursor, time) != GDK_GRAB_SUCCESS ||
+-	    gdk_keyboard_grab (priv->window->window, FALSE, time) != GDK_GRAB_SUCCESS)
++	    gdk_keyboard_grab (gtk_widget_get_window (priv->window), FALSE, time) != GDK_GRAB_SUCCESS)
+ 	{
+ 		ephy_gesture_stop (gesture, time);
+ 
+diff --git a/extensions/gestures/ephy-gestures-extension.c b/extensions/gestures/ephy-gestures-extension.c
+index cfc6d7c..a435b0c 100644
+--- a/extensions/gestures/ephy-gestures-extension.c
++++ b/extensions/gestures/ephy-gestures-extension.c
+@@ -276,7 +276,6 @@ dom_mouse_down_cb (EphyWebView *view,
+ 	EphyEmbed *embed;
+ 	GtkWidget *toplevel;
+ 	EphyWindow *window;
+-	gboolean ppv_mode;
+ 	guint button;
+ 	WebKitHitTestResult *hit_test;
+ 	guint context;
+diff --git a/extensions/permissions/ephy-permissions-dialog.c b/extensions/permissions/ephy-permissions-dialog.c
+index 53e2148..8c1820c 100644
+--- a/extensions/permissions/ephy-permissions-dialog.c
++++ b/extensions/permissions/ephy-permissions-dialog.c
+@@ -612,7 +612,7 @@ ephy_permissions_dialog_constructor (GType type,
+         gtk_dialog_set_has_separator (GTK_DIALOG (dialog), FALSE);
+         gtk_container_set_border_width (GTK_CONTAINER (dialog), 5);
+ 
+-        gtk_box_set_spacing (GTK_BOX (GTK_DIALOG (dialog)->vbox), 2);
++        gtk_box_set_spacing (GTK_BOX (gtk_dialog_get_content_area (GTK_DIALOG (dialog))), 2);
+ 
+         gtk_dialog_add_button (GTK_DIALOG (dialog),
+                                GTK_STOCK_HELP, GTK_RESPONSE_HELP);
+@@ -623,7 +623,7 @@ ephy_permissions_dialog_constructor (GType type,
+ 	notebook = gtk_notebook_new ();
+ 	priv->notebook = GTK_NOTEBOOK (notebook);
+ 	gtk_container_set_border_width (GTK_CONTAINER (priv->notebook), 5);
+-	gtk_box_pack_start (GTK_BOX (GTK_DIALOG (dialog)->vbox), notebook,
++	gtk_box_pack_start (GTK_BOX (gtk_dialog_get_content_area (GTK_DIALOG (dialog))), notebook,
+ 			    TRUE, TRUE, 0);
+ 	gtk_widget_show (notebook);
+ 
+diff --git a/extensions/push-scroller/ephy-push-scroller.c b/extensions/push-scroller/ephy-push-scroller.c
+index ea1286b..80de408 100644
+--- a/extensions/push-scroller/ephy-push-scroller.c
++++ b/extensions/push-scroller/ephy-push-scroller.c
+@@ -250,7 +250,7 @@ ephy_push_scroller_start (EphyPushScroller *scroller,
+ 	/* grab the pointer */
+ 	widget = GTK_WIDGET (priv->window);
+ 	gtk_grab_add (widget);
+-	if (gdk_pointer_grab (widget->window, FALSE,
++	if (gdk_pointer_grab (gtk_widget_get_window (widget), FALSE,
+ 			      GDK_POINTER_MOTION_MASK |
+ 			      GDK_BUTTON_PRESS_MASK |
+ 			      GDK_BUTTON_RELEASE_MASK,
+@@ -260,7 +260,7 @@ ephy_push_scroller_start (EphyPushScroller *scroller,
+ 		return;
+ 	}
+ 
+-	if (gdk_keyboard_grab (widget->window, FALSE, timestamp) != GDK_GRAB_SUCCESS)
++	if (gdk_keyboard_grab (gtk_widget_get_window (widget), FALSE, timestamp) != GDK_GRAB_SUCCESS)
+ 	{
+ 		ephy_push_scroller_stop (scroller, timestamp);
+ 		return;
+diff --git a/extensions/rss/ephy-rss-extension.c b/extensions/rss/ephy-rss-extension.c
+index 2a42fa6..f799b66 100644
+--- a/extensions/rss/ephy-rss-extension.c
++++ b/extensions/rss/ephy-rss-extension.c
+@@ -57,8 +57,10 @@ static GType type = 0;
+ 
+ static void ephy_rss_display_cb 	(GtkAction *action,
+ 					 EphyWindow *window);
++#if 0
+ static void ephy_rss_update_statusbar 	(EphyWindow *window,
+ 					 gboolean show);
++#endif
+ static void ephy_rss_update_action 	(EphyWindow *window);
+ static void ephy_rss_feed_subscribe_cb (GtkAction *action,
+ 					 EphyWindow *window);
+@@ -251,6 +253,7 @@ ephy_rss_ge_content_cb (EphyEmbed *embed,
+ 	ephy_rss_update_action (window);
+ }
+ 
++#if 0
+ static void
+ ephy_rss_update_statusbar (EphyWindow *window,
+ 			   gboolean show)
+@@ -263,6 +266,7 @@ ephy_rss_update_statusbar (EphyWindow *window,
+ 
+ 	g_object_set (data->evbox, "visible", show, NULL);
+ }
++#endif
+ 
+ /* Update the menu item availability */
+ static void
+@@ -289,7 +293,9 @@ ephy_rss_update_action (EphyWindow *window)
+ 
+ 	g_object_set (data->info_action, "sensitive", show, NULL);
+ 
++#if 0
+ 	ephy_rss_update_statusbar (window, show);
++#endif
+ 
+ 	g_object_set (data->subscribe_action,
+ 		      "sensitive", show,
+@@ -360,6 +366,7 @@ impl_detach_tab (EphyExtension *extension,
+ 	g_object_set_data (G_OBJECT (embed), FEEDLIST_DATA_KEY, NULL);
+ }
+ 
++#if 0
+ static gboolean
+ ephy_rss_statusbar_icon_clicked_cb (GtkWidget *widget,
+ 				    GdkEventButton *event,
+@@ -414,6 +421,7 @@ ephy_rss_destroy_statusbar_icon (EphyWindow *window,
+ 
+ 	ephy_statusbar_remove_widget (statusbar, GTK_WIDGET (data->evbox));
+ }
++#endif
+ 
+ /* Create the menu item to subscribe to an rss feed */
+ static void
+@@ -468,8 +476,10 @@ impl_attach_window (EphyExtension *ext,
+ 
+ 	g_object_set_data (G_OBJECT (window), EPHY_RSS_EXTENSION_DATA_KEY, extension);
+ 
++#if 0
+ 	/* Create the status bar icon */
+ 	ephy_rss_create_statusbar_icon (window, data);
++#endif
+ 
+ 	/* Register for tab switch events */
+ 	ephy_rss_sync_active_tab (window, NULL, NULL);
+@@ -498,8 +508,10 @@ impl_detach_window (EphyExtension *ext,
+ 	g_signal_handlers_disconnect_by_func
+ 		(window, G_CALLBACK (ephy_rss_sync_active_tab), NULL);
+ 
++#if 0
+ 	/* Remove the status bar icon */
+ 	ephy_rss_destroy_statusbar_icon (window, data);
++#endif
+ 
+ 	/* Destroy data */
+ 	g_object_set_data (G_OBJECT (window), WINDOW_DATA_KEY, NULL);
+diff --git a/extensions/rss/rss-ui.c b/extensions/rss/rss-ui.c
+index a1d01d8..f18905f 100644
+--- a/extensions/rss/rss-ui.c
++++ b/extensions/rss/rss-ui.c
+@@ -368,7 +368,7 @@ rss_ui_drag_data_get_cb (GtkWidget *widget,
+ 	if (feed == NULL || feed->address == NULL) return;
+ 
+ 	gtk_selection_data_set (selection_data,
+-			        selection_data->target,
++			        gtk_selection_data_get_target (selection_data),
+ 			        8,
+ 			        (const guchar*) feed->address,
+ 			        strlen (feed->address));
+diff --git a/help/es/es.po b/help/es/es.po
+index 73de289..44fee0b 100644
+--- a/help/es/es.po
++++ b/help/es/es.po
+@@ -1,23 +1,24 @@
+ # translation of epiphany-extensions.help.HEAD.po to Español
+-# Jorge González <jorgegonz@svn.gnome.org>, 2008.
+ # Daniel Mustieles <daniel.mustieles@ie.edu>, 2008.
+ # Manual de las extensiones del navegador web de GNOME Epiphany
++# Jorge González <jorgegonz@svn.gnome.org>, 2008, 2010.
++#
+ msgid ""
+ msgstr ""
+ "Project-Id-Version: epiphany-extensions.help.HEAD\n"
+-"POT-Creation-Date: 2008-04-06 03:20+0100\n"
+-"PO-Revision-Date: 2008-04-06 13:09+0200\n"
++"POT-Creation-Date: 2009-12-14 16:18+0000\n"
++"PO-Revision-Date: 2010-06-16 07:43+0200\n"
+ "Last-Translator: Jorge González <jorgegonz@svn.gnome.org>\n"
+ "Language-Team: Español <gnome-es-list@gnome.org>\n"
+ "MIME-Version: 1.0\n"
+ "Content-Type: text/plain; charset=UTF-8\n"
+ "Content-Transfer-Encoding: 8bit\n"
+ "X-Generator: KBabel 1.11.4\n"
+-"Plural-Forms:  nplurals=2; plural=(n != 1);\n"
++"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+ 
+ #. When image changes, this message will be marked fuzzy or untranslated for you.
+ #. It doesn't matter what you translate it to: it's not used at all.
+-#: C/epiphany-extensions.xml:203(None)
++#: C/epiphany-extensions.xml:206(None)
+ msgid ""
+ "@@image: 'figures/epi-ext-action-create.png'; "
+ "md5=574626dd47b5eba1048121d2d88fe07d"
+@@ -27,7 +28,7 @@ msgstr ""
+ 
+ #. When image changes, this message will be marked fuzzy or untranslated for you.
+ #. It doesn't matter what you translate it to: it's not used at all.
+-#: C/epiphany-extensions.xml:272(None)
++#: C/epiphany-extensions.xml:275(None)
+ msgid ""
+ "@@image: 'figures/epi-ext-actions-use.png'; "
+ "md5=7ada8c3473a1c528cbffa960b0006a6d"
+@@ -37,7 +38,7 @@ msgstr ""
+ 
+ #. When image changes, this message will be marked fuzzy or untranslated for you.
+ #. It doesn't matter what you translate it to: it's not used at all.
+-#: C/epiphany-extensions.xml:306(None)
++#: C/epiphany-extensions.xml:309(None)
+ msgid ""
+ "@@image: 'figures/epi-ext-adblocker.png'; "
+ "md5=9a9b8476501d94a5f585275af9be8186"
+@@ -47,7 +48,7 @@ msgstr ""
+ 
+ #. When image changes, this message will be marked fuzzy or untranslated for you.
+ #. It doesn't matter what you translate it to: it's not used at all.
+-#: C/epiphany-extensions.xml:587(None)
++#: C/epiphany-extensions.xml:590(None)
+ msgid ""
+ "@@image: 'figures/epi-ext-gestures-back.png'; "
+ "md5=c5b56cf973ea0ef5b87283b0e0c7ed4b"
+@@ -57,7 +58,7 @@ msgstr ""
+ 
+ #. When image changes, this message will be marked fuzzy or untranslated for you.
+ #. It doesn't matter what you translate it to: it's not used at all.
+-#: C/epiphany-extensions.xml:598(None)
++#: C/epiphany-extensions.xml:601(None)
+ msgid ""
+ "@@image: 'figures/epi-ext-gestures-forward.png'; "
+ "md5=e65d802ab75bf5db41b6a1723fe95264"
+@@ -67,7 +68,7 @@ msgstr ""
+ 
+ #. When image changes, this message will be marked fuzzy or untranslated for you.
+ #. It doesn't matter what you translate it to: it's not used at all.
+-#: C/epiphany-extensions.xml:609(None)
++#: C/epiphany-extensions.xml:612(None)
+ msgid ""
+ "@@image: 'figures/epi-ext-gestures-up.png'; "
+ "md5=b86e7cf6c439595aa8acda7e9a98192c"
+@@ -77,7 +78,7 @@ msgstr ""
+ 
+ #. When image changes, this message will be marked fuzzy or untranslated for you.
+ #. It doesn't matter what you translate it to: it's not used at all.
+-#: C/epiphany-extensions.xml:620(None)
++#: C/epiphany-extensions.xml:623(None)
+ msgid ""
+ "@@image: 'figures/epi-ext-gestures-homepage.png'; "
+ "md5=ecf77b1a6f6f6e41e6350a66fbaf161e"
+@@ -87,7 +88,7 @@ msgstr ""
+ 
+ #. When image changes, this message will be marked fuzzy or untranslated for you.
+ #. It doesn't matter what you translate it to: it's not used at all.
+-#: C/epiphany-extensions.xml:631(None)
++#: C/epiphany-extensions.xml:634(None)
+ msgid ""
+ "@@image: 'figures/epi-ext-gestures-reload.png'; "
+ "md5=1fc686e1f01caa7b3eb89d991caebffb"
+@@ -97,7 +98,7 @@ msgstr ""
+ 
+ #. When image changes, this message will be marked fuzzy or untranslated for you.
+ #. It doesn't matter what you translate it to: it's not used at all.
+-#: C/epiphany-extensions.xml:642(None)
++#: C/epiphany-extensions.xml:645(None)
+ msgid ""
+ "@@image: 'figures/epi-ext-gestures-stop.png'; "
+ "md5=48449b610aaf3e6bd6e72dd5b5880e0a"
+@@ -107,7 +108,7 @@ msgstr ""
+ 
+ #. When image changes, this message will be marked fuzzy or untranslated for you.
+ #. It doesn't matter what you translate it to: it's not used at all.
+-#: C/epiphany-extensions.xml:653(None)
++#: C/epiphany-extensions.xml:656(None)
+ msgid ""
+ "@@image: 'figures/epi-ext-gestures-new-window.png'; "
+ "md5=fe1d22c8d896e54d5cbc9bf653c46bc9"
+@@ -117,7 +118,7 @@ msgstr ""
+ 
+ #. When image changes, this message will be marked fuzzy or untranslated for you.
+ #. It doesn't matter what you translate it to: it's not used at all.
+-#: C/epiphany-extensions.xml:664(None)
++#: C/epiphany-extensions.xml:667(None)
+ msgid ""
+ "@@image: 'figures/epi-ext-gestures-new-tab.png'; "
+ "md5=f93528c60f02e08d39dddecaf7cc4cbb"
+@@ -127,7 +128,7 @@ msgstr ""
+ 
+ #. When image changes, this message will be marked fuzzy or untranslated for you.
+ #. It doesn't matter what you translate it to: it's not used at all.
+-#: C/epiphany-extensions.xml:675(None)
++#: C/epiphany-extensions.xml:678(None)
+ msgid ""
+ "@@image: 'figures/epi-ext-gestures-close.png'; "
+ "md5=83f58e3ebad89f060ea49558c9668a81"
+@@ -137,7 +138,7 @@ msgstr ""
+ 
+ #. When image changes, this message will be marked fuzzy or untranslated for you.
+ #. It doesn't matter what you translate it to: it's not used at all.
+-#: C/epiphany-extensions.xml:686(None)
++#: C/epiphany-extensions.xml:689(None)
+ msgid ""
+ "@@image: 'figures/epi-ext-gestures-close-2.png'; "
+ "md5=28c55ad71d3ab73852d8a5ab367fdee2"
+@@ -147,7 +148,7 @@ msgstr ""
+ 
+ #. When image changes, this message will be marked fuzzy or untranslated for you.
+ #. It doesn't matter what you translate it to: it's not used at all.
+-#: C/epiphany-extensions.xml:697(None)
++#: C/epiphany-extensions.xml:700(None)
+ msgid ""
+ "@@image: 'figures/epi-ext-gestures-fullscreen.png'; "
+ "md5=b4eb72045ddb2488b215d3f3530ac56c"
+@@ -157,7 +158,7 @@ msgstr ""
+ 
+ #. When image changes, this message will be marked fuzzy or untranslated for you.
+ #. It doesn't matter what you translate it to: it's not used at all.
+-#: C/epiphany-extensions.xml:708(None)
++#: C/epiphany-extensions.xml:711(None)
+ msgid ""
+ "@@image: 'figures/epi-ext-gestures-next-tab.png'; "
+ "md5=dc94db0828a4f676d32286a066c7e3a4"
+@@ -167,7 +168,7 @@ msgstr ""
+ 
+ #. When image changes, this message will be marked fuzzy or untranslated for you.
+ #. It doesn't matter what you translate it to: it's not used at all.
+-#: C/epiphany-extensions.xml:719(None)
++#: C/epiphany-extensions.xml:722(None)
+ msgid ""
+ "@@image: 'figures/epi-ext-gestures-prev-tab.png'; "
+ "md5=9afb96085b69343b1f1bdba91088343d"
+@@ -177,7 +178,7 @@ msgstr ""
+ 
+ #. When image changes, this message will be marked fuzzy or untranslated for you.
+ #. It doesn't matter what you translate it to: it's not used at all.
+-#: C/epiphany-extensions.xml:731(None)
++#: C/epiphany-extensions.xml:734(None)
+ msgid ""
+ "@@image: 'figures/epi-ext-gestures-view-source.png'; "
+ "md5=c509bcf2cd4dea67e7bb3d9dcc4db6aa"
+@@ -187,7 +188,7 @@ msgstr ""
+ 
+ #. When image changes, this message will be marked fuzzy or untranslated for you.
+ #. It doesn't matter what you translate it to: it's not used at all.
+-#: C/epiphany-extensions.xml:742(None)
++#: C/epiphany-extensions.xml:745(None)
+ msgid ""
+ "@@image: 'figures/epi-ext-gestures-view-source-2.png'; "
+ "md5=b312d3d53273067c780358698c786ab9"
+@@ -197,7 +198,7 @@ msgstr ""
+ 
+ #. When image changes, this message will be marked fuzzy or untranslated for you.
+ #. It doesn't matter what you translate it to: it's not used at all.
+-#: C/epiphany-extensions.xml:1089(None)
++#: C/epiphany-extensions.xml:1092(None)
+ msgid ""
+ "@@image: 'figures/epi-ext-sidebar.png'; md5=892abfaecbd5854de4e72f727212c5e2"
+ msgstr ""
+@@ -206,7 +207,7 @@ msgstr ""
+ 
+ #. When image changes, this message will be marked fuzzy or untranslated for you.
+ #. It doesn't matter what you translate it to: it's not used at all.
+-#: C/epiphany-extensions.xml:1179(None)
++#: C/epiphany-extensions.xml:1182(None)
+ msgid ""
+ "@@image: 'figures/epi-ext-tabgroups.png'; "
+ "md5=9ccf9b6918ed6cc01570ce38ca8bd053"
+@@ -370,49 +371,49 @@ msgstr "Osadci"
+ msgid "Victor.Osadci.GNOME@xhtml.md"
+ msgstr "Victor.Osadci.GNOME@xhtml.md"
+ 
+-#: C/epiphany-extensions.xml:83(revnumber)
++#: C/epiphany-extensions.xml:86(revnumber)
+ msgid "1.0"
+ msgstr "1.0"
+ 
+-#: C/epiphany-extensions.xml:84(date)
++#: C/epiphany-extensions.xml:87(date)
+ msgid "2006-03"
+ msgstr "2006-03"
+ 
+-#: C/epiphany-extensions.xml:88(releaseinfo)
++#: C/epiphany-extensions.xml:91(releaseinfo)
+ msgid "This manual describes version 2.14 of Epiphany."
+ msgstr "Este manual describe la versión 2.14 de Epiphany."
+ 
+-#: C/epiphany-extensions.xml:94(primary)
++#: C/epiphany-extensions.xml:97(primary)
+ msgid "Epiphany-Extensions"
+ msgstr "Extensiones de Epiphany"
+ 
+-#: C/epiphany-extensions.xml:97(primary)
++#: C/epiphany-extensions.xml:100(primary)
+ msgid "epiphany-extensions"
+ msgstr "extensiones de epiphany"
+ 
+-#: C/epiphany-extensions.xml:100(primary)
++#: C/epiphany-extensions.xml:103(primary)
+ msgid "extension"
+ msgstr "extensión"
+ 
+-#: C/epiphany-extensions.xml:103(primary)
++#: C/epiphany-extensions.xml:106(primary)
+ msgid "Browser"
+ msgstr "Navegador"
+ 
+-#: C/epiphany-extensions.xml:109(title) C/epiphany-extensions.xml:120(title)
+-#: C/epiphany-extensions.xml:138(title) C/epiphany-extensions.xml:285(title)
+-#: C/epiphany-extensions.xml:357(title) C/epiphany-extensions.xml:386(title)
+-#: C/epiphany-extensions.xml:416(title) C/epiphany-extensions.xml:487(title)
+-#: C/epiphany-extensions.xml:534(title) C/epiphany-extensions.xml:553(title)
+-#: C/epiphany-extensions.xml:852(title) C/epiphany-extensions.xml:899(title)
+-#: C/epiphany-extensions.xml:918(title) C/epiphany-extensions.xml:968(title)
+-#: C/epiphany-extensions.xml:1015(title) C/epiphany-extensions.xml:1033(title)
+-#: C/epiphany-extensions.xml:1052(title) C/epiphany-extensions.xml:1074(title)
+-#: C/epiphany-extensions.xml:1138(title) C/epiphany-extensions.xml:1161(title)
+-#: C/epiphany-extensions.xml:1191(title)
++#: C/epiphany-extensions.xml:112(title) C/epiphany-extensions.xml:123(title)
++#: C/epiphany-extensions.xml:141(title) C/epiphany-extensions.xml:288(title)
++#: C/epiphany-extensions.xml:360(title) C/epiphany-extensions.xml:389(title)
++#: C/epiphany-extensions.xml:419(title) C/epiphany-extensions.xml:490(title)
++#: C/epiphany-extensions.xml:537(title) C/epiphany-extensions.xml:556(title)
++#: C/epiphany-extensions.xml:855(title) C/epiphany-extensions.xml:902(title)
++#: C/epiphany-extensions.xml:921(title) C/epiphany-extensions.xml:971(title)
++#: C/epiphany-extensions.xml:1018(title) C/epiphany-extensions.xml:1036(title)
++#: C/epiphany-extensions.xml:1055(title) C/epiphany-extensions.xml:1077(title)
++#: C/epiphany-extensions.xml:1141(title) C/epiphany-extensions.xml:1164(title)
++#: C/epiphany-extensions.xml:1194(title)
+ msgid "Introduction"
+ msgstr "Introducción"
+ 
+-#: C/epiphany-extensions.xml:111(para)
++#: C/epiphany-extensions.xml:114(para)
+ msgid ""
+ "<application>Epiphany Extensions</application> are a set of tools that "
+ "extend the capabilities of <application>Epiphany</application>, the GNOME "
+@@ -422,28 +423,28 @@ msgstr ""
+ "herramientas que amplían las capacidades de <application>Epiphany</"
+ "application>, el navegador web de GNOME."
+ 
+-#: C/epiphany-extensions.xml:112(para)
++#: C/epiphany-extensions.xml:115(para)
+ msgid "They provide to Epiphany new functionality and complete some existing."
+ msgstr ""
+ "Proporcionan a Epiphany nuevas funcionalidades y completan algunas de las "
+ "existentes."
+ 
+-#: C/epiphany-extensions.xml:117(title)
++#: C/epiphany-extensions.xml:120(title)
+ msgid "Extensions Manager"
+ msgstr "Gestor de extensiones"
+ 
+-#: C/epiphany-extensions.xml:121(para)
++#: C/epiphany-extensions.xml:124(para)
+ msgid ""
+ "The Extension Manager is the tool that lets you activate Epiphany Extensions."
+ msgstr ""
+ "El Gestor de extensiones es la herramienta que le permite activar las "
+ "extensiones de Epiphany."
+ 
+-#: C/epiphany-extensions.xml:126(title)
++#: C/epiphany-extensions.xml:129(title)
+ msgid "Using Extensions Manager"
+ msgstr "Uso del Gestor de extensiones"
+ 
+-#: C/epiphany-extensions.xml:127(para)
++#: C/epiphany-extensions.xml:130(para)
+ msgid ""
+ "To open the Extension Manager, choose <menuchoice><guimenu>Tools</"
+ "guimenu><guimenuitem>Extension...</guimenuitem></menuchoice>."
+@@ -452,7 +453,7 @@ msgstr ""
+ "<menuchoice><guimenu>Herramientas</guimenu><guimenuitem>Extensión...</"
+ "guimenuitem></menuchoice>."
+ 
+-#: C/epiphany-extensions.xml:129(para)
++#: C/epiphany-extensions.xml:132(para)
+ msgid ""
+ "To enable an extension, activate the check-box in front of the extension. To "
+ "disable an extension, deactivate the check-box."
+@@ -460,11 +461,11 @@ msgstr ""
+ "Para habilitar una extensión, active la casilla correspondiente a la "
+ "extensión. Para deshabilitar una extensión, desactive la casilla."
+ 
+-#: C/epiphany-extensions.xml:135(title)
++#: C/epiphany-extensions.xml:138(title)
+ msgid "Actions"
+ msgstr "Acciones"
+ 
+-#: C/epiphany-extensions.xml:140(para)
++#: C/epiphany-extensions.xml:143(para)
+ msgid ""
+ "The Actions extension allows you to create specific actions in the context "
+ "menu, for images, pages or both."
+@@ -472,16 +473,16 @@ msgstr ""
+ "La extensión Acciones le permite crear acciones específicas en el menú "
+ "contextual, para imágenes, páginas o ambas."
+ 
+-#: C/epiphany-extensions.xml:145(title)
++#: C/epiphany-extensions.xml:148(title)
+ msgid "Manage Actions"
+ msgstr "Gestionar acciones"
+ 
+-#: C/epiphany-extensions.xml:148(title)
++#: C/epiphany-extensions.xml:151(title)
+ msgid "Create Actions"
+ msgstr "Crear acciones"
+ 
+-#: C/epiphany-extensions.xml:153(para) C/epiphany-extensions.xml:216(para)
+-#: C/epiphany-extensions.xml:242(para)
++#: C/epiphany-extensions.xml:156(para) C/epiphany-extensions.xml:219(para)
++#: C/epiphany-extensions.xml:245(para)
+ msgid ""
+ "Choose <menuchoice><guimenu>Edit</guimenu><guimenuitem>Actions</"
+ "guimenuitem></menuchoice> to open the Actions manager"
+@@ -489,11 +490,11 @@ msgstr ""
+ "Para abrir el Gestor de acciones elija <menuchoice><guimenu>Editar</"
+ "guimenu><guimenuitem>Acciones</guimenuitem></menuchoice>"
+ 
+-#: C/epiphany-extensions.xml:158(para)
++#: C/epiphany-extensions.xml:161(para)
+ msgid "Press <guibutton>Add</guibutton> to add a new action"
+ msgstr "Pulse <guibutton>Añadir</guibutton> para añadir una nueva acción"
+ 
+-#: C/epiphany-extensions.xml:166(para)
++#: C/epiphany-extensions.xml:169(para)
+ msgid ""
+ "Enter the <guilabel>Name</guilabel> of the action. The name will be "
+ "displayed in the context menu"
+@@ -501,7 +502,7 @@ msgstr ""
+ "Introduzca el <guilabel>Nombre</guilabel> de la acción. Se mostrará el "
+ "nombre en el menú contextual"
+ 
+-#: C/epiphany-extensions.xml:170(para)
++#: C/epiphany-extensions.xml:173(para)
+ msgid ""
+ "Enter the <guilabel>Description</guilabel> of the action. The Description "
+ "will be displayed in the statusbar of <application>Epiphany</application> "
+@@ -511,7 +512,7 @@ msgstr ""
+ "se mostrará en la barra de estado de <application>Epiphany</application> y "
+ "en el Gestor de acciones"
+ 
+-#: C/epiphany-extensions.xml:176(para)
++#: C/epiphany-extensions.xml:179(para)
+ msgid ""
+ "Enter the <guilabel>Command</guilabel> to execute. this command will be "
+ "executed and will receive as argument the element on which you'll launch the "
+@@ -522,7 +523,7 @@ msgstr ""
+ "acción. Esta acción puede ser cualquier programa o script disponible en su "
+ "ruta"
+ 
+-#: C/epiphany-extensions.xml:183(para)
++#: C/epiphany-extensions.xml:186(para)
+ msgid ""
+ "Select <guilabel>Pages</guilabel> or <guilabel>Images</guilabel> to choose "
+ "on which elements the action will appear"
+@@ -530,39 +531,39 @@ msgstr ""
+ "Seleccione <guilabel>Páginas</guilabel> o <guilabel>Imágenes</guilabel> para "
+ "elegir sobre qué elementos aparecerá la acción"
+ 
+-#: C/epiphany-extensions.xml:188(para)
++#: C/epiphany-extensions.xml:191(para)
+ msgid "Press <guibutton>Add</guibutton>"
+ msgstr "Pulse <guibutton>Añadir</guibutton>"
+ 
+-#: C/epiphany-extensions.xml:163(para)
++#: C/epiphany-extensions.xml:166(para)
+ msgid "In the \"Add Action\" window, <placeholder-1/>"
+ msgstr "En la ventana «Añadir acción», <placeholder-1/>"
+ 
+-#: C/epiphany-extensions.xml:194(para) C/epiphany-extensions.xml:255(para)
++#: C/epiphany-extensions.xml:197(para) C/epiphany-extensions.xml:258(para)
+ msgid "Press <guibutton>Close</guibutton> to close the Actions Manager"
+ msgstr "Pulse <guibutton>Cerrar</guibutton> para cerrar el Gestor de acciones"
+ 
+-#: C/epiphany-extensions.xml:150(para)
++#: C/epiphany-extensions.xml:153(para)
+ msgid "To create an action, perform the following steps: <placeholder-1/>"
+ msgstr "Para crear una acción, siga los siguientes pasos: <placeholder-1/>"
+ 
+-#: C/epiphany-extensions.xml:199(title)
++#: C/epiphany-extensions.xml:202(title)
+ msgid "An example of action"
+ msgstr "Un ejemplo de acción"
+ 
+-#: C/epiphany-extensions.xml:211(title)
++#: C/epiphany-extensions.xml:214(title)
+ msgid "Edit Actions"
+ msgstr "Editar acciones"
+ 
+-#: C/epiphany-extensions.xml:220(para)
++#: C/epiphany-extensions.xml:223(para)
+ msgid "Select the action to edit"
+ msgstr "Seleccione la acción para editar"
+ 
+-#: C/epiphany-extensions.xml:225(para)
++#: C/epiphany-extensions.xml:228(para)
+ msgid "Press <guibutton>Edit</guibutton>"
+ msgstr "Pulse <guibutton>Editar</guibutton>"
+ 
+-#: C/epiphany-extensions.xml:229(para)
++#: C/epiphany-extensions.xml:232(para)
+ msgid ""
+ "Edit the action as described in <xref linkend=\"epi-ext-action-manage-create"
+ "\"/>"
+@@ -570,31 +571,31 @@ msgstr ""
+ "Edita la acción tal y como se describe en <xref linkend=\"epi-ext-action-"
+ "manage-create\"/>"
+ 
+-#: C/epiphany-extensions.xml:213(para)
++#: C/epiphany-extensions.xml:216(para)
+ msgid "To edit an action, follow these steps: <placeholder-1/>"
+ msgstr "Para editar una acción, siga los pasos: <placeholder-1/>"
+ 
+-#: C/epiphany-extensions.xml:237(title)
++#: C/epiphany-extensions.xml:240(title)
+ msgid "Delete Actions"
+ msgstr "Borrar acciones"
+ 
+-#: C/epiphany-extensions.xml:246(para)
++#: C/epiphany-extensions.xml:249(para)
+ msgid "Select the action to delete"
+ msgstr "Seleccione la acción para eliminar"
+ 
+-#: C/epiphany-extensions.xml:251(para)
++#: C/epiphany-extensions.xml:254(para)
+ msgid "Press <guibutton>Remove</guibutton>"
+ msgstr "Pulse <guibutton>Eliminar</guibutton>"
+ 
+-#: C/epiphany-extensions.xml:239(para)
++#: C/epiphany-extensions.xml:242(para)
+ msgid "To delete an action, do the following: <placeholder-1/>"
+ msgstr "Para borrar una acción, haga lo siguiente: <placeholder-1/>"
+ 
+-#: C/epiphany-extensions.xml:263(title)
++#: C/epiphany-extensions.xml:266(title)
+ msgid "Using Actions"
+ msgstr "Uso de las acciones"
+ 
+-#: C/epiphany-extensions.xml:265(para)
++#: C/epiphany-extensions.xml:268(para)
+ msgid ""
+ "To use a custom action, choose the action to execute from the context menu "
+ "of the element you wish to perform the action on."
+@@ -602,7 +603,7 @@ msgstr ""
+ "Para utilizar una acción personalizada, seleccione la acción para ejecutar "
+ "en el menú contextual del elemento sobre el que quiere ejecutar la acción."
+ 
+-#: C/epiphany-extensions.xml:268(title)
++#: C/epiphany-extensions.xml:271(title)
+ msgid ""
+ "The <application>Epiphany</application> image context menu with a custom "
+ "action"
+@@ -610,11 +611,11 @@ msgstr ""
+ "Imagen del menú contextual de <application>Epiphany</application> con una "
+ "acción personalizada"
+ 
+-#: C/epiphany-extensions.xml:282(title)
++#: C/epiphany-extensions.xml:285(title)
+ msgid "Ad Blocker"
+ msgstr "Bloqueo de anuncios"
+ 
+-#: C/epiphany-extensions.xml:287(para)
++#: C/epiphany-extensions.xml:290(para)
+ msgid ""
+ "The Ad Blocker extension lets you block ad banners on websites. It avoids "
+ "downloading them, saving time and bandwidth."
+@@ -622,11 +623,11 @@ msgstr ""
+ "La extensión Bloqueo de anuncios permite bloquear banners en páginas web. "
+ "Esto previene su descarga, ahorrando tiempo y ancho de banda."
+ 
+-#: C/epiphany-extensions.xml:292(title)
++#: C/epiphany-extensions.xml:295(title)
+ msgid "Using Ad Blocker"
+ msgstr "Uso del Bloqueo de Anuncios"
+ 
+-#: C/epiphany-extensions.xml:294(para)
++#: C/epiphany-extensions.xml:297(para)
+ msgid ""
+ "To use the Ad Blocker, you have to enable the extension. The extension will "
+ "ignore link to ads when you visit websites, and they won't be displayed in "
+@@ -636,7 +637,7 @@ msgstr ""
+ "extensión ignorará los enlaces a anuncios cuando visite las páginas web y no "
+ "se mostrarán en la página web."
+ 
+-#: C/epiphany-extensions.xml:297(para)
++#: C/epiphany-extensions.xml:300(para)
+ msgid ""
+ "<application>Epiphany</application> will display an icon in left side of the "
+ "status bar (see <xref linkend=\"epi-ext-figure-adblocker\"/>) to inform you "
+@@ -647,17 +648,17 @@ msgstr ""
+ "de la barra de estado (vea <xref linkend=\"epi-ext-figure-adblocker\"/>) "
+ "para informarle de que se ha bloqueado un anuncio. Si pasa el puntero del "
+ "ratón por encima del icono, le mostrará el número de anuncios bloqueados en "
+-"la página. <placeholder-1/>"
++"la página."
+ 
+-#: C/epiphany-extensions.xml:302(title)
++#: C/epiphany-extensions.xml:305(title)
+ msgid "The Ad Blocker icon"
+ msgstr "El icono del bloqueador de anuncios"
+ 
+-#: C/epiphany-extensions.xml:314(title)
++#: C/epiphany-extensions.xml:317(title)
+ msgid "Extend Ad Blocker"
+ msgstr "Bloqueo de Anuncios extendido"
+ 
+-#: C/epiphany-extensions.xml:316(para)
++#: C/epiphany-extensions.xml:319(para)
+ msgid ""
+ "Ad Blocker should block most of the advertisement on the web, but if you "
+ "find that some banners are not blocked or Ad Blocker is too restrictive, you "
+@@ -668,7 +669,7 @@ msgstr ""
+ "Bloqueador de anuncios es demasiado restrictivo, puede configurar la "
+ "extensión Bloqueador de anuncios para que se ajuste a sus necesidades."
+ 
+-#: C/epiphany-extensions.xml:321(para)
++#: C/epiphany-extensions.xml:324(para)
+ msgid ""
+ "Ad Blocker uses Perl regular expressions to match known URLs of ads servers "
+ "and common words used in URLs of ads. Ad Blocker stores the system-wide "
+@@ -683,11 +684,11 @@ msgstr ""
+ "ubicado en <filename class=\"directory\">$PREFIX/share/epiphany-extensions/</"
+ "filename>; con una expresión regular por línea."
+ 
+-#: C/epiphany-extensions.xml:330(title)
++#: C/epiphany-extensions.xml:333(title)
+ msgid "Add a deny rule"
+ msgstr "Añadir una regla de denegación"
+ 
+-#: C/epiphany-extensions.xml:332(para)
++#: C/epiphany-extensions.xml:335(para)
+ msgid ""
+ "If you want to block an ad not blocked by the Ad Blocker default rules, you "
+ "may create a blacklist file, and add rules inside."
+@@ -696,7 +697,7 @@ msgstr ""
+ "del Bloqueador de anuncios, debe crear un archivo de lista negra y añadir "
+ "reglas dentro."
+ 
+-#: C/epiphany-extensions.xml:335(para)
++#: C/epiphany-extensions.xml:338(para)
+ msgid ""
+ "<application>Epiphany</application> looks for the blacklist rules in the "
+ "file <filename>$HOME/.gnome2/epiphany/extensions/data/adblock/blacklist</"
+@@ -706,11 +707,11 @@ msgstr ""
+ "archivo <filename>$HOME/.gnome2/epiphany/extensions/data/adblock/blacklist</"
+ "filename>."
+ 
+-#: C/epiphany-extensions.xml:341(title)
++#: C/epiphany-extensions.xml:344(title)
+ msgid "Add a permit rule"
+ msgstr "Añadir una regla de permiso"
+ 
+-#: C/epiphany-extensions.xml:343(para)
++#: C/epiphany-extensions.xml:346(para)
+ msgid ""
+ "If you want allow to permit an ad to be displayed or correct a rule of Ad "
+ "Blocker which is too restrictive, you can create a whitelist file, and add "
+@@ -720,7 +721,7 @@ msgstr ""
+ "Bloqueador de anuncios que es muy restrictiva, puede crear un archivo de "
+ "lista blanca y añadir reglas en él."
+ 
+-#: C/epiphany-extensions.xml:346(para)
++#: C/epiphany-extensions.xml:349(para)
+ msgid ""
+ "<application>Epiphany</application> looks for white-list rules in the file "
+ "<filename>$HOME/.gnome2/epiphany/extensions/data/adblock/whitelist</"
+@@ -730,22 +731,22 @@ msgstr ""
+ "archivo <filename>$HOME/.gnome2/epiphany/extensions/data/adblock/whitelist</"
+ "filename>."
+ 
+-#: C/epiphany-extensions.xml:354(title)
++#: C/epiphany-extensions.xml:357(title)
+ msgid "Auto Reload Tab"
+ msgstr "Autorecargar solapa"
+ 
+-#: C/epiphany-extensions.xml:359(para)
++#: C/epiphany-extensions.xml:362(para)
+ msgid ""
+ "The Auto Reload Tab extension allows you to regularly reload a page in a tab."
+ msgstr ""
+ "La extensión Autorecargar solapa le permite recargar regularmente una página "
+ "en una solapa."
+ 
+-#: C/epiphany-extensions.xml:364(title)
++#: C/epiphany-extensions.xml:367(title)
+ msgid "Using Auto Reload Tab"
+ msgstr "Uso de la solapa de Autorecarga"
+ 
+-#: C/epiphany-extensions.xml:366(para)
++#: C/epiphany-extensions.xml:369(para)
+ msgid ""
+ "Enter the URL of a page you want to open and you know its content change "
+ "often, then choose <menuchoice><guimenu>View</guimenu><guimenuitem>Auto "
+@@ -757,11 +758,11 @@ msgstr ""
+ "guimenu><guimenuitem>Autorecargar</guimenuitem></menuchoice> para activar la "
+ "auto recarga, <application>Epiphany</application> actualizará cada 3 minutos."
+ 
+-#: C/epiphany-extensions.xml:373(title)
++#: C/epiphany-extensions.xml:376(title)
+ msgid "Auto reload local files"
+ msgstr "Autorecargar archivos locales"
+ 
+-#: C/epiphany-extensions.xml:374(para)
++#: C/epiphany-extensions.xml:377(para)
+ msgid ""
+ "When a local file is opened, <application>Epiphany</application> will "
+ "monitor it and reload the file when it changes."
+@@ -769,11 +770,11 @@ msgstr ""
+ "Cuando se abre un archivo local, <application>Epiphany</application> lo "
+ "monitoriza y recarga el archivo cuando éste cambia."
+ 
+-#: C/epiphany-extensions.xml:383(title)
++#: C/epiphany-extensions.xml:386(title)
+ msgid "AutoScroll"
+ msgstr "Autodesplazamiento"
+ 
+-#: C/epiphany-extensions.xml:388(para)
++#: C/epiphany-extensions.xml:391(para)
+ msgid ""
+ "The Auto Scroll extension allows you to automatically scroll a page in any "
+ "direction. For instance, if you set a slow scroll, you can read a whole web "
+@@ -783,11 +784,11 @@ msgstr ""
+ "página en cualquier dirección. Por ejemplo, si configura un desplazamiento "
+ "lento puede leer una página web entera sin tocar el ratón."
+ 
+-#: C/epiphany-extensions.xml:394(title)
++#: C/epiphany-extensions.xml:397(title)
+ msgid "Using Auto Scroll"
+ msgstr "Uso del Autodesplazamiento"
+ 
+-#: C/epiphany-extensions.xml:399(para)
++#: C/epiphany-extensions.xml:402(para)
+ msgid ""
+ "Press and release the middle-mouse button; a target appears, and the cursor "
+ "of mouse pointer is changed to a hand cursor."
+@@ -795,7 +796,7 @@ msgstr ""
+ "Pulse y suelte el botón medio del ratón; aparecerá un objetivo y el puntero "
+ "del ratón se convierte en un cursor en forma de mano."
+ 
+-#: C/epiphany-extensions.xml:404(para)
++#: C/epiphany-extensions.xml:407(para)
+ msgid ""
+ "Move the cursor in the direction to scroll. The page will start to scroll in "
+ "that direction."
+@@ -803,15 +804,15 @@ msgstr ""
+ "Mueva el ratón en la dirección del desplazamiento. La página comenzará a "
+ "desplazarse en esa dirección."
+ 
+-#: C/epiphany-extensions.xml:396(para)
++#: C/epiphany-extensions.xml:399(para)
+ msgid "To start to auto scroll on a page, <placeholder-1/>"
+ msgstr "Para iniciar el autodesplazamiento en una página, <placeholder-1/>"
+ 
+-#: C/epiphany-extensions.xml:413(title)
++#: C/epiphany-extensions.xml:416(title)
+ msgid "Certificates"
+ msgstr "Certificados"
+ 
+-#: C/epiphany-extensions.xml:418(para)
++#: C/epiphany-extensions.xml:421(para)
+ msgid ""
+ "The Certificates extension gives access to the certificates stored by "
+ "<application>Epiphany</application>, in order to view or manage them."
+@@ -819,15 +820,15 @@ msgstr ""
+ "La extensión Certificados da acceso a los certificados almacenados por "
+ "<application>Epiphany</application>, para verlos o administrarlos."
+ 
+-#: C/epiphany-extensions.xml:423(title)
++#: C/epiphany-extensions.xml:426(title)
+ msgid "Using Certificates"
+ msgstr "Usar los certificados"
+ 
+-#: C/epiphany-extensions.xml:426(title)
++#: C/epiphany-extensions.xml:429(title)
+ msgid "View website certificate"
+ msgstr "Ver el certificado del sitio web"
+ 
+-#: C/epiphany-extensions.xml:428(para)
++#: C/epiphany-extensions.xml:431(para)
+ msgid ""
+ "When you browse a secured website, the unlocked padlock which appear on the "
+ "left of the status bar becomes a locked padlock. When the Certificates "
+@@ -839,11 +840,11 @@ msgstr ""
+ "la extensión Certificados está activada, puede pulsar en el candado y éste "
+ "mostrará la información del certificado."
+ 
+-#: C/epiphany-extensions.xml:436(title)
++#: C/epiphany-extensions.xml:439(title)
+ msgid "Manage Certificates"
+ msgstr "Gestionar certificados"
+ 
+-#: C/epiphany-extensions.xml:438(para)
++#: C/epiphany-extensions.xml:441(para)
+ msgid ""
+ "The Certificates extension lets you manage the certificates stored by "
+ "<application>Epiphany</application> Browser."
+@@ -851,11 +852,11 @@ msgstr ""
+ "La extensión Certificados le permite gestionar los certificados almacenados "
+ "por el navegador <application>Epiphany</application>."
+ 
+-#: C/epiphany-extensions.xml:446(guilabel)
++#: C/epiphany-extensions.xml:449(guilabel)
+ msgid "Your Certificates"
+ msgstr "Sus certificados"
+ 
+-#: C/epiphany-extensions.xml:447(para)
++#: C/epiphany-extensions.xml:450(para)
+ msgid ""
+ "To import, view, backup and delete your own certificates. Personal "
+ "Certificates can be used to identify when you browse a sensible site."
+@@ -864,28 +865,28 @@ msgstr ""
+ "certificados personales se pueden usar para identificar cuando se visita un "
+ "sitio web sensible."
+ 
+-#: C/epiphany-extensions.xml:454(guilabel)
++#: C/epiphany-extensions.xml:457(guilabel)
+ msgid "Other People's"
+ msgstr "De otras personas"
+ 
+-#: C/epiphany-extensions.xml:455(para)
++#: C/epiphany-extensions.xml:458(para)
+ msgid "To import, view, edit and delete certificates from people you know."
+ msgstr "Para importar, ver, editar y borrar certificados de gente conocida."
+ 
+-#: C/epiphany-extensions.xml:459(guilabel)
++#: C/epiphany-extensions.xml:462(guilabel)
+ msgid "Web Sites"
+ msgstr "Sitios Web"
+ 
+-#: C/epiphany-extensions.xml:460(para)
++#: C/epiphany-extensions.xml:463(para)
+ msgid "To import, view, edit and delete certificates from website you visited."
+ msgstr ""
+ "Para importar, ver, editar y borrar certificados de sitios web visitados."
+ 
+-#: C/epiphany-extensions.xml:464(guilabel)
++#: C/epiphany-extensions.xml:467(guilabel)
+ msgid "Authorities"
+ msgstr "Autoridades"
+ 
+-#: C/epiphany-extensions.xml:465(para)
++#: C/epiphany-extensions.xml:468(para)
+ msgid ""
+ "To import, view, edit and delete certificates from authorities. Authorities "
+ "are organizations which create and validate the authenticity of published "
+@@ -895,7 +896,7 @@ msgstr ""
+ "autoridades son organizaciones que crean y validan la autenticidad de los "
+ "certificados publicados en Internet."
+ 
+-#: C/epiphany-extensions.xml:440(para)
++#: C/epiphany-extensions.xml:443(para)
+ msgid ""
+ "To display the <guilabel>Certificate Manager</guilabel>, choose "
+ "<menuchoice><guimenu>Tools</guimenu><guimenuitem>Manage Certificates</"
+@@ -907,24 +908,24 @@ msgstr ""
+ "certificados</guimenuitem></menuchoice>, esto le da acceso a 4 solapas: "
+ "<placeholder-1/><placeholder-2/>"
+ 
+-#: C/epiphany-extensions.xml:475(title)
++#: C/epiphany-extensions.xml:478(title)
+ msgid "Manage Security Devices"
+ msgstr "Gestionar dispositivos de seguridad"
+ 
+-#: C/epiphany-extensions.xml:477(para)
++#: C/epiphany-extensions.xml:480(para)
+ msgid ""
+ "Security Devices are used to encrypt and decrypt connections and can store "
+ "certificates and passwords."
+ msgstr ""
+-"Los Dispositivos de seguridad se utilizan para cifrar y descifrar conexiones, y "
+-"pueden almacenar certificados y contraseñas."
++"Los Dispositivos de seguridad se utilizan para cifrar y descifrar "
++"conexiones, y pueden almacenar certificados y contraseñas."
+ 
+-#: C/epiphany-extensions.xml:484(title)
+-#: C/epiphany-extensions.xml:509(guilabel)
++#: C/epiphany-extensions.xml:487(title)
++#: C/epiphany-extensions.xml:512(guilabel)
+ msgid "Error Viewer"
+ msgstr "Visor de errores"
+ 
+-#: C/epiphany-extensions.xml:489(para)
++#: C/epiphany-extensions.xml:492(para)
+ msgid ""
+ "The Error Viewer extension allows you to view errors in web pages, validate "
+ "web pages and check links."
+@@ -932,31 +933,31 @@ msgstr ""
+ "La extensión Visor de errores le permite ver los errores de una página web, "
+ "validar las páginas y comprobar enlaces."
+ 
+-#: C/epiphany-extensions.xml:494(title)
++#: C/epiphany-extensions.xml:497(title)
+ msgid "Using Error Viewer"
+ msgstr "Uso del Visor de errores"
+ 
+-#: C/epiphany-extensions.xml:501(guilabel)
++#: C/epiphany-extensions.xml:504(guilabel)
+ msgid "Link Checker"
+ msgstr "Comprobador de enlaces"
+ 
+-#: C/epiphany-extensions.xml:502(para)
++#: C/epiphany-extensions.xml:505(para)
+ msgid "Detects dead links on a site"
+ msgstr "Detecta enlaces muertos en una página"
+ 
+-#: C/epiphany-extensions.xml:505(guilabel)
++#: C/epiphany-extensions.xml:508(guilabel)
+ msgid "HTML Code Checker"
+ msgstr "Comprobador de código HTML"
+ 
+-#: C/epiphany-extensions.xml:506(para)
++#: C/epiphany-extensions.xml:509(para)
+ msgid "Checks the validity of the source code."
+ msgstr "Comprueba la validez del código fuente."
+ 
+-#: C/epiphany-extensions.xml:510(para)
++#: C/epiphany-extensions.xml:513(para)
+ msgid "Displays various errors of a webpage (like javascript, ...)"
+ msgstr "Muestra varios errores de una página web (como javascript, ...)"
+ 
+-#: C/epiphany-extensions.xml:496(para)
++#: C/epiphany-extensions.xml:499(para)
+ msgid ""
+ "The Error Viewer is a small but useful extension for webmasters to check "
+ "that websites (specially yours) conform to Web standards. This extension "
+@@ -966,17 +967,18 @@ msgstr ""
+ "comprobar que los sitios web (en especial el suyo propio) cumple con los "
+ "estándares Web. Esta extensión incluye tres funciones: <placeholder-1/>"
+ 
+-#: C/epiphany-extensions.xml:515(para)
++#: C/epiphany-extensions.xml:518(para)
+ msgid ""
+ "To launch the Link Checker, choose <menuchoice><guimenu>Tools</"
+ "guimenu><guimenuitem>Check Links</guimenuitem></menuchoice>. The error "
+ "viewer window will open, and the links verification will start automatically."
+ msgstr ""
+-"Para ejecutar el Comprobador de enlaces, elija <menuchoice><guimenu>Herramientas"
+-"</guimenu><guimenuitem>Comprobar enlaces</guimenuitem></menuchoice>. Se abrirá "
+-"la ventana del visor de errores y la comprobación de enlaces comenzará automáticamente."
++"Para ejecutar el Comprobador de enlaces, elija "
++"<menuchoice><guimenu>Herramientas</guimenu><guimenuitem>Comprobar enlaces</"
++"guimenuitem></menuchoice>. Se abrirá la ventana del visor de errores y la "
++"comprobación de enlaces comenzará automáticamente."
+ 
+-#: C/epiphany-extensions.xml:519(para)
++#: C/epiphany-extensions.xml:522(para)
+ msgid ""
+ "To launch the HTML Code Checker, choose <menuchoice><guimenu>Tools</"
+ "guimenu><guimenuitem>Check HTML</guimenuitem></menuchoice>. The error viewer "
+@@ -987,7 +989,7 @@ msgstr ""
+ "guimenuitem></menuchoice>. Se abrirá la ventana de visualización de errores "
+ "y comenzará automáticamente la comprobación del código HTML."
+ 
+-#: C/epiphany-extensions.xml:523(para)
++#: C/epiphany-extensions.xml:526(para)
+ msgid ""
+ "To launch the Error Viewer, choose <menuchoice><guimenu>Tools</"
+ "guimenu><guimenuitem>Error Viewer</guimenuitem></menuchoice>. The error "
+@@ -999,11 +1001,11 @@ msgstr ""
+ "el visor de errores y mostrará todos los errores de validación descubiertos "
+ "en la página web."
+ 
+-#: C/epiphany-extensions.xml:531(title)
++#: C/epiphany-extensions.xml:534(title)
+ msgid "Favicon Fallback"
+ msgstr "Recuperación de Favicon"
+ 
+-#: C/epiphany-extensions.xml:536(para)
++#: C/epiphany-extensions.xml:539(para)
+ msgid ""
+ "The Favicon Fallback extension allows to retrieve the icon favicon.ico when "
+ "the favicon is not well declared in web page."
+@@ -1011,11 +1013,11 @@ msgstr ""
+ "La extensión Recuperación de Favicon le permite recuperar el icono favicon "
+ "cuando éste no está declarado en la página web."
+ 
+-#: C/epiphany-extensions.xml:541(title)
++#: C/epiphany-extensions.xml:544(title)
+ msgid "Using Favicon"
+ msgstr "Uso del favicon"
+ 
+-#: C/epiphany-extensions.xml:543(para)
++#: C/epiphany-extensions.xml:546(para)
+ msgid ""
+ "Once activated, this extension will retrieve the picture file /favicon.ico "
+ "on each site you will visit if this file exists. Then <application>Epiphany</"
+@@ -1026,11 +1028,11 @@ msgstr ""
+ "<application>Epiphany</application> mostrará este icono en el lado izquierdo "
+ "de la barra de búsqueda."
+ 
+-#: C/epiphany-extensions.xml:550(title)
++#: C/epiphany-extensions.xml:553(title)
+ msgid "Gestures"
+ msgstr "Gestos"
+ 
+-#: C/epiphany-extensions.xml:555(para)
++#: C/epiphany-extensions.xml:558(para)
+ msgid ""
+ "The Gestures extension allows you to quickly perform actions in "
+ "<application>Epiphany</application> by drawing a shape with the mouse."
+@@ -1038,11 +1040,11 @@ msgstr ""
+ "La extensión Gestos le permite ejecutar acciones rápidamente en "
+ "<application>Epiphany</application> dibujando una forma con el ratón."
+ 
+-#: C/epiphany-extensions.xml:560(title)
++#: C/epiphany-extensions.xml:563(title)
+ msgid "Using Gestures"
+ msgstr "Uso de gestos"
+ 
+-#: C/epiphany-extensions.xml:562(para)
++#: C/epiphany-extensions.xml:565(para)
+ msgid ""
+ "To perform a gesture, press the middle button in the view pane of a "
+ "<application>Epiphany</application> window, move the mouse in one of the "
+@@ -1054,7 +1056,7 @@ msgstr ""
+ "el ratón en uno de los siguientes patrones, y después suelte el botón. El "
+ "cursor cambiará mientras se realiza el gesto."
+ 
+-#: C/epiphany-extensions.xml:568(title)
++#: C/epiphany-extensions.xml:571(title)
+ msgid ""
+ "List of available default patterns in <application>Epiphany Extensions</"
+ "application>"
+@@ -1062,148 +1064,148 @@ msgstr ""
+ "Lista de patrones predeterminados disponibles en las "
+ "<application>Extensiones de Epiphany</application>"
+ 
+-#: C/epiphany-extensions.xml:575(entry)
++#: C/epiphany-extensions.xml:578(entry)
+ msgid "Action"
+ msgstr "Acción"
+ 
+-#: C/epiphany-extensions.xml:576(entry)
++#: C/epiphany-extensions.xml:579(entry)
+ msgid "Gesture"
+ msgstr "Gesto"
+ 
+-#: C/epiphany-extensions.xml:577(entry)
++#: C/epiphany-extensions.xml:580(entry)
+ msgid "Example"
+ msgstr "Ejemplo"
+ 
+-#: C/epiphany-extensions.xml:582(entry)
++#: C/epiphany-extensions.xml:585(entry)
+ msgid "Go back in history"
+ msgstr "Retroceder por el histórico"
+ 
+-#: C/epiphany-extensions.xml:583(entry)
++#: C/epiphany-extensions.xml:586(entry)
+ msgid "Left"
+ msgstr "Izquierda"
+ 
+-#: C/epiphany-extensions.xml:593(entry)
++#: C/epiphany-extensions.xml:596(entry)
+ msgid "Go forward in history"
+ msgstr "Avanzar por el histórico"
+ 
+-#: C/epiphany-extensions.xml:594(entry)
++#: C/epiphany-extensions.xml:597(entry)
+ msgid "Right"
+ msgstr "Derecha"
+ 
+-#: C/epiphany-extensions.xml:604(entry)
++#: C/epiphany-extensions.xml:607(entry)
+ msgid "Go up in a directory"
+ msgstr "Subir un directorio"
+ 
+-#: C/epiphany-extensions.xml:605(entry)
++#: C/epiphany-extensions.xml:608(entry)
+ msgid "Up - Left - Up"
+ msgstr "Arriba - Izquierda - Arriba"
+ 
+-#: C/epiphany-extensions.xml:615(entry)
++#: C/epiphany-extensions.xml:618(entry)
+ msgid "Go to your home page"
+ msgstr "Ir a su página de inicio"
+ 
+-#: C/epiphany-extensions.xml:616(entry)
++#: C/epiphany-extensions.xml:619(entry)
+ msgid "Up - Left - Down"
+ msgstr "Arriba - Izquierda - Abajo"
+ 
+-#: C/epiphany-extensions.xml:626(entry)
++#: C/epiphany-extensions.xml:629(entry)
+ msgid "Reload the page"
+ msgstr "Recargar la página"
+ 
+-#: C/epiphany-extensions.xml:627(entry)
++#: C/epiphany-extensions.xml:630(entry)
+ msgid "Up - Down"
+ msgstr "Arriba - Abajo"
+ 
+-#: C/epiphany-extensions.xml:637(entry)
++#: C/epiphany-extensions.xml:640(entry)
+ msgid "Stop loading the page"
+ msgstr "Detener la carga de la página"
+ 
+-#: C/epiphany-extensions.xml:638(entry)
++#: C/epiphany-extensions.xml:641(entry)
+ msgid "Left - Up"
+ msgstr "Izquierda - Arriba"
+ 
+-#: C/epiphany-extensions.xml:648(entry)
++#: C/epiphany-extensions.xml:651(entry)
+ msgid "Open a new window"
+ msgstr "Abrir una ventana nueva"
+ 
+-#: C/epiphany-extensions.xml:649(entry)
++#: C/epiphany-extensions.xml:652(entry)
+ msgid "Up"
+ msgstr "Arriba"
+ 
+-#: C/epiphany-extensions.xml:659(entry)
++#: C/epiphany-extensions.xml:662(entry)
+ msgid "Open a new tab"
+ msgstr "Abrir una solapa nueva"
+ 
+-#: C/epiphany-extensions.xml:660(entry)
++#: C/epiphany-extensions.xml:663(entry)
+ msgid "Down"
+ msgstr "Abajo"
+ 
+-#: C/epiphany-extensions.xml:670(entry)
++#: C/epiphany-extensions.xml:673(entry)
+ msgid "Close a tab/window"
+ msgstr "Cerrar una solapa/ventana"
+ 
+-#: C/epiphany-extensions.xml:671(entry)
++#: C/epiphany-extensions.xml:674(entry)
+ msgid "Right - Left - Right"
+ msgstr "Derecha - Izquierda - Derecha"
+ 
+-#: C/epiphany-extensions.xml:681(entry)
++#: C/epiphany-extensions.xml:684(entry)
+ msgid "Close a tab /window (second gesture)"
+ msgstr "Cerrar una solapa/ventana (segundo gesto)"
+ 
+-#: C/epiphany-extensions.xml:682(entry)
++#: C/epiphany-extensions.xml:685(entry)
+ msgid "Down - Right"
+ msgstr "Abajo - Derecha"
+ 
+-#: C/epiphany-extensions.xml:692(entry)
++#: C/epiphany-extensions.xml:695(entry)
+ msgid "Toggle full-screen mode"
+ msgstr "Conmutar el modo de pantalla completa"
+ 
+-#: C/epiphany-extensions.xml:693(entry)
++#: C/epiphany-extensions.xml:696(entry)
+ msgid "Down - Left"
+ msgstr "Abajo - Izquierda"
+ 
+-#: C/epiphany-extensions.xml:703(entry)
++#: C/epiphany-extensions.xml:706(entry)
+ msgid "Go to the next tab"
+ msgstr "Ir a la siguiente solapa"
+ 
+-#: C/epiphany-extensions.xml:704(entry)
++#: C/epiphany-extensions.xml:707(entry)
+ msgid "Up - Right"
+ msgstr "Arriba - Derecha"
+ 
+-#: C/epiphany-extensions.xml:714(entry)
++#: C/epiphany-extensions.xml:717(entry)
+ msgid "Go to the previous tab"
+ msgstr "Ir a la solapa anterior"
+ 
+-#: C/epiphany-extensions.xml:715(entry)
++#: C/epiphany-extensions.xml:718(entry)
+ msgid "Up - Left"
+ msgstr "Arriba - Izquierda"
+ 
+-#: C/epiphany-extensions.xml:725(entry)
++#: C/epiphany-extensions.xml:728(entry)
+ msgid "View the page source"
+ msgstr "Ver el código fuente de la página"
+ 
+-#: C/epiphany-extensions.xml:727(wordasword)
++#: C/epiphany-extensions.xml:730(wordasword)
+ msgid "S"
+ msgstr "S"
+ 
+-#: C/epiphany-extensions.xml:726(entry)
++#: C/epiphany-extensions.xml:729(entry)
+ msgid "Left - Down - Right - Down - Left (Do a <placeholder-1/>)"
+ msgstr ""
+ "Izquierda - Abajo - Derecha - Abajo - Izquierda (haga un <placeholder-1/>)"
+ 
+-#: C/epiphany-extensions.xml:737(entry)
++#: C/epiphany-extensions.xml:740(entry)
+ msgid "View the page source (Second gesture)"
+ msgstr "Ver el código fuente de la página (segundo gesto)"
+ 
+-#: C/epiphany-extensions.xml:738(entry)
++#: C/epiphany-extensions.xml:741(entry)
+ msgid "Up - Right - Down"
+ msgstr "Arriba - Derecha - Abajo"
+ 
+-#: C/epiphany-extensions.xml:753(title)
++#: C/epiphany-extensions.xml:756(title)
+ msgid "Create gestures"
+ msgstr "Crear gestos"
+ 
+-#: C/epiphany-extensions.xml:755(para)
++#: C/epiphany-extensions.xml:758(para)
+ msgid ""
+ "The Gestures extension lets you create your own gesture patterns, and so let "
+ "you extend the set provided by default."
+@@ -1211,11 +1213,11 @@ msgstr ""
+ "La extensión Gestos le permite crear sus propios patrones de gestos, "
+ "ampliando así el conjunto proporcionado de forma predeterminada."
+ 
+-#: C/epiphany-extensions.xml:759(title)
++#: C/epiphany-extensions.xml:762(title)
+ msgid "Understand how gesture works"
+ msgstr "Comprender cómo funcionan los gestos"
+ 
+-#: C/epiphany-extensions.xml:761(para)
++#: C/epiphany-extensions.xml:764(para)
+ msgid ""
+ "<application>Epiphany</application> stores the definition of the gestures "
+ "for all users in the file <filename>ephy-gestures.xml</filename> located in "
+@@ -1229,11 +1231,11 @@ msgstr ""
+ "epiphany-extensions/</filename>; este archivo utiliza el formato xml y "
+ "define los gestos para todos los usuarios del sistema."
+ 
+-#: C/epiphany-extensions.xml:771(title)
++#: C/epiphany-extensions.xml:774(title)
+ msgid "A Gesture Example"
+ msgstr "Ejemplo de gesto"
+ 
+-#: C/epiphany-extensions.xml:767(para)
++#: C/epiphany-extensions.xml:770(para)
+ msgid ""
+ "If you open this file, you see a set of markup gesture, and inside them, "
+ "there is one or several markup sequence and one markup action. <placeholder-"
+@@ -1242,11 +1244,11 @@ msgstr ""
+ "Si abre este archivo verá un conjunto de gestos marcados, y dentro de ellos, "
+ "hay una o varias secuencias marcadas y una acción marcada. <placeholder-1/>"
+ 
+-#: C/epiphany-extensions.xml:784(title)
++#: C/epiphany-extensions.xml:787(title)
+ msgid "Create new gesture"
+ msgstr "Crear gesto nuevo"
+ 
+-#: C/epiphany-extensions.xml:786(para)
++#: C/epiphany-extensions.xml:789(para)
+ msgid ""
+ "In this section, we will explain how to create a new gesture. We will decide "
+ "to print the web page when we will draw a <wordasword>P</wordasword> with "
+@@ -1256,7 +1258,7 @@ msgstr ""
+ "imprimir la página web al dibujar una <wordasword>P</wordasword> con el "
+ "ratón."
+ 
+-#: C/epiphany-extensions.xml:790(para)
++#: C/epiphany-extensions.xml:793(para)
+ msgid ""
+ "To create your own gestures, first create a file named <filename>ephy-"
+ "gestures.xml</filename> in the directory <filename class=\"directory\">~/."
+@@ -1268,7 +1270,7 @@ msgstr ""
+ "\"directory\">~/.gnome2/epiphany/</filename> que almacenará sus definiciones "
+ "de gestos personales."
+ 
+-#: C/epiphany-extensions.xml:795(para)
++#: C/epiphany-extensions.xml:798(para)
+ msgid ""
+ "Open the newly created file with a text editor and add the following "
+ "content: <placeholder-1/>"
+@@ -1276,11 +1278,11 @@ msgstr ""
+ "Abra el archivo nuevo con un editor de textos y añada el siguiente "
+ "contenido: <placeholder-1/>"
+ 
+-#: C/epiphany-extensions.xml:808(title)
++#: C/epiphany-extensions.xml:811(title)
+ msgid "Define the gesture movement"
+ msgstr "Define el movimiento de un gesto"
+ 
+-#: C/epiphany-extensions.xml:810(para)
++#: C/epiphany-extensions.xml:813(para)
+ msgid ""
+ "To define a new gesture, you need at least one or several sequences and an "
+ "action to execute."
+@@ -1288,7 +1290,7 @@ msgstr ""
+ "Para definir un nuevo gesto necesita, al menos, una o varias secuencias y "
+ "una acción que ejecutar."
+ 
+-#: C/epiphany-extensions.xml:812(para)
++#: C/epiphany-extensions.xml:815(para)
+ msgid ""
+ "A sequence is a set of numerical values between 1 and 9 which define the "
+ "gesture to draw following a phone keypad layout (with \"1\" placed to the "
+@@ -1299,7 +1301,7 @@ msgstr ""
+ "teléfono (con «1» situado en la esquina superior izquierda y el «9» en la "
+ "esquina inferior derecha)."
+ 
+-#: C/epiphany-extensions.xml:816(para)
++#: C/epiphany-extensions.xml:819(para)
+ msgid ""
+ "If we want to draw a <wordasword>P</wordasword>, the key sequence is "
+ "74123654. Insert this value between the markups \"sequence\"."
+@@ -1307,11 +1309,11 @@ msgstr ""
+ "Si quiere dibujar una <wordasword>P</wordasword>, la secuencia de teclas es "
+ "74123654. Introduzca este valor entre las marcas «secuencia»."
+ 
+-#: C/epiphany-extensions.xml:829(title)
++#: C/epiphany-extensions.xml:832(title)
+ msgid "Define the action"
+ msgstr "Definir la acción"
+ 
+-#: C/epiphany-extensions.xml:831(para)
++#: C/epiphany-extensions.xml:834(para)
+ msgid ""
+ "An action describes the path to a menu or toolbar item in the "
+ "<application>Epiphany</application> window. All these paths are defined is "
+@@ -1324,11 +1326,11 @@ msgstr ""
+ "ubicado en <filename class=\"directory\">$PREFIX/epiphany/epiphany-ui.xml</"
+ "filename>"
+ 
+-#: C/epiphany-extensions.xml:849(title)
++#: C/epiphany-extensions.xml:852(title)
+ msgid "Greasemonkey"
+ msgstr "Greasemonkey"
+ 
+-#: C/epiphany-extensions.xml:854(para)
++#: C/epiphany-extensions.xml:857(para)
+ msgid ""
+ "Greasemonkey is a powerful extension that allows users to use scripts that "
+ "make on-the-fly changes to web pages. The greasemonkey scripts can make page "
+@@ -1339,7 +1341,7 @@ msgstr ""
+ "Greasemonkey pueden, por ejemplo, hacer modificaciones en una página o "
+ "rellenar un formulario automáticamente."
+ 
+-#: C/epiphany-extensions.xml:858(para)
++#: C/epiphany-extensions.xml:861(para)
+ msgid ""
+ "Greasemonkey scripts are javascripts and have the file extension \".user.js"
+ "\". Greasemonkey extension doesn't come with any scripts, you have to find "
+@@ -1352,7 +1354,7 @@ msgstr ""
+ "los scripts en la web. Un buen repositorio de scripts para Gresemonkey es "
+ "<ulink url=\"http://userscripts.org/\">http://userscripts.org/</ulink>."
+ 
+-#: C/epiphany-extensions.xml:863(para)
++#: C/epiphany-extensions.xml:866(para)
+ msgid ""
+ "To learn more about Greasemonkey, read the <ulink url=\"http://en.wikipedia."
+ "org/wiki/Greasemonkey\">definition</ulink> on the Wikipedia on-line "
+@@ -1362,15 +1364,15 @@ msgstr ""
+ "wikipedia.org/wiki/Greasemonkey\">definición</ulink> en la enciclopedia en "
+ "línea Wikipedia."
+ 
+-#: C/epiphany-extensions.xml:869(title)
++#: C/epiphany-extensions.xml:872(title)
+ msgid "Using Greasemonkey"
+ msgstr "Uso de Greasemonkey"
+ 
+-#: C/epiphany-extensions.xml:872(title)
++#: C/epiphany-extensions.xml:875(title)
+ msgid "Install a Greasemonkey script"
+ msgstr "Instalar un script de Greasemonkey"
+ 
+-#: C/epiphany-extensions.xml:874(para)
++#: C/epiphany-extensions.xml:877(para)
+ msgid ""
+ "To install a Greasemonkey script, first locate a link to a greasemonkey "
+ "script on a web page, right-click on the link, and choose "
+@@ -1384,7 +1386,7 @@ msgstr ""
+ "guimenuitem>. <application>Epiphany</application> descargará el script; un "
+ "mensaje confirmará que el script está instalado y listo para usarse."
+ 
+-#: C/epiphany-extensions.xml:879(para)
++#: C/epiphany-extensions.xml:882(para)
+ msgid ""
+ "You can manually install Greasemonkey scripts by copying them in <filename "
+ "class=\"directory\">$HOME/.gnome2/epiphany/extensions/data/greasemonkey/</"
+@@ -1394,11 +1396,11 @@ msgstr ""
+ "class=\"directory\">$HOME/.gnome2/epiphany/extensions/data/greasemonkey/</"
+ "filename>"
+ 
+-#: C/epiphany-extensions.xml:885(title)
++#: C/epiphany-extensions.xml:888(title)
+ msgid "Remove a Greasemonkey script"
+ msgstr "Eliminar un script Greasemonkey"
+ 
+-#: C/epiphany-extensions.xml:887(para)
++#: C/epiphany-extensions.xml:890(para)
+ msgid ""
+ "<application>Epiphany</application> doesn't provide a Graphical User "
+ "interface to delete scripts; to remove a script go to <filename class="
+@@ -1410,21 +1412,21 @@ msgstr ""
+ "\"directory\">$HOME/.gnome2/epiphany/extensions/data/greasemonkey/</"
+ "filename> y mueva el archivo del script a la papelera."
+ 
+-#: C/epiphany-extensions.xml:896(title)
++#: C/epiphany-extensions.xml:899(title)
+ msgid "Java Console"
+ msgstr "Consola Java"
+ 
+-#: C/epiphany-extensions.xml:901(para)
++#: C/epiphany-extensions.xml:904(para)
+ msgid "Java Console extension provides access to the Java-Plugin Console."
+ msgstr ""
+ "La extensión Consola Java proporciona acceso a la consola de complementos de "
+ "Java."
+ 
+-#: C/epiphany-extensions.xml:906(title)
++#: C/epiphany-extensions.xml:909(title)
+ msgid "Using Java Console"
+ msgstr "Uso de la consola Java"
+ 
+-#: C/epiphany-extensions.xml:908(para)
++#: C/epiphany-extensions.xml:911(para)
+ msgid ""
+ "To display the Java Console, choose <menuchoice><guimenu>Tools</"
+ "guimenu><guimenuitem>Java Console</guimenuitem></menuchoice>."
+@@ -1433,23 +1435,23 @@ msgstr ""
+ "<menuchoice><guimenu>Herramientas</guimenu><guimenuitem>Consola Java</"
+ "guimenuitem></menuchoice>."
+ 
+-#: C/epiphany-extensions.xml:915(title)
++#: C/epiphany-extensions.xml:918(title)
+ msgid "News Feed Subscription"
+ msgstr "Suscripción a proveedores de noticias"
+ 
+-#: C/epiphany-extensions.xml:924(para)
++#: C/epiphany-extensions.xml:927(para)
+ msgid "Liferea"
+ msgstr "Liferea"
+ 
+-#: C/epiphany-extensions.xml:925(para)
++#: C/epiphany-extensions.xml:928(para)
+ msgid "Straw"
+ msgstr "Straw"
+ 
+-#: C/epiphany-extensions.xml:926(para)
++#: C/epiphany-extensions.xml:929(para)
+ msgid "Blam"
+ msgstr "Blam"
+ 
+-#: C/epiphany-extensions.xml:920(para)
++#: C/epiphany-extensions.xml:923(para)
+ msgid ""
+ "The News Feed Subscription extension allows you to subscribe to a news feed "
+ "offered by the web page in your favorite news reader. The supported feed "
+@@ -1460,11 +1462,11 @@ msgstr ""
+ "favorito. Los lectores de canales o proveedores soportados son <placeholder-"
+ "1/>"
+ 
+-#: C/epiphany-extensions.xml:932(title)
++#: C/epiphany-extensions.xml:935(title)
+ msgid "Using News Feed Subscription"
+ msgstr "Uso de Suscripción a proveedores de noticias"
+ 
+-#: C/epiphany-extensions.xml:934(para)
++#: C/epiphany-extensions.xml:937(para)
+ msgid ""
+ "When <application>Epiphany</application> detects a that a website provides "
+ "RSS and Atom feeds, it will display an icon on left side of the "
+@@ -1474,7 +1476,7 @@ msgstr ""
+ "proporciona canales RSS y Atom, se mostrará un icono en el lado izquierdo de "
+ "la barra de estado de <application>Epiphany</application>."
+ 
+-#: C/epiphany-extensions.xml:939(para)
++#: C/epiphany-extensions.xml:942(para)
+ msgid ""
+ "Choose <menuchoice><guimenu>Tools</guimenu><guimenuitem>News Feed "
+ "Subscription</guimenuitem></menuchoice>, a new window with the list of "
+@@ -1487,7 +1489,7 @@ msgstr ""
+ "icono del canal en la barra de estado para que aparezca la ventana "
+ "<interface>Subscripción a proveedores de noticias</interface>"
+ 
+-#: C/epiphany-extensions.xml:948(para)
++#: C/epiphany-extensions.xml:951(para)
+ msgid ""
+ "Choose the feeds you wan to subscribe to. You can also copy the feed "
+ "Location using the feed's context menu."
+@@ -1495,19 +1497,19 @@ msgstr ""
+ "Seleccione los canales a los que desea suscribirse. También puede copiar la "
+ "ubicación del canal utilizando el menú contextual de canales."
+ 
+-#: C/epiphany-extensions.xml:954(para)
++#: C/epiphany-extensions.xml:957(para)
+ msgid "Press <guibutton>Subscribe</guibutton> to subscribe the feeds."
+ msgstr "Pulse <guibutton>Suscribir</guibutton> para suscribirse a los canales."
+ 
+-#: C/epiphany-extensions.xml:936(para)
++#: C/epiphany-extensions.xml:939(para)
+ msgid "To register this feed: <placeholder-1/>"
+ msgstr "Para registrar este canal RSS: <placeholder-1/>"
+ 
+-#: C/epiphany-extensions.xml:965(title)
++#: C/epiphany-extensions.xml:968(title)
+ msgid "Page Info"
+ msgstr "Información de página"
+ 
+-#: C/epiphany-extensions.xml:970(para)
++#: C/epiphany-extensions.xml:973(para)
+ msgid ""
+ "The Page Info extension provides detailed information about the web pages "
+ "you visit."
+@@ -1515,53 +1517,54 @@ msgstr ""
+ "La extensión Información de página proporciona información detallada sobre "
+ "las páginas web que visita."
+ 
+-#: C/epiphany-extensions.xml:975(title)
++#: C/epiphany-extensions.xml:978(title)
+ msgid "Using Page Info"
+ msgstr "Uso de la información de la página"
+ 
+-#: C/epiphany-extensions.xml:983(guilabel)
++#: C/epiphany-extensions.xml:986(guilabel)
+ msgid "General"
+ msgstr "General"
+ 
+-#: C/epiphany-extensions.xml:984(para)
++#: C/epiphany-extensions.xml:987(para)
+ msgid "Provides various information on the page and the website"
+ msgstr "Proporciona información variada de la página y del sitio web"
+ 
+-#: C/epiphany-extensions.xml:988(guilabel)
++#: C/epiphany-extensions.xml:991(guilabel)
+ msgid "Media"
+ msgstr "Multimedia"
+ 
+-#: C/epiphany-extensions.xml:989(para)
++#: C/epiphany-extensions.xml:992(para)
+ msgid "Displays media files (pictures, sounds,...) used on the page."
+-msgstr "Muestra los archivos multimedia (fotos, sonidos,...) usados en la página"
++msgstr ""
++"Muestra los archivos multimedia (fotos, sonidos,...) usados en la página"
+ 
+-#: C/epiphany-extensions.xml:993(guilabel)
++#: C/epiphany-extensions.xml:996(guilabel)
+ msgid "Links"
+ msgstr "Enlaces"
+ 
+-#: C/epiphany-extensions.xml:994(para)
++#: C/epiphany-extensions.xml:997(para)
+ msgid "Provides all the links of the web page."
+ msgstr "Proporciona todos los enlaces de la página web."
+ 
+-#: C/epiphany-extensions.xml:997(guilabel)
++#: C/epiphany-extensions.xml:1000(guilabel)
+ msgid "Forms"
+ msgstr "Formularios"
+ 
+-#: C/epiphany-extensions.xml:998(para)
++#: C/epiphany-extensions.xml:1001(para)
+ msgid "All the forms available in the page are displayed."
+ msgstr "Se muestran todos los formularios disponibles en la página."
+ 
+-#: C/epiphany-extensions.xml:1002(guilabel)
++#: C/epiphany-extensions.xml:1005(guilabel)
+ msgid "Metadata"
+ msgstr "Metadatos"
+ 
+-#: C/epiphany-extensions.xml:1003(para)
++#: C/epiphany-extensions.xml:1006(para)
+ msgid "Displays all the information entered by the webmaster about the site."
+ msgstr ""
+ "Muestra toda la información acerca del sitio web introducida por el "
+ "webmaster."
+ 
+-#: C/epiphany-extensions.xml:977(para)
++#: C/epiphany-extensions.xml:980(para)
+ msgid ""
+ "To access the page information choose <menuchoice><guimenu>View</"
+ "guimenu><guimenuitem>Page Information</guimenuitem></menuchoice>; a new "
+@@ -1572,11 +1575,11 @@ msgstr ""
+ "guimenuitem></menuchoice>; aparecerá una nueva ventana permitiéndole acceder "
+ "a 5 solapas: <placeholder-1/>"
+ 
+-#: C/epiphany-extensions.xml:1012(title)
++#: C/epiphany-extensions.xml:1015(title)
+ msgid "Push Scroll"
+ msgstr "Pulsar y desplazar"
+ 
+-#: C/epiphany-extensions.xml:1017(para)
++#: C/epiphany-extensions.xml:1020(para)
+ msgid ""
+ "The Push Scroll extension provides scroll function while the middle mouse "
+ "button is pressed."
+@@ -1584,11 +1587,11 @@ msgstr ""
+ "La extensión Pulsar y desplazar proporciona la función de desplazamiento "
+ "mientras el botón del medio de ratón está pulsado."
+ 
+-#: C/epiphany-extensions.xml:1022(title)
++#: C/epiphany-extensions.xml:1025(title)
+ msgid "Using Push Scroll"
+ msgstr "Uso de Pulsar y desplazar"
+ 
+-#: C/epiphany-extensions.xml:1024(para)
++#: C/epiphany-extensions.xml:1027(para)
+ msgid ""
+ "To use Push Scroll, simply press the middle mouse button, and move your "
+ "mouse in any direction, the page will scroll."
+@@ -1596,11 +1599,11 @@ msgstr ""
+ "Para usar Pulsar y desplazar, simplemente pulse el botón del medio del ratón "
+ "y mueva su ratón en cualquier dirección y la página se desplazará."
+ 
+-#: C/epiphany-extensions.xml:1030(title)
++#: C/epiphany-extensions.xml:1033(title)
+ msgid "Python Console"
+ msgstr "Consola Python"
+ 
+-#: C/epiphany-extensions.xml:1035(para)
++#: C/epiphany-extensions.xml:1038(para)
+ msgid ""
+ "Opens an interactive Python console, and allows to modify "
+ "<application>Epiphany</application> through Python."
+@@ -1608,11 +1611,11 @@ msgstr ""
+ "Abre una consola interactiva de Python, y le permite modificar "
+ "<application>Epiphany</application> a través de Python."
+ 
+-#: C/epiphany-extensions.xml:1040(title)
++#: C/epiphany-extensions.xml:1043(title)
+ msgid "Using Python Console"
+ msgstr "Uso de la consola de Python"
+ 
+-#: C/epiphany-extensions.xml:1042(para)
++#: C/epiphany-extensions.xml:1045(para)
+ msgid ""
+ "To display the Python Console, choose <menuchoice><guimenu>Tools</"
+ "guimenu><guimenuitem>Python Console</guimenuitem></menuchoice>."
+@@ -1621,11 +1624,11 @@ msgstr ""
+ "<menuchoice><guimenu>Herramientas</guimenu><guimenuitem>Consola Python</"
+ "guimenuitem></menuchoice>."
+ 
+-#: C/epiphany-extensions.xml:1049(title)
++#: C/epiphany-extensions.xml:1052(title)
+ msgid "Select Stylesheet"
+ msgstr "Selector de la hoja de estilo"
+ 
+-#: C/epiphany-extensions.xml:1054(para)
++#: C/epiphany-extensions.xml:1057(para)
+ msgid ""
+ "The Select Stylesheet extension lets you switch between the stylesheets of a "
+ "web page. You can also disable the stylesheets when you browsing a page."
+@@ -1634,11 +1637,11 @@ msgstr ""
+ "hojas de estilo de una página web. También puede desactivar las hojas de "
+ "estilo cuando visita una página."
+ 
+-#: C/epiphany-extensions.xml:1060(title)
++#: C/epiphany-extensions.xml:1063(title)
+ msgid "Using Select Stylesheet"
+ msgstr "Uso del Selector de hoja de estilo"
+ 
+-#: C/epiphany-extensions.xml:1062(para)
++#: C/epiphany-extensions.xml:1065(para)
+ msgid ""
+ "To change the style sheet of the website you visit, choose "
+ "<menuchoice><guimenu>View</guimenu><guimenuitem>Style</guimenuitem></"
+@@ -1648,7 +1651,7 @@ msgstr ""
+ "<menuchoice><guimenu>Ver</guimenu><guimenuitem>Estilo</guimenuitem></"
+ "menuchoice>, entonces elija una hoja de estilo de entre las disponibles."
+ 
+-#: C/epiphany-extensions.xml:1065(para)
++#: C/epiphany-extensions.xml:1068(para)
+ msgid ""
+ "If you choose the style sheet <guilabel>none</guilabel> the website will not "
+ "use any style sheet."
+@@ -1656,11 +1659,11 @@ msgstr ""
+ "Si selecciona la hoja de estilos <guilabel>ninguna</guilabel> el sitio web "
+ "no utilizará ninguna hoja de estilos."
+ 
+-#: C/epiphany-extensions.xml:1071(title)
++#: C/epiphany-extensions.xml:1074(title)
+ msgid "Sidebar"
+ msgstr "Barra lateral"
+ 
+-#: C/epiphany-extensions.xml:1076(para)
++#: C/epiphany-extensions.xml:1079(para)
+ msgid ""
+ "The Sidebar extension adds a small window on the left side of the "
+ "<application>Epiphany</application> window. Sidebar allows to display "
+@@ -1671,19 +1674,19 @@ msgstr ""
+ "mostrar el contenido del sitio web y puede proporcionar acceso rápido a su "
+ "información."
+ 
+-#: C/epiphany-extensions.xml:1082(title)
++#: C/epiphany-extensions.xml:1085(title)
+ msgid "Using Sidebar"
+ msgstr "Uso de la barra lateral"
+ 
+-#: C/epiphany-extensions.xml:1085(title)
++#: C/epiphany-extensions.xml:1088(title)
+ msgid "<application>Epiphany</application> with a Sidebar displayed"
+ msgstr "<application>Epiphany</application> con una Barra lateral"
+ 
+-#: C/epiphany-extensions.xml:1096(title)
++#: C/epiphany-extensions.xml:1099(title)
+ msgid "Display Sidebar"
+ msgstr "Mostrar barra lateral"
+ 
+-#: C/epiphany-extensions.xml:1098(para)
++#: C/epiphany-extensions.xml:1101(para)
+ msgid ""
+ "By default, the Sidebar is not displayed; to display the Sidebar, choose "
+ "menu <menuchoice><guimenu>View</guimenu><guimenuitem>Sidebar</guimenuitem></"
+@@ -1693,7 +1696,7 @@ msgstr ""
+ "seleccione menú <menuchoice><guimenu>Ver</guimenu><guimenuitem>Barra "
+ "lateral</guimenuitem></menuchoice>."
+ 
+-#: C/epiphany-extensions.xml:1101(para)
++#: C/epiphany-extensions.xml:1104(para)
+ msgid ""
+ "You can also toggle the visibility of Sidebar by pressing <keycap>F9</"
+ "keycap>."
+@@ -1701,11 +1704,11 @@ msgstr ""
+ "Puede cambiar la visibilidad de la Barra lateral pulsando <keycap>F9</"
+ "keycap>."
+ 
+-#: C/epiphany-extensions.xml:1106(title)
++#: C/epiphany-extensions.xml:1109(title)
+ msgid "Add a Sidebar"
+ msgstr "Añadir una barra lateral"
+ 
+-#: C/epiphany-extensions.xml:1108(para)
++#: C/epiphany-extensions.xml:1111(para)
+ msgid ""
+ "To add a Sidebar, activate the Sidebar extension, then click on the link "
+ "that the website provides to install the sidebar. A dialog requests to add "
+@@ -1713,11 +1716,11 @@ msgid ""
+ "sidebar document is added to the Sidebar."
+ msgstr ""
+ "Para añadir una Barra lateral, active la extensión Barra lateral y pulse en "
+-"el enlace que ofrece el sitio web para instalar la barra lateral. Un diálogo le "
+-"pedirá que añada el documento a la Barra lateral, pulse <guibutton>Añadir "
++"el enlace que ofrece el sitio web para instalar la barra lateral. Un diálogo "
++"le pedirá que añada el documento a la Barra lateral, pulse <guibutton>Añadir "
+ "barra lateral</guibutton>, se añadirá el documento a la Barra lateral."
+ 
+-#: C/epiphany-extensions.xml:1113(para)
++#: C/epiphany-extensions.xml:1116(para)
+ msgid ""
+ "You can find a list of websites that provide sidebar on <ulink url=\"http://"
+ "dmoz.org/Netscape/Sidebar/\">DMOZ</ulink>."
+@@ -1725,11 +1728,11 @@ msgstr ""
+ "Puede encontrar una lista de sitios web que ofrecen barras laterales en "
+ "<ulink url=\"http://dmoz.org/Netscape/Sidebar/\">DMOZ</ulink>."
+ 
+-#: C/epiphany-extensions.xml:1118(title)
++#: C/epiphany-extensions.xml:1121(title)
+ msgid "Switch between Sidebars"
+ msgstr "Cambiar entre Barras laterales"
+ 
+-#: C/epiphany-extensions.xml:1120(para)
++#: C/epiphany-extensions.xml:1123(para)
+ msgid ""
+ "When you have subscribed to several sidebars, to switch between them, select "
+ "the Sidebar from the drop-box at the top of the Sidebar."
+@@ -1738,11 +1741,11 @@ msgstr ""
+ "seleccione la Barra lateral de la caja desplegable en la parte superior de "
+ "la Barra lateral."
+ 
+-#: C/epiphany-extensions.xml:1126(title)
++#: C/epiphany-extensions.xml:1129(title)
+ msgid "Delete a Sidebar"
+ msgstr "Eliminar una barra lateral"
+ 
+-#: C/epiphany-extensions.xml:1128(para)
++#: C/epiphany-extensions.xml:1131(para)
+ msgid ""
+ "To delete a Sidebar which you have added, display the sidebar to delete and "
+ "press the trash icon."
+@@ -1750,11 +1753,11 @@ msgstr ""
+ "Para borrar una Barra lateral que había añadido, muestre la barra lateral "
+ "para borrar y pulse en el icono de la papelera."
+ 
+-#: C/epiphany-extensions.xml:1135(title)
++#: C/epiphany-extensions.xml:1138(title)
+ msgid "Smart Bookmarks"
+ msgstr "Marcadores inteligentes"
+ 
+-#: C/epiphany-extensions.xml:1140(para)
++#: C/epiphany-extensions.xml:1143(para)
+ msgid ""
+ "The Smart Bookmarks extension is an extension that enable to look up "
+ "selected text with a smart bookmark."
+@@ -1762,11 +1765,11 @@ msgstr ""
+ "La extensión Marcadores inteligentes es una extensión que permite buscar "
+ "texto seleccionado con un marcador inteligente."
+ 
+-#: C/epiphany-extensions.xml:1145(title)
++#: C/epiphany-extensions.xml:1148(title)
+ msgid "Using Smart Bookmarks"
+ msgstr "Uso de los Marcadores inteligentes"
+ 
+-#: C/epiphany-extensions.xml:1147(para)
++#: C/epiphany-extensions.xml:1150(para)
+ msgid ""
+ "To create a smart bookmark, see the appropriate <ulink type=\"help\" url="
+ "\"ghelp:epiphany#smart-bookmarks-create-a-smartbookmark\"> section</ulink> "
+@@ -1776,31 +1779,32 @@ msgstr ""
+ "type=\"help\" url=\"ghelp:epiphany#smart-bookmarks-create-a-smartbookmark"
+ "\">sección</ulink> del manual de <application>Epiphany</application>."
+ 
+-#: C/epiphany-extensions.xml:1150(para)
++#: C/epiphany-extensions.xml:1153(para)
+ msgid ""
+ "To look up text, select the text in a web page and choose <guimenuitem>Look "
+ "Up</guimenuitem> and the smart bookmark from the context menu. A new browser "
+ "window will be opened with the result of the look-up."
+ msgstr ""
+ "Para buscar texto, seleccione el texto en una página web y elija "
+-"<guimenuitem>Buscar</guimenuitem> y el marcador inteligente del menú contextual. "
+-"Se abrirá una ventana nueva del navegador con el resultado de la búsqueda."
++"<guimenuitem>Buscar</guimenuitem> y el marcador inteligente del menú "
++"contextual. Se abrirá una ventana nueva del navegador con el resultado de la "
++"búsqueda."
+ 
+-#: C/epiphany-extensions.xml:1158(title)
++#: C/epiphany-extensions.xml:1161(title)
+ msgid "Tab Groups"
+ msgstr "Grupos de solapas"
+ 
+-#: C/epiphany-extensions.xml:1163(para)
++#: C/epiphany-extensions.xml:1166(para)
+ msgid "The Tab Groups extension makes new tabs appear after the current tab."
+ msgstr ""
+ "La extensión Grupos de solapas hace que las nuevas solapas aparezcan después "
+ "de la solapa actual."
+ 
+-#: C/epiphany-extensions.xml:1168(title)
++#: C/epiphany-extensions.xml:1171(title)
+ msgid "Using Tab Groups"
+ msgstr "Uso de grupos de solapas"
+ 
+-#: C/epiphany-extensions.xml:1170(para)
++#: C/epiphany-extensions.xml:1173(para)
+ msgid ""
+ "Once this extension is enabled, it changes the normal behaviour (where new "
+ "tabs are created after the last tab) to a new one. When you open a new tab, "
+@@ -1810,15 +1814,15 @@ msgstr ""
+ "nuevas solapas se crean después de la última solapa) a uno nuevo. Cuando "
+ "abre una solapa nueva, ésta se creará antes de la solapa actual."
+ 
+-#: C/epiphany-extensions.xml:1175(title)
++#: C/epiphany-extensions.xml:1178(title)
+ msgid "A new tab created after the first tab"
+ msgstr "Una solapa nueva creada después de la primera solapa"
+ 
+-#: C/epiphany-extensions.xml:1188(title)
++#: C/epiphany-extensions.xml:1191(title)
+ msgid "Tab States"
+ msgstr "Estado de solapas"
+ 
+-#: C/epiphany-extensions.xml:1193(para)
++#: C/epiphany-extensions.xml:1196(para)
+ msgid ""
+ "The Tab States extension changes the status of the tab label to signal the "
+ "content has changed."
+@@ -1826,11 +1830,11 @@ msgstr ""
+ "La extensión Estado de solapas cambia el estado de la solapa para indicar "
+ "que el contenido ha cambiado."
+ 
+-#: C/epiphany-extensions.xml:1198(title)
++#: C/epiphany-extensions.xml:1201(title)
+ msgid "Using Tab States"
+ msgstr "Uso del Estado de solapas"
+ 
+-#: C/epiphany-extensions.xml:1200(para)
++#: C/epiphany-extensions.xml:1203(para)
+ msgid ""
+ "Once this extension is enabled, when the content of a page in a tab changes, "
+ "the tab label will become bold, to notify you that the page has changed."
+@@ -1839,47 +1843,47 @@ msgstr ""
+ "solapa, la etiqueta de la solapa aparecerá en negrita para notificarle que "
+ "la página ha cambiado."
+ 
+-#: C/epiphany-extensions.xml:1236(title)
++#: C/epiphany-extensions.xml:1239(title)
+ msgid "About <application>Epiphany Extensions</application>"
+ msgstr "Acerca de <application>Extensiones de Epiphany</application>"
+ 
+-#: C/epiphany-extensions.xml:1241(para)
++#: C/epiphany-extensions.xml:1244(para)
+ msgid "Samuel Abels (<email>spam2@debain.org</email>)"
+ msgstr "Samuel Abels (<email>spam2@debain.org</email>)"
+ 
+-#: C/epiphany-extensions.xml:1243(para)
++#: C/epiphany-extensions.xml:1246(para)
+ msgid "Crispin Flowerday (<email>gnome@flowerday.cx</email>)"
+ msgstr "Crispin Flowerday (<email>gnome@flowerday.cx</email>)"
+ 
+-#: C/epiphany-extensions.xml:1245(para)
++#: C/epiphany-extensions.xml:1248(para)
+ msgid "Adam Hooper (<email>adamh@cvs.gnome.org</email>)"
+ msgstr "Adam Hooper (<email>adamh@cvs.gnome.org</email>)"
+ 
+-#: C/epiphany-extensions.xml:1247(para)
++#: C/epiphany-extensions.xml:1250(para)
+ msgid "Mathias Hasselmann (<email>mathias@taschenorakel.de</email>)"
+ msgstr "Mathias Hasselmann (<email>mathias@taschenorakel.de</email>)"
+ 
+-#: C/epiphany-extensions.xml:1249(para)
++#: C/epiphany-extensions.xml:1252(para)
+ msgid "James Henstridge (<email>james@daa.com.au</email>)"
+ msgstr "James Henstridge (<email>james@daa.com.au</email>)"
+ 
+-#: C/epiphany-extensions.xml:1251(para)
++#: C/epiphany-extensions.xml:1254(para)
+ msgid "Jean-Yves Lefort (<email>jylefort@brutele.be</email>)"
+ msgstr "Jean-Yves Lefort (<email>jylefort@brutele.be</email>)"
+ 
+-#: C/epiphany-extensions.xml:1253(para)
++#: C/epiphany-extensions.xml:1256(para)
+ msgid "Christian Persch (<email>chpe@gnome.org</email>)"
+ msgstr "Christian Persch (<email>chpe@gnome.org</email>)"
+ 
+-#: C/epiphany-extensions.xml:1255(para)
++#: C/epiphany-extensions.xml:1258(para)
+ msgid "Raphaël Slinckx (<email>raphael@slinckx.net</email>)"
+ msgstr "Raphaël Slinckx (<email>raphael@slinckx.net</email>)"
+ 
+-#: C/epiphany-extensions.xml:1257(para)
++#: C/epiphany-extensions.xml:1260(para)
+ msgid "Justin Wake (<email>jwake@iinet.net.au</email>)"
+ msgstr "Justin Wake (<email>jwake@iinet.net.au</email>)"
+ 
+-#: C/epiphany-extensions.xml:1238(para)
++#: C/epiphany-extensions.xml:1241(para)
+ msgid ""
+ "<application>Epiphany Extensions</application> were written by <placeholder-"
+ "1/>"
+@@ -1887,7 +1891,7 @@ msgstr ""
+ "<placeholder-1/> escribieron las <application>Extensiones de Epiphany</"
+ "application>"
+ 
+-#: C/epiphany-extensions.xml:1261(para)
++#: C/epiphany-extensions.xml:1264(para)
+ msgid ""
+ "This manual was written by Baptiste Mille-Mathias <email>baptiste."
+ "millemathias@gmail.com</email>."
+@@ -1895,7 +1899,7 @@ msgstr ""
+ "Baptiste Mille-Mathias <email>baptiste.millemathias@gmail.com</email> "
+ "escribió este manual."
+ 
+-#: C/epiphany-extensions.xml:1266(para)
++#: C/epiphany-extensions.xml:1269(para)
+ msgid ""
+ "This program is distributed under the terms of the GNU General Public "
+ "license as published by the Free Software Foundation; either version 2 of "
+@@ -1910,10 +1914,9 @@ msgstr ""
+ "\"help\">enlace</ulink>, o en el archivo COPYING incluido con el código "
+ "fuente de este programa."
+ 
+-#. Put one translator per line, in the form of NAME <EMAIL>, YEAR1, YEAR2.
++#. Put one translator per line, in the form of NAME <EMAIL>, YEAR1, YEAR2
+ #: C/epiphany-extensions.xml:0(None)
+ msgid "translator-credits"
+ msgstr ""
+ "Daniel Mustieles <daniel.mustieles@ie.edu>, 2008\n"
+ "Jorge González <jorgegonz@svn.gnome.org>, 2008."
+-
+diff --git a/po/sl.po b/po/sl.po
+index 91880d5..81f05c3 100644
+--- a/po/sl.po
++++ b/po/sl.po
+@@ -1,4 +1,4 @@
+-# Slovenian translation of epiphany-extensions
++# Slovenian translations for epiphany-extensions.
+ # Copyright (C) 2009 epiphany-extensions's COPYRIGHT HOLDER
+ # This file is distributed under the same license as the epiphany-extensions package.
+ #
+@@ -71,7 +71,7 @@ msgstr "Ukaza ni mogoče zagnati"
+ 
+ #: ../extensions/actions/ephy-actions-extension-editor-dialog.c:520
+ msgid "No action selected."
+-msgstr "Dejanje ni izbrano."
++msgstr "Ni izbranega dejanja."
+ 
+ #: ../extensions/actions/ephy-actions-extension-editor-dialog.c:530
+ #, c-format
+@@ -87,7 +87,7 @@ msgstr[3] "%i izbrana dejanja."
+ #: ../extensions/extensions-manager-ui/ephy-extensions-manager-ui-extension.c:194
+ #, c-format
+ msgid "Could not display help: %s"
+-msgstr "Pomoči ni mogoče prikazati: %s"
++msgstr "Ni mogoče prikazati pomoči: %s"
+ 
+ #: ../extensions/actions/ephy-actions-extension-properties-dialog.c:310
+ msgid "Add Action"
+@@ -109,9 +109,9 @@ msgid ""
+ "This version has been modified from its original. The changes have not been approved by the original author;\n"
+ "direct any problems to Bugzilla and not to the original author (G).\n"
+ msgstr ""
+-"Ta seznam je avtorsko zaščitil © njegov izvorni avtor(G). Seznam je z dovoljenjem ponovno licenciran pod GPL.\n"
++"Ta seznam je avtorsko zaščitil © njegov izvorni avtor(G). Seznam je z dovoljenjem ponovno objavljen pod GPL.\n"
+ "Izvorni seznam, Filterset.G, je mogoče najti na http://www.pierceive.com/filtersetg/.\n"
+-"Ta različica je bila spremenjena od izvorne. Avtor teh sprememb ni odobril.\n"
++"Ta različica je bila spremenjena in avtor teh sprememb ni odobril.\n"
+ "Morebitne težave pošljite na Bugzillo in ne izvornemu avtorju (G).\n"
+ 
+ #: ../extensions/adblock/adblock-ui.c:481
+@@ -120,7 +120,7 @@ msgstr "Vzorec"
+ 
+ #: ../extensions/adblock/adblock.ui.h:1
+ msgid "<b>Courtesy of Graham Pierce</b>"
+-msgstr "<b>Vljudno prispeval Graham Pierce</b>"
++msgstr "<b>Prispeval Graham Pierce</b>"
+ 
+ #: ../extensions/adblock/adblock.ui.h:2
+ msgid "<b>New rule</b>"
+@@ -137,7 +137,7 @@ msgstr "Urejevalnik Adblock"
+ 
+ #: ../extensions/adblock/adblock.ui.h:5
+ msgid "Blacklist"
+-msgstr "Črn seznam"
++msgstr "Črni seznam"
+ 
+ #: ../extensions/adblock/adblock.ui.h:6
+ msgid "Filterset.G"
+@@ -145,7 +145,7 @@ msgstr "Filterset.G"
+ 
+ #: ../extensions/adblock/adblock.ui.h:7
+ msgid "Whitelist"
+-msgstr "Bel seznam"
++msgstr "Beli seznam"
+ 
+ #: ../extensions/adblock/ephy-adblock-extension.c:230
+ msgid "Edit Adblock"
+@@ -348,7 +348,7 @@ msgstr "Napaka HTML v %s:"
+ #: ../extensions/error-viewer/sgml-validator.c:367
+ #, c-format
+ msgid "Invalid character encoding"
+-msgstr "Neveljavno znakovno kodiranje"
++msgstr "Neveljaven znakovni nabor"
+ 
+ #: ../extensions/error-viewer/sgml-validator.c:372
+ #, c-format
+@@ -406,16 +406,16 @@ msgstr "Namesti skript Greasemonkey"
+ #: ../extensions/greasemonkey/ephy-greasemonkey-extension.c:311
+ #, c-format
+ msgid "The user script at “%s” has been installed"
+-msgstr "Uporabniški skript na “%s” je bil nameščen"
++msgstr "Uporabniški skript na “%s” je nameščen"
+ 
+ #: ../extensions/java-console/ephy-java-console-extension.c:48
+ msgid "_Java Console"
+-msgstr "_Java konzola"
++msgstr "Konzola _Java"
+ 
+ #. shortcut key
+ #: ../extensions/java-console/ephy-java-console-extension.c:50
+ msgid "Show Java Console"
+-msgstr "Pokaži Java konzolo"
++msgstr "Pokaži konzolo Java"
+ 
+ #: ../extensions/livehttpheaders/ephy-livehttpheaders-extension.c:100
+ msgid "_HTTP Headers"
+@@ -431,7 +431,7 @@ msgstr "<b>Odziv</b>"
+ 
+ #: ../extensions/livehttpheaders/livehttpheaders-ui.glade.h:3
+ msgid "<b>URLs</b>"
+-msgstr "<b>URL-ji</b>"
++msgstr "<b>Naslovi URL</b>"
+ 
+ #: ../extensions/livehttpheaders/livehttpheaders-ui.glade.h:4
+ msgid "Clear cache"
+@@ -451,11 +451,11 @@ msgstr "Podrobnosti st_ani"
+ 
+ #: ../extensions/page-info/ephy-page-info-extension.c:63
+ msgid "Display page information in a dialog"
+-msgstr "Prikaz podrobnosti strani v pogovorne oknu"
++msgstr "Prikaz podrobnosti strani v pogovornem oknu"
+ 
+ #: ../extensions/page-info/page-info-dialog.c:704
+ msgid "Save As..."
+-msgstr "Shrani Kot..."
++msgstr "Shrani Kot ..."
+ 
+ #: ../extensions/page-info/page-info-dialog.c:721
+ msgid "Select a directory"
+@@ -504,7 +504,7 @@ msgstr "Neznano"
+ 
+ #: ../extensions/page-info/page-info-dialog.c:824
+ msgid "No referrer"
+-msgstr "Ni napotila"
++msgstr "Ni napotilnika"
+ 
+ #: ../extensions/page-info/page-info-dialog.c:838
+ #: ../extensions/page-info/page-info-dialog.c:854
+@@ -715,7 +715,7 @@ msgstr "Lastnosti strani"
+ 
+ #: ../extensions/page-info/page-info.glade.h:26
+ msgid "Referrer:"
+-msgstr "Napotilo:"
++msgstr "Napotilnik:"
+ 
+ #: ../extensions/page-info/page-info.glade.h:27
+ msgid "Size:"
+@@ -807,7 +807,7 @@ msgstr "Naročanje na vir novic strani"
+ 
+ #: ../extensions/rss/rss-ui.c:156
+ msgid "<b><i>Unable to contact the feed reader, is it running ?</i></b>"
+-msgstr "<b><i>Ni mogoče vzpostaviti stika z bralnikom virov, ali teče?</i></b>"
++msgstr "<b><i>Ni mogoče vzpostaviti stika z bralnikom virov. ALi je ta zagnan?</i></b>"
+ 
+ #: ../extensions/rss/rss-ui.c:158
+ msgid "Retry"
+@@ -819,7 +819,7 @@ msgstr "Kopiraj _naslov vira"
+ 
+ #: ../extensions/rss/rss-ui.c:552
+ msgid "Subscribe"
+-msgstr "Naročilo"
++msgstr "Naročanje"
+ 
+ #: ../extensions/rss/rss-ui.ui.h:1
+ msgid "<b>Select Interesting Feeds</b>"
+@@ -902,11 +902,11 @@ msgstr "Izvedba poljubnih ukazov iz vsebinskega menija"
+ 
+ #: ../extensions/adblock/adblock.ephy-extension.in.in.h:1
+ msgid "Ad Blocker"
+-msgstr "Bloker oglasov"
++msgstr "Ad Blocker"
+ 
+ #: ../extensions/adblock/adblock.ephy-extension.in.in.h:2
+ msgid "Block the pest!"
+-msgstr "Blokiranje oglasov!"
++msgstr "Blokiranje prikazovanja oglasov!"
+ 
+ #: ../extensions/auto-scroller/auto-scroller.ephy-extension.in.in.h:1
+ msgid "Auto Scroll"
+@@ -914,7 +914,7 @@ msgstr "Samodejno drsenje"
+ 
+ #: ../extensions/auto-scroller/auto-scroller.ephy-extension.in.in.h:2
+ msgid "Scroll on middle mouse click"
+-msgstr "Drsenje ob srednjem miškinem kliku"
++msgstr "Drsenje s srednjim miškinim klikom"
+ 
+ #: ../extensions/auto-reload/auto-reload.ephy-extension.in.in.h:1
+ msgid "Auto Reload Tab"
+@@ -938,7 +938,7 @@ msgstr "Potrditev veljavnosti spletnih strani in preverjanje povezav"
+ 
+ #: ../extensions/extensions-manager-ui/extensions-manager-ui.ephy-extension.in.in.h:1
+ msgid "Activate and deactivate extensions"
+-msgstr "Vklop in izklop razširitev"
++msgstr "Preklop delovanja razširitev"
+ 
+ #: ../extensions/extensions-manager-ui/extensions-manager-ui.ephy-extension.in.in.h:2
+ msgid "Extensions Manager"
+@@ -946,11 +946,11 @@ msgstr "Upravljalnik razširitev"
+ 
+ #: ../extensions/gestures/gestures.ephy-extension.in.in.h:1
+ msgid "Gestures"
+-msgstr "Gibi"
++msgstr "Poteze"
+ 
+ #: ../extensions/gestures/gestures.ephy-extension.in.in.h:2
+ msgid "Perform actions with mouse gestures"
+-msgstr "Izvedba dejanj z miškinimi gibi"
++msgstr "Izvedba dejanj s potezami miške"
+ 
+ #: ../extensions/greasemonkey/greasemonkey.ephy-extension.in.in.h:1
+ msgid "Greasemonkey"
+@@ -962,7 +962,7 @@ msgstr "Zagon uporabniških skriptov za spremembo obnašanja spletnih strani"
+ 
+ #: ../extensions/java-console/java-console.ephy-extension.in.in.h:1
+ msgid "Java Console"
+-msgstr "Java konzola"
++msgstr "Konzola Java"
+ 
+ #: ../extensions/java-console/java-console.ephy-extension.in.in.h:2
+ msgid "Provide access to the Java-Plugin Console"
+@@ -990,7 +990,7 @@ msgstr "Dovoljenja"
+ 
+ #: ../extensions/push-scroller/push-scroller.ephy-extension.in.in.h:1
+ msgid "Drag the page on middle mouse click"
+-msgstr "Vleka strani ob srednjem miškinem kliku"
++msgstr "Povleci in spusti strani s srednjim miškinim klikom"
+ 
+ #: ../extensions/push-scroller/push-scroller.ephy-extension.in.in.h:2
+ msgid "Push Scroll"
+@@ -1002,7 +1002,7 @@ msgstr "Naročilo na vir novic, ki ga ponuja spletna stran, v vašem najljubšem
+ 
+ #: ../extensions/sample/sample.ephy-extension.in.in.h:1
+ msgid "A sample extension"
+-msgstr "Vzročna razširitev"
++msgstr "Vzorčna razširitev"
+ 
+ #: ../extensions/sample/sample.ephy-extension.in.in.h:2
+ msgid "Sample"
+@@ -1026,7 +1026,7 @@ msgstr "Pametni zaznamki"
+ 
+ #: ../extensions/tab-groups/tab-groups.ephy-extension.in.in.h:1
+ msgid "Groups newly opened tabs"
+-msgstr "Združi novo odprte zavihke"
++msgstr "Združi na novo odprte zavihke"
+ 
+ #: ../extensions/tab-groups/tab-groups.ephy-extension.in.in.h:2
+ msgid "Tab Groups"
+@@ -1034,7 +1034,7 @@ msgstr "Skupine zavihkov"
+ 
+ #: ../extensions/tab-states/tab-states.ephy-extension.in.in.h:1
+ msgid "Indicates new content in background tabs"
+-msgstr "Določi novo vsebino v zavihkih ozadja"
++msgstr "Določa novo vsebino v zavihkih ozadja"
+ 
+ #: ../extensions/tab-states/tab-states.ephy-extension.in.in.h:2
+ msgid "Tab States"
+@@ -1046,64 +1046,4 @@ msgstr "Tabulator za krmarjenje"
+ 
+ #: ../extensions/tab-key-tab-navigate/tab-key-tab-navigate.ephy-extension.in.in.h:2
+ msgid "Use the Tab key to navigate between tabs"
+-msgstr "Uporabite tabulator za preklop med zavihki"
+-
+-#~ msgid ""
+-#~ "If this option is enabled, the action will be included in the popup menu "
+-#~ "of images."
+-#~ msgstr ""
+-#~ "Izbrana možnost določi, da bo dejanje vključeno v pojavni meni slik."
+-#~ msgid ""
+-#~ "If this option is enabled, the action will be included in the popup menu "
+-#~ "of links and pages."
+-#~ msgstr ""
+-#~ "Izbrana možnost določi, da je dejanje vključeno v pojavni meni povezav in "
+-#~ "strani."
+-#~ msgid "The action description."
+-#~ msgstr "Opis dejanja."
+-#~ msgid ""
+-#~ "The action name. If a character is preceded by an underscore, that "
+-#~ "character will be used as the access key for the menu item."
+-#~ msgstr ""
+-#~ "Ime dejanja. V primeru, da je pred njim podčrtaj, bo znak uporabljen kot "
+-#~ "dostopna tipka za predmet menija."
+-#~ msgid ""
+-#~ "The command to execute when the action is activated. The URL of the link, "
+-#~ "image or page will be appended to the command."
+-#~ msgstr ""
+-#~ "Ukaz za izvedbo, ko je dejanje zagnano. URL povezave, slika ali stran "
+-#~ "bodo pripete ukazu."
+-#~ msgid "Add a new rule"
+-#~ msgstr "Dodajanje novega pravila"
+-#~ msgid "No Sidebars installed"
+-#~ msgstr "Ni nameščenih bočnih oken"
+-#~ msgid "_Sidebar"
+-#~ msgstr "_Bočno okno"
+-#~ msgid "Show or hide the sidebar"
+-#~ msgstr "Prikaz ali skritje bočnega okna"
+-#~ msgid "Do you really want to remove this sidebar?"
+-#~ msgstr "Ali ste prepričani, da želite odstraniti to bočno okno?"
+-#~ msgid "There is no way to recover this sidebar after removal."
+-#~ msgstr "Po odstranitvi ni načina za povrnitev bočnega okna."
+-#~ msgid "Remove Sidebar"
+-#~ msgstr "Odstranjevanje bočnega okna"
+-#~ msgid "The sidebar already contains “%s”"
+-#~ msgstr "Bočno okno že vsebuje “%s”"
+-#~ msgid ""
+-#~ "To use this sidebar, select it from the list of available sidebar pages."
+-#~ msgstr ""
+-#~ "Za uporabo tega bočnega okna ga izberite s seznama dostopnih strani "
+-#~ "bočnih oken."
+-#~ msgid "Add Sidebar"
+-#~ msgstr "Dodajanje bočnega okna"
+-#~ msgid "Add “%s” to the Sidebar?"
+-#~ msgstr "Dodajanje “%s” v bočno okno?"
+-#~ msgid "The source to the new sidebar page is “%s”."
+-#~ msgstr "Vir nove strani bočnega okna je “%s”."
+-#~ msgid "_Add Sidebar"
+-#~ msgstr "_Do"
+-#~ msgid "Adds a sidebar to windows"
+-#~ msgstr "Oknom doda bočno okno"
+-#~ msgid "Sidebar"
+-#~ msgstr "Bočno okno"
+-
++msgstr "Uporaba tabulatorja za preklop med zavihki"
+\ No newline at end of file
+diff --git a/po/zh_CN.po b/po/zh_CN.po
+index 8349e28..0c99711 100644
+--- a/po/zh_CN.po
++++ b/po/zh_CN.po
+@@ -1,81 +1,52 @@
+-# SOME DESCRIPTIVE TITLE.
+-# Copyright (C) 2004 THE PACKAGE'S COPYRIGHT HOLDER
++# Simplified Chinese translation of epiphany-extensions
++# Copyright (C) 2004, 2010 Free Software Foundation, Inc
+ # This file is distributed under the same license as the epiphany-extensions package.
+-# Funda Wang <fundawang@linux.net.cn>, 2004.
+ # Liu Songhe <jackliu9999@263.net>, 2004.
+-#
++# Funda Wang <fundawang@linux.net.cn>, 2004, 2010.
++# YunQiang Su <wzssyqa@gmail.com>, 2010.
+ msgid ""
+ msgstr ""
+ "Project-Id-Version: epiphany-extensions\n"
+ "Report-Msgid-Bugs-To: http://bugzilla.gnome.org/enter_bug.cgi?"
+-"product=epiphany-extensions\n"
+-"POT-Creation-Date: 2008-11-08 03:23+0000\n"
+-"PO-Revision-Date: 2006-01-22 18:15+0800\n"
+-"Last-Translator: Funda Wang <fundawang@linux.net.cn>\n"
+-"Language-Team: zh_CN <i18n-translation@lists.linux.net.cn>\n"
++"product=epiphany-extensions&component=general\n"
++"POT-Creation-Date: 2010-07-08 23:06+0000\n"
++"PO-Revision-Date: 2010-07-27 16:20+0800\n"
++"Last-Translator: YunQiang Su <wzssyqa@gmail.com>\n"
++"Language-Team: Chinese (simplified) <i18n-zh@googlegroups.com>\n"
+ "MIME-Version: 1.0\n"
+ "Content-Type: text/plain; charset=UTF-8\n"
+ "Content-Transfer-Encoding: 8bit\n"
+ "Plural-Forms: nplurals=1; plural=0;\n"
+ 
+-#: ../extensions/actions/action-properties.glade.h:1
++#: ../extensions/actions/action-properties.ui.h:1
+ msgid "<span weight=\"bold\">Applies to</span>"
+ msgstr "<span weight=\"bold\">应用到</span>"
+ 
+-#: ../extensions/actions/action-properties.glade.h:2
++#: ../extensions/actions/action-properties.ui.h:2
+ msgid "<span weight=\"bold\">General</span>"
+ msgstr "<span weight=\"bold\">常规</span>"
+ 
+-#: ../extensions/actions/action-properties.glade.h:3
+-msgid ""
+-"If this option is enabled, the action will be included in the popup menu of "
+-"images."
+-msgstr "如果启用此选项，则在图像的弹出菜单中包含动作。"
+-
+-#: ../extensions/actions/action-properties.glade.h:4
+-msgid ""
+-"If this option is enabled, the action will be included in the popup menu of "
+-"links and pages."
+-msgstr "如果启用此选项，则在链接和页面的弹出菜单中包含动作。"
+-
+-#: ../extensions/actions/action-properties.glade.h:5
+-msgid "The action description."
+-msgstr "动作描述。"
+-
+-#: ../extensions/actions/action-properties.glade.h:6
+-msgid ""
+-"The action name. If a character is preceded by an underscore, that character "
+-"will be used as the access key for the menu item."
+-msgstr "动作名称。如果字符前面包含下划线，则字符将会用作菜单项的加速键。"
+-
+-#: ../extensions/actions/action-properties.glade.h:7
+-msgid ""
+-"The command to execute when the action is activated. The URL of the link, "
+-"image or page will be appended to the command."
+-msgstr "激活动作时所执行的命令。链接、图像或页面的 URL 将被追加到命令后面。"
+-
+-#: ../extensions/actions/action-properties.glade.h:8
++#: ../extensions/actions/action-properties.ui.h:3
+ msgid "_Command:"
+ msgstr "命令(_C)："
+ 
+-#: ../extensions/actions/action-properties.glade.h:9
++#: ../extensions/actions/action-properties.ui.h:4
+ msgid "_Description:"
+ msgstr "描述(_D)："
+ 
+-#: ../extensions/actions/action-properties.glade.h:10
++#: ../extensions/actions/action-properties.ui.h:5
+ msgid "_Images"
+ msgstr "图像(_I)"
+ 
+-#: ../extensions/actions/action-properties.glade.h:11
+-#: ../extensions/epilicious/epilicious-config.glade.h:6
++#: ../extensions/actions/action-properties.ui.h:6
+ msgid "_Name:"
+ msgstr "名称(_N)："
+ 
+-#: ../extensions/actions/action-properties.glade.h:12
++#: ../extensions/actions/action-properties.ui.h:7
+ msgid "_Pages"
+ msgstr "页面(_P)"
+ 
+-#: ../extensions/actions/actions-editor.glade.h:1
++#: ../extensions/actions/actions-editor.ui.h:1
+ #: ../extensions/actions/actions.ephy-extension.in.in.h:1
+ msgid "Actions"
+ msgstr "动作"
+@@ -92,7 +63,7 @@ msgstr "自定义动作"
+ msgid "Could not run command"
+ msgstr "无法运行命令"
+ 
+-#: ../extensions/actions/ephy-actions-extension.c:439
++#: ../extensions/actions/ephy-actions-extension.c:440
+ msgid "Could not Run Command"
+ msgstr "无法运行命令"
+ 
+@@ -106,6 +77,13 @@ msgid "%i action selected."
+ msgid_plural "%i actions selected."
+ msgstr[0] "选中了 %i 个动作。"
+ 
++#: ../extensions/actions/ephy-actions-extension-editor-dialog.c:745
++#: ../extensions/extensions-manager-ui/extensions-manager-ui.c:139
++#: ../extensions/extensions-manager-ui/ephy-extensions-manager-ui-extension.c:194
++#, c-format
++msgid "Could not display help: %s"
++msgstr "无法显示帮助：%s"
++
+ #: ../extensions/actions/ephy-actions-extension-properties-dialog.c:310
+ msgid "Add Action"
+ msgstr "添加动作"
+@@ -138,61 +116,53 @@ msgstr ""
+ msgid "Pattern"
+ msgstr "模式"
+ 
+-#: ../extensions/adblock/adblock.glade.h:1
++#: ../extensions/adblock/adblock.ui.h:1
+ msgid "<b>Courtesy of Graham Pierce</b>"
+ msgstr ""
+ 
+-#: ../extensions/adblock/adblock.glade.h:2
++#: ../extensions/adblock/adblock.ui.h:2
+ msgid "<b>New rule</b>"
+ msgstr "<b>新规则</b>"
+ 
+-#: ../extensions/adblock/adblock.glade.h:3
++#: ../extensions/adblock/adblock.ui.h:3
+ msgid "<b>Update rules from original site</b>"
+ msgstr "<b>从原始网站的更新规则</b>"
+ 
+-#: ../extensions/adblock/adblock.glade.h:4
+-#: ../extensions/adblock/ephy-adblock-extension.c:230
++#: ../extensions/adblock/adblock.ui.h:4
++#: ../extensions/adblock/ephy-adblock-extension.c:229
+ msgid "Adblock Editor"
+ msgstr "广告屏蔽编辑器"
+ 
+-#: ../extensions/adblock/adblock.glade.h:5
+-msgid "Add a new rule"
+-msgstr "添加新规则"
+-
+-#: ../extensions/adblock/adblock.glade.h:6
++#: ../extensions/adblock/adblock.ui.h:5
+ msgid "Blacklist"
+ msgstr "黑名单"
+ 
+-#: ../extensions/adblock/adblock.glade.h:7
++#: ../extensions/adblock/adblock.ui.h:6
+ msgid "Filterset.G"
+ msgstr "Filterset.G"
+ 
+-#: ../extensions/adblock/adblock.glade.h:8
++#: ../extensions/adblock/adblock.ui.h:7
+ msgid "Whitelist"
+ msgstr "白名单"
+ 
+-#: ../extensions/adblock/ephy-adblock-extension.c:231
++#: ../extensions/adblock/ephy-adblock-extension.c:230
+ msgid "Edit Adblock"
+ msgstr "编辑广告屏蔽"
+ 
+-#: ../extensions/adblock/ephy-adblock-extension.c:298
++#: ../extensions/adblock/ephy-adblock-extension.c:300
+ #, c-format
+ msgid "%d hidden advertisement"
+ msgid_plural "%d hidden advertisements"
+ msgstr[0] "%d 个隐藏的广告"
+ 
+-#: ../extensions/auto-reload/ephy-auto-reload-extension.c:83
++#: ../extensions/auto-reload/ephy-auto-reload-extension.c:81
+ msgid "_Auto Reload"
+ msgstr "自动重新装入(_A)"
+ 
+-#: ../extensions/auto-reload/ephy-auto-reload-extension.c:85
++#: ../extensions/auto-reload/ephy-auto-reload-extension.c:83
+ msgid "Reload the page periodically"
+ msgstr "定时重新装入页面"
+ 
+-#: ../extensions/cc-license-viewer/cc-license-viewer.py:373
+-msgid "View Creative Commons license"
+-msgstr "查看 Creative Commons 许可"
+-
+ #: ../extensions/certificates/ephy-certificates-extension.c:163
+ #: ../extensions/certificates/certificates.ephy-extension.in.in.h:1
+ msgid "Certificates"
+@@ -222,122 +192,6 @@ msgstr "管理安全设备(_D)"
+ msgid "Manage your security devices"
+ msgstr "管理您的安全设备"
+ 
+-#: ../extensions/epilicious/epilicious-config.glade.h:1
+-msgid "Action for tagged bookmarks:"
+-msgstr "被标记书签的动作："
+-
+-#: ../extensions/epilicious/epilicious-config.glade.h:2
+-msgid "Epilicious Configuration"
+-msgstr "Epilicious 配置"
+-
+-#: ../extensions/epilicious/epilicious-config.glade.h:3
+-msgid "_Backend:"
+-msgstr "后端(_B)："
+-
+-#: ../extensions/epilicious/epilicious-config.glade.h:4
+-msgid "_Exclude"
+-msgstr "排除(_E)"
+-
+-#: ../extensions/epilicious/epilicious-config.glade.h:5
+-msgid "_Include"
+-msgstr "包含(_I)"
+-
+-#: ../extensions/epilicious/epilicious-config.glade.h:7
+-msgid "_Password:"
+-msgstr "密码(_P)："
+-
+-#: ../extensions/epilicious/epilicious-config.glade.h:8
+-msgid "_Tag:"
+-msgstr "标签(_T)："
+-
+-#: ../extensions/epilicious/epilicious-progress.glade.h:1
+-msgid "Adding new bookmarks and synching topics"
+-msgstr "添加新书签和同步主题"
+-
+-#: ../extensions/epilicious/epilicious-progress.glade.h:2
+-msgid "Removing deleted bookmarks"
+-msgstr "移去已删除的书签"
+-
+-#: ../extensions/epilicious/epilicious-progress.glade.h:4
+-#: ../extensions/epilicious/progress.py:41
+-#, no-c-format, python-format
+-msgid "Retrieving bookmarks from %s"
+-msgstr "从 %s 获取书签"
+-
+-#: ../extensions/epilicious/epilicious-progress.glade.h:5
+-msgid "Retrieving bookmarks from epiphany"
+-msgstr "从 epiphany 获取书签"
+-
+-#: ../extensions/epilicious/epilicious-progress.glade.h:6
+-msgid "Retrieving previous synch point"
+-msgstr "获取上个同步点"
+-
+-#: ../extensions/epilicious/epilicious-progress.glade.h:7
+-msgid "Saving new synch point"
+-msgstr "保存新同步点"
+-
+-#: ../extensions/epilicious/epilicious-progress.glade.h:9
+-#: ../extensions/epilicious/progress.py:39
+-#, no-c-format, python-format
+-msgid "Synchronizing with %s"
+-msgstr "正在与 %s 同步"
+-
+-#: ../extensions/epilicious/epilicious-progress.glade.h:10
+-msgid "Synchronizing..."
+-msgstr "正在同步..."
+-
+-#: ../extensions/epilicious/epilicious.py.in:202
+-#: ../extensions/epilicious/epilicious.py.in:220
+-msgid "Epilicious Synchronize"
+-msgstr "Epilicious 同步"
+-
+-#: ../extensions/epilicious/epilicious.schemas.in.h:1
+-msgid "Bookmarks with this topic will be synchronized."
+-msgstr "带有此主题的书签将被同步。"
+-
+-#: ../extensions/epilicious/epilicious.schemas.in.h:2
+-msgid ""
+-"Controls the function of the topic. If this is unset then all bookmarks with "
+-"the topic will be synched. If this is set then all bookmarks without the "
+-"topic will be synched."
+-msgstr ""
+-"控制主题的功能。如果未设定，则带有此主题的所有书签都将同步。如果设定了此选"
+-"项，则不带有此主题的所有书签才会同步。"
+-
+-#: ../extensions/epilicious/epilicious.schemas.in.h:3
+-msgid "Exclude topic"
+-msgstr "排除主题"
+-
+-#: ../extensions/epilicious/epilicious.schemas.in.h:4
+-msgid "Shared topic"
+-msgstr "共享主题"
+-
+-#: ../extensions/epilicious/epilicious.schemas.in.h:5
+-msgid ""
+-"The backend that epilicious will use for synchronizing bookmarks. Allowed "
+-"value: 'ma.gnolia'"
+-msgstr "epilicious 用来同步书签的后端。允许的值为“ma.gnolia”"
+-
+-#: ../extensions/epilicious/epilicious.schemas.in.h:6
+-msgid "The password that epilicious will use for synchronizing bookmarks."
+-msgstr "epilicious 用来同步书签的密码。"
+-
+-#: ../extensions/epilicious/epilicious.schemas.in.h:7
+-msgid "The username that epilicious will use for synchronizing bookmarks."
+-msgstr "epilicious 用来同步书签的用户名。"
+-
+-#: ../extensions/epilicious/epilicious.schemas.in.h:8
+-msgid "epilicious backend"
+-msgstr "epilicious 后端"
+-
+-#: ../extensions/epilicious/epilicious.schemas.in.h:9
+-msgid "password"
+-msgstr "密码"
+-
+-#: ../extensions/epilicious/epilicious.schemas.in.h:10
+-msgid "username"
+-msgstr "用户名"
+-
+ #: ../extensions/error-viewer/ephy-error-viewer-extension.c:90
+ msgid "Check _HTML"
+ msgstr "检查 _HTML"
+@@ -498,46 +352,46 @@ msgstr ""
+ "%s 中有 HTML 错误：\n"
+ "没有指定有效的文档类型。"
+ 
+-#: ../extensions/extensions-manager-ui/extensions-manager-ui.c:346
++#: ../extensions/extensions-manager-ui/extensions-manager-ui.c:364
+ msgid "Enabled"
+ msgstr "启用"
+ 
+-#: ../extensions/extensions-manager-ui/extensions-manager-ui.c:354
+-#: ../extensions/rss/rss-ui.c:584
++#: ../extensions/extensions-manager-ui/extensions-manager-ui.c:372
++#: ../extensions/rss/rss-ui.c:560
+ msgid "Description"
+ msgstr "描述"
+ 
+-#: ../extensions/extensions-manager-ui/extensions-manager-ui.glade.h:1
++#: ../extensions/extensions-manager-ui/extensions-manager-ui.ui.h:1
+ msgid "<b>Loaded Extensions</b>"
+ msgstr "<b>装入的扩展</b>"
+ 
+-#: ../extensions/extensions-manager-ui/extensions-manager-ui.glade.h:2
++#: ../extensions/extensions-manager-ui/extensions-manager-ui.ui.h:2
+ msgid "Extensions"
+ msgstr "扩展"
+ 
+-#: ../extensions/extensions-manager-ui/ephy-extensions-manager-ui-extension.c:67
+-#: ../extensions/extensions-manager-ui/ephy-extensions-manager-ui-extension.c:73
++#: ../extensions/extensions-manager-ui/ephy-extensions-manager-ui-extension.c:68
++#: ../extensions/extensions-manager-ui/ephy-extensions-manager-ui-extension.c:74
+ msgid "_Extensions"
+ msgstr "扩展(_E)"
+ 
+-#: ../extensions/extensions-manager-ui/ephy-extensions-manager-ui-extension.c:69
++#: ../extensions/extensions-manager-ui/ephy-extensions-manager-ui-extension.c:70
+ msgid "Load and unload extensions"
+ msgstr "装入和卸载扩展"
+ 
+-#: ../extensions/extensions-manager-ui/ephy-extensions-manager-ui-extension.c:75
++#: ../extensions/extensions-manager-ui/ephy-extensions-manager-ui-extension.c:76
+ msgid "Help about extensions"
+ msgstr "关于扩展的帮助"
+ 
+-#: ../extensions/greasemonkey/ephy-greasemonkey-extension.c:80
++#: ../extensions/greasemonkey/ephy-greasemonkey-extension.c:78
+ msgid "Install User _Script"
+ msgstr "安装用户脚本(_S)"
+ 
+ #. shortcut key
+-#: ../extensions/greasemonkey/ephy-greasemonkey-extension.c:82
++#: ../extensions/greasemonkey/ephy-greasemonkey-extension.c:80
+ msgid "Install Greasemonkey script"
+ msgstr "安装 Greasemonkey 脚本"
+ 
+-#: ../extensions/greasemonkey/ephy-greasemonkey-extension.c:313
++#: ../extensions/greasemonkey/ephy-greasemonkey-extension.c:311
+ #, c-format
+ msgid "The user script at “%s” has been installed"
+ msgstr "“%s”的用户脚本已经安装"
+@@ -573,7 +427,7 @@ msgstr "清除缓存"
+ 
+ #: ../extensions/livehttpheaders/livehttpheaders-ui.glade.h:5
+ msgid "Live Headers"
+-msgstr ""
++msgstr "实时头"
+ 
+ #: ../extensions/livehttpheaders/livehttpheaders-ui.glade.h:6
+ msgid "Remove headers"
+@@ -871,99 +725,100 @@ msgstr "类型："
+ msgid "_Save Media As..."
+ msgstr "媒体另存为(_S)..."
+ 
+-#: ../extensions/permissions/ephy-permissions-dialog.c:178
++#: ../extensions/permissions/ephy-permissions-dialog.c:165
+ msgid "allowed"
+ msgstr "允许"
+ 
+-#: ../extensions/permissions/ephy-permissions-dialog.c:182
++#: ../extensions/permissions/ephy-permissions-dialog.c:169
+ msgid "denied"
+ msgstr "禁止"
+ 
+ #. Sometimes we get this... how did this get in the list!?
+-#: ../extensions/permissions/ephy-permissions-dialog.c:187
++#: ../extensions/permissions/ephy-permissions-dialog.c:174
+ msgid "default"
+ msgstr "默认"
+ 
+-#: ../extensions/permissions/ephy-permissions-dialog.c:513
++#: ../extensions/permissions/ephy-permissions-dialog.c:500
+ msgid "Domain"
+ msgstr "域"
+ 
+-#: ../extensions/permissions/ephy-permissions-dialog.c:525
++#: ../extensions/permissions/ephy-permissions-dialog.c:512
++#: ../extensions/soup-fly/soup-fly.c:196
+ msgid "State"
+ msgstr "状态"
+ 
+-#: ../extensions/permissions/ephy-permissions-dialog.c:618
++#: ../extensions/permissions/ephy-permissions-dialog.c:605
+ msgid "Site Permissions"
+ msgstr "站点权限"
+ 
+-#: ../extensions/permissions/ephy-permissions-dialog.c:645
++#: ../extensions/permissions/ephy-permissions-dialog.c:632
+ msgid "Cookies"
+ msgstr "Cookies"
+ 
+-#: ../extensions/permissions/ephy-permissions-dialog.c:646
++#: ../extensions/permissions/ephy-permissions-dialog.c:633
+ msgid "Images"
+ msgstr "图像"
+ 
+-#: ../extensions/permissions/ephy-permissions-dialog.c:647
++#: ../extensions/permissions/ephy-permissions-dialog.c:634
+ msgid "Popup Windows"
+ msgstr "弹出窗口"
+ 
+ #. stock icon
+-#: ../extensions/permissions/ephy-permissions-extension.c:155
++#: ../extensions/permissions/ephy-permissions-extension.c:152
+ msgid "Site _Permissions"
+ msgstr "站点权限(_P)"
+ 
+ #. shortcut key
+-#: ../extensions/permissions/ephy-permissions-extension.c:157
++#: ../extensions/permissions/ephy-permissions-extension.c:154
+ msgid "Manage web site permissions"
+ msgstr "管理网站属性"
+ 
+-#: ../extensions/rss/ephy-rss-extension.c:85
++#: ../extensions/rss/ephy-rss-extension.c:82
+ msgid "News Feeds Subscription"
+ msgstr "新闻推送订阅"
+ 
+-#: ../extensions/rss/ephy-rss-extension.c:87
++#: ../extensions/rss/ephy-rss-extension.c:84
+ msgid "Subscribe to this website's news feeds in your favorite news reader"
+ msgstr "用您喜爱的新闻阅读器订阅此网站的新闻推送"
+ 
+-#: ../extensions/rss/ephy-rss-extension.c:92
++#: ../extensions/rss/ephy-rss-extension.c:89
+ msgid "_Subscribe to this feed"
+ msgstr "订阅此种子(_S)"
+ 
+-#: ../extensions/rss/ephy-rss-extension.c:94
++#: ../extensions/rss/ephy-rss-extension.c:91
+ msgid "Subscribe to this feed in your favorite news reader"
+ msgstr "用您喜爱的新闻阅读器订阅此种子"
+ 
+-#: ../extensions/rss/ephy-rss-extension.c:367
++#: ../extensions/rss/ephy-rss-extension.c:402
+ msgid "Subscribe to site's news feed"
+ msgstr "订阅网站的新闻推送"
+ 
+-#: ../extensions/rss/rss-ui.c:166
++#: ../extensions/rss/rss-ui.c:156
+ msgid "<b><i>Unable to contact the feed reader, is it running ?</i></b>"
+ msgstr "<b><i>无法联系种子阅读器，程序是否在运行？</i></b>"
+ 
+-#: ../extensions/rss/rss-ui.c:168
++#: ../extensions/rss/rss-ui.c:158
+ msgid "Retry"
+ msgstr "重试"
+ 
+-#: ../extensions/rss/rss-ui.c:296
++#: ../extensions/rss/rss-ui.c:288
+ msgid "_Copy Feed Address"
+ msgstr "复制种子地址(_C)"
+ 
+-#: ../extensions/rss/rss-ui.c:576
++#: ../extensions/rss/rss-ui.c:552
+ msgid "Subscribe"
+ msgstr "订阅"
+ 
+-#: ../extensions/rss/rss-ui.glade.h:1
++#: ../extensions/rss/rss-ui.ui.h:1
+ msgid "<b>Select Interesting Feeds</b>"
+ msgstr "<b>选择感兴趣的种子</b>"
+ 
+-#: ../extensions/rss/rss-ui.glade.h:2
++#: ../extensions/rss/rss-ui.ui.h:2
+ #: ../extensions/rss/rss.ephy-extension.in.in.h:1
+ msgid "News Feed Subscription"
+ msgstr "新闻推送订阅"
+ 
+-#: ../extensions/rss/rss-ui.glade.h:3
++#: ../extensions/rss/rss-ui.ui.h:3
+ msgid "_Subscribe"
+ msgstr "订阅(_S)"
+ 
+@@ -996,60 +851,6 @@ msgstr "默认"
+ msgid "None"
+ msgstr "无"
+ 
+-#: ../extensions/sidebar/ephy-sidebar.c:167
+-msgid "No Sidebars installed"
+-msgstr "未安装侧边栏"
+-
+-#: ../extensions/sidebar/ephy-sidebar-extension.c:88
+-msgid "_Sidebar"
+-msgstr "侧边栏(_S)"
+-
+-#: ../extensions/sidebar/ephy-sidebar-extension.c:89
+-msgid "Show or hide the sidebar"
+-msgstr "显示或隐藏侧边栏"
+-
+-#: ../extensions/sidebar/ephy-sidebar-extension.c:306
+-msgid "Do you really want to remove this sidebar?"
+-msgstr "您真的想要删除此侧边栏吗？"
+-
+-#: ../extensions/sidebar/ephy-sidebar-extension.c:310
+-msgid "There is no way to recover this sidebar after removal."
+-msgstr "删除后将无法恢复此侧边栏。"
+-
+-#: ../extensions/sidebar/ephy-sidebar-extension.c:312
+-msgid "Remove Sidebar"
+-msgstr "删除侧边栏"
+-
+-#. Translators: %s is the sidebar title
+-#: ../extensions/sidebar/ephy-sidebar-extension.c:459
+-#, c-format
+-msgid "The sidebar already contains “%s”"
+-msgstr "侧边栏已包含“%s”"
+-
+-#: ../extensions/sidebar/ephy-sidebar-extension.c:463
+-msgid ""
+-"To use this sidebar, select it from the list of available sidebar pages."
+-msgstr "要使用此侧边栏，请从可用的侧边栏列表页面中选择它。"
+-
+-#: ../extensions/sidebar/ephy-sidebar-extension.c:466
+-#: ../extensions/sidebar/ephy-sidebar-extension.c:492
+-msgid "Add Sidebar"
+-msgstr "添加侧边栏"
+-
+-#: ../extensions/sidebar/ephy-sidebar-extension.c:486
+-#, c-format
+-msgid "Add “%s” to the Sidebar?"
+-msgstr "将“%s”添加到侧边栏吗？"
+-
+-#: ../extensions/sidebar/ephy-sidebar-extension.c:490
+-#, c-format
+-msgid "The source to the new sidebar page is “%s”."
+-msgstr "新侧边栏的源文件为“%s”。"
+-
+-#: ../extensions/sidebar/ephy-sidebar-extension.c:496
+-msgid "_Add Sidebar"
+-msgstr "添加侧边栏(_A)"
+-
+ #: ../extensions/smart-bookmarks/smart-bookmarks-extension.c:531
+ msgid "_Look Up"
+ msgstr "查阅(_L)"
+@@ -1066,6 +867,23 @@ msgstr "在新标签中打开搜索结果"
+ msgid "Open search result in new tab if true, in new window if false"
+ msgstr "如果为 true 则在新标签中打开书签，如果为 false 则在新窗口中打开"
+ 
++#: ../extensions/soup-fly/ephy-soup-fly-extension.c:66
++msgid "_Soup Fly"
++msgstr ""
++
++#. shortcut key
++#: ../extensions/soup-fly/ephy-soup-fly-extension.c:68
++msgid "Show information about the SoupSession used by the browser"
++msgstr "显示浏览器使用的 SoupSession 信息"
++
++#: ../extensions/soup-fly/soup-fly.c:220
++msgid "Clear finished"
++msgstr "清除已完成项"
++
++#: ../extensions/soup-fly/soup-fly.c:224
++msgid "Automatically remove finished messages"
++msgstr "自动删除已完成的消息"
++
+ #: ../extensions/actions/actions.ephy-extension.in.in.h:2
+ msgid "Execute arbitrary commands from the context menu"
+ msgstr "从快捷菜单中执行外部命令"
+@@ -1076,7 +894,7 @@ msgstr "广告屏蔽"
+ 
+ #: ../extensions/adblock/adblock.ephy-extension.in.in.h:2
+ msgid "Block the pest!"
+-msgstr ""
++msgstr "屏蔽无用信息！"
+ 
+ #: ../extensions/auto-scroller/auto-scroller.ephy-extension.in.in.h:1
+ msgid "Auto Scroll"
+@@ -1094,22 +912,10 @@ msgstr "自动重新装入标签"
+ msgid "Reload a tab periodically"
+ msgstr "定时重新装入标签"
+ 
+-#: ../extensions/cc-license-viewer/cc-license-viewer.ephy-extension.in.h:1
+-msgid "Creative Commons license viewer"
+-msgstr "Creative Commons 许可查看器"
+-
+-#: ../extensions/cc-license-viewer/cc-license-viewer.ephy-extension.in.h:2
+-msgid "Shows the Creative Commons license of the current website if available"
+-msgstr "如果可能的话，显示当前网站的 Creative Commons 许可"
+-
+ #: ../extensions/certificates/certificates.ephy-extension.in.in.h:2
+ msgid "View the page certificate and manage the certificates"
+ msgstr "查看页面证书并管理证书"
+ 
+-#: ../extensions/epilicious/epilicious.ephy-extension.in.h:1
+-msgid "Synchronize bookmarks with social bookmark sites"
+-msgstr "与社会化书签网站同步书签"
+-
+ #: ../extensions/error-viewer/error-viewer.ephy-extension.in.in.h:1
+ msgid "Error viewer"
+ msgstr "错误查看器"
+@@ -1126,15 +932,6 @@ msgstr "激活和禁用扩展"
+ msgid "Extensions Manager"
+ msgstr "扩展管理器"
+ 
+-#: ../extensions/favicon/favicon.ephy-extension.in.h:1
+-msgid "Favicon fallback"
+-msgstr "默认收藏图标"
+-
+-#: ../extensions/favicon/favicon.ephy-extension.in.h:2
+-msgid ""
+-"Loads /favicon.ico as favicon if the site doesn't use the standard method"
+-msgstr "如果网站不使用标准方式指定收藏图标，则装入 /favicon.ico"
+-
+ #: ../extensions/gestures/gestures.ephy-extension.in.in.h:1
+ msgid "Gestures"
+ msgstr "手势"
+@@ -1161,7 +958,7 @@ msgstr "提供对 Java 插件控制台的访问"
+ 
+ #: ../extensions/livehttpheaders/livehttpheaders.ephy-extension.in.in.h:1
+ msgid "Live HTTP headers"
+-msgstr ""
++msgstr "实时 HTTP 头"
+ 
+ #: ../extensions/page-info/page-info.ephy-extension.in.in.h:1
+ msgid "Display information about and links and media from the current page"
+@@ -1187,27 +984,11 @@ msgstr "鼠标中键单击时拖曳页面"
+ msgid "Push Scroll"
+ msgstr "中键滚动"
+ 
+-#: ../extensions/python-console/python-console.ephy-extension.in.h:1
+-msgid "Opens an interactive Python console"
+-msgstr "打开交互式 Python 控制台"
+-
+-#: ../extensions/python-console/python-console.ephy-extension.in.h:2
+-msgid "Python Console"
+-msgstr "Python 控制台"
+-
+ #: ../extensions/rss/rss.ephy-extension.in.in.h:2
+ msgid ""
+ "Subscribe to a news feed offered by the webpage in your favorite news reader"
+ msgstr "用您喜爱的新闻阅读器订阅网页提供的新闻推送"
+ 
+-#: ../extensions/sample-mozilla/sample-mozilla.ephy-extension.in.in.h:1
+-msgid "A sample extension with mozilla backend"
+-msgstr "Mozilla 后端的示例扩展"
+-
+-#: ../extensions/sample-mozilla/sample-mozilla.ephy-extension.in.in.h:2
+-msgid "Sample (Mozilla)"
+-msgstr "示例(Mozilla)"
+-
+ #: ../extensions/sample/sample.ephy-extension.in.in.h:1
+ msgid "A sample extension"
+ msgstr "示例扩展"
+@@ -1224,14 +1005,6 @@ msgstr "选择样式表"
+ msgid "Select between different stylesheets offered by the web page"
+ msgstr "选择网页提供的不同样式表"
+ 
+-#: ../extensions/sidebar/sidebar.ephy-extension.in.in.h:1
+-msgid "Adds a sidebar to windows"
+-msgstr "在窗口中添加侧边栏"
+-
+-#: ../extensions/sidebar/sidebar.ephy-extension.in.in.h:2
+-msgid "Sidebar"
+-msgstr "侧边栏"
+-
+ #: ../extensions/smart-bookmarks/smart-bookmarks.ephy-extension.in.in.h:1
+ msgid "Look up the selected text with a smart bookmark"
+ msgstr "用智能书签查阅选中文本"
+@@ -1255,3 +1028,197 @@ msgstr "在后台标签标识新内容"
+ #: ../extensions/tab-states/tab-states.ephy-extension.in.in.h:2
+ msgid "Tab States"
+ msgstr "标签状态"
++
++#: ../extensions/tab-key-tab-navigate/tab-key-tab-navigate.ephy-extension.in.in.h:1
++msgid "Tab Key Tab Navigate"
++msgstr "Tab 键导航"
++
++#: ../extensions/tab-key-tab-navigate/tab-key-tab-navigate.ephy-extension.in.in.h:2
++msgid "Use the Tab key to navigate between tabs"
++msgstr "使用 Tab 键在表格间导航"
++
++#~ msgid ""
++#~ "If this option is enabled, the action will be included in the popup menu "
++#~ "of images."
++#~ msgstr "如果启用此选项，则在图像的弹出菜单中包含动作。"
++
++#~ msgid ""
++#~ "If this option is enabled, the action will be included in the popup menu "
++#~ "of links and pages."
++#~ msgstr "如果启用此选项，则在链接和页面的弹出菜单中包含动作。"
++
++#~ msgid "The action description."
++#~ msgstr "动作描述。"
++
++#~ msgid ""
++#~ "The action name. If a character is preceded by an underscore, that "
++#~ "character will be used as the access key for the menu item."
++#~ msgstr "动作名称。如果字符前面包含下划线，则字符将会用作菜单项的加速键。"
++
++#~ msgid ""
++#~ "The command to execute when the action is activated. The URL of the link, "
++#~ "image or page will be appended to the command."
++#~ msgstr "激活动作时所执行的命令。链接、图像或页面的 URL 将被追加到命令后面。"
++
++#~ msgid "Add a new rule"
++#~ msgstr "添加新规则"
++
++#~ msgid "View Creative Commons license"
++#~ msgstr "查看 Creative Commons 许可"
++
++#~ msgid "Action for tagged bookmarks:"
++#~ msgstr "被标记书签的动作："
++
++#~ msgid "Epilicious Configuration"
++#~ msgstr "Epilicious 配置"
++
++#~ msgid "_Backend:"
++#~ msgstr "后端(_B)："
++
++#~ msgid "_Exclude"
++#~ msgstr "排除(_E)"
++
++#~ msgid "_Include"
++#~ msgstr "包含(_I)"
++
++#~ msgid "_Password:"
++#~ msgstr "密码(_P)："
++
++#~ msgid "_Tag:"
++#~ msgstr "标签(_T)："
++
++#~ msgid "Adding new bookmarks and synching topics"
++#~ msgstr "添加新书签和同步主题"
++
++#~ msgid "Removing deleted bookmarks"
++#~ msgstr "移去已删除的书签"
++
++#~ msgid "Retrieving bookmarks from %s"
++#~ msgstr "从 %s 获取书签"
++
++#~ msgid "Retrieving bookmarks from epiphany"
++#~ msgstr "从 epiphany 获取书签"
++
++#~ msgid "Retrieving previous synch point"
++#~ msgstr "获取上个同步点"
++
++#~ msgid "Saving new synch point"
++#~ msgstr "保存新同步点"
++
++#~ msgid "Synchronizing with %s"
++#~ msgstr "正在与 %s 同步"
++
++#~ msgid "Synchronizing..."
++#~ msgstr "正在同步..."
++
++#~ msgid "Epilicious Synchronize"
++#~ msgstr "Epilicious 同步"
++
++#~ msgid "Bookmarks with this topic will be synchronized."
++#~ msgstr "带有此主题的书签将被同步。"
++
++#~ msgid ""
++#~ "Controls the function of the topic. If this is unset then all bookmarks "
++#~ "with the topic will be synched. If this is set then all bookmarks without "
++#~ "the topic will be synched."
++#~ msgstr ""
++#~ "控制主题的功能。如果未设定，则带有此主题的所有书签都将同步。如果设定了此选"
++#~ "项，则不带有此主题的所有书签才会同步。"
++
++#~ msgid "Exclude topic"
++#~ msgstr "排除主题"
++
++#~ msgid "Shared topic"
++#~ msgstr "共享主题"
++
++#~ msgid ""
++#~ "The backend that epilicious will use for synchronizing bookmarks. Allowed "
++#~ "value: 'ma.gnolia'"
++#~ msgstr "epilicious 用来同步书签的后端。允许的值为“ma.gnolia”"
++
++#~ msgid "The password that epilicious will use for synchronizing bookmarks."
++#~ msgstr "epilicious 用来同步书签的密码。"
++
++#~ msgid "The username that epilicious will use for synchronizing bookmarks."
++#~ msgstr "epilicious 用来同步书签的用户名。"
++
++#~ msgid "epilicious backend"
++#~ msgstr "epilicious 后端"
++
++#~ msgid "password"
++#~ msgstr "密码"
++
++#~ msgid "username"
++#~ msgstr "用户名"
++
++#~ msgid "No Sidebars installed"
++#~ msgstr "未安装侧边栏"
++
++#~ msgid "_Sidebar"
++#~ msgstr "侧边栏(_S)"
++
++#~ msgid "Show or hide the sidebar"
++#~ msgstr "显示或隐藏侧边栏"
++
++#~ msgid "Do you really want to remove this sidebar?"
++#~ msgstr "您真的想要删除此侧边栏吗？"
++
++#~ msgid "There is no way to recover this sidebar after removal."
++#~ msgstr "删除后将无法恢复此侧边栏。"
++
++#~ msgid "Remove Sidebar"
++#~ msgstr "删除侧边栏"
++
++#~ msgid "The sidebar already contains “%s”"
++#~ msgstr "侧边栏已包含“%s”"
++
++#~ msgid ""
++#~ "To use this sidebar, select it from the list of available sidebar pages."
++#~ msgstr "要使用此侧边栏，请从可用的侧边栏列表页面中选择它。"
++
++#~ msgid "Add Sidebar"
++#~ msgstr "添加侧边栏"
++
++#~ msgid "Add “%s” to the Sidebar?"
++#~ msgstr "将“%s”添加到侧边栏吗？"
++
++#~ msgid "The source to the new sidebar page is “%s”."
++#~ msgstr "新侧边栏的源文件为“%s”。"
++
++#~ msgid "_Add Sidebar"
++#~ msgstr "添加侧边栏(_A)"
++
++#~ msgid "Creative Commons license viewer"
++#~ msgstr "Creative Commons 许可查看器"
++
++#~ msgid ""
++#~ "Shows the Creative Commons license of the current website if available"
++#~ msgstr "如果可能的话，显示当前网站的 Creative Commons 许可"
++
++#~ msgid "Synchronize bookmarks with social bookmark sites"
++#~ msgstr "与社会化书签网站同步书签"
++
++#~ msgid "Favicon fallback"
++#~ msgstr "默认收藏图标"
++
++#~ msgid ""
++#~ "Loads /favicon.ico as favicon if the site doesn't use the standard method"
++#~ msgstr "如果网站不使用标准方式指定收藏图标，则装入 /favicon.ico"
++
++#~ msgid "Opens an interactive Python console"
++#~ msgstr "打开交互式 Python 控制台"
++
++#~ msgid "Python Console"
++#~ msgstr "Python 控制台"
++
++#~ msgid "A sample extension with mozilla backend"
++#~ msgstr "Mozilla 后端的示例扩展"
++
++#~ msgid "Sample (Mozilla)"
++#~ msgstr "示例(Mozilla)"
++
++#~ msgid "Adds a sidebar to windows"
++#~ msgstr "在窗口中添加侧边栏"
++
++#~ msgid "Sidebar"
++#~ msgstr "侧边栏"

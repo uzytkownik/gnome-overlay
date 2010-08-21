@@ -37,6 +37,10 @@ pkg_setup() {
 		$(use_enable coverage)"
 }
 
+src_prepare() {
+	false
+}
+
 src_install() {
 	gnome2_src_install
 

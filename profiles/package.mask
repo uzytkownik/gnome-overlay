@@ -63,9 +63,12 @@ gnome-extra/yelp-xsl
 =mail-client/evolution-2.31*
 =media-gfx/eog-2.31*
 =media-sound/sound-juicer-2.31*
+=media-video/cheese-2.31*
 =media-video/totem-2.90*
+=net-im/empathy-2.31*
 net-libs/webkit-gtk:3.0
 =www-client/epiphany-2.31*
+=www-client/epiphany-extensions-2.31*
 x11-libs/gdk-pixbuf
 =x11-libs/gtk+-2.21*
 x11-libs/gtk+:3

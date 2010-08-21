@@ -1,0 +1,13 @@
+diff --git a/backends/telepathy/Makefile.am b/backends/telepathy/Makefile.am
+index 42a867f..ccad7ba 100644
+--- a/backends/telepathy/Makefile.am
++++ b/backends/telepathy/Makefile.am
+@@ -182,7 +182,7 @@ libfolks_backend_telepathy_la_LIBADD = \
+ 	$(GEE_LIBS) \
+ 	$(TP_GLIB_LIBS) \
+ 	-L$(abs_top_srcdir)/backends/telepathy/.libs \
+-	-lfolks-telepathy \
++	libfolks-telepathy.la \
+ 	$(NULL)
+ 
+ libfolks_backend_telepathy_la_LDFLAGS = -shared -fPIC -module -avoid-version
