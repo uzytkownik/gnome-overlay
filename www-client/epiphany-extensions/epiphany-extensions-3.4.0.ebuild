@@ -16,7 +16,7 @@ SLOT="0"
 KEYWORDS="~alpha ~amd64 ~ia64 ~ppc ~ppc64 ~sparc ~x86"
 IUSE="dbus examples pcre"
 
-RDEPEND=">=www-client/epiphany-3.3.0
+RDEPEND=">=www-client/epiphany-3.2.0
 	app-text/opensp
 	>=dev-libs/glib-2.26.0:2
 	>=dev-libs/libxml2-2.6:2
@@ -57,7 +57,6 @@ pkg_setup() {
 src_prepare() {
 	# https://bugzilla.gnome.org/show_bug.cgi?id=664369; needs eautoreconf
 	epatch "${FILESDIR}/${PN}-3.2.0-dbus-libs.patch"
-	sed -i 's:EPIPHANY_API_VERSION=3\.2:EPIPHANY_API_VERSION=3.3:g' configure.ac
 	eautoreconf
 	gnome2_src_prepare
 }
